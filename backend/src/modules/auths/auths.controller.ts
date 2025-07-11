@@ -52,7 +52,14 @@ export class AuthsController {
 
   @Get('google/callback')
   @UseGuards(PassportAuthGuard('google'))
-  googleAuthRedirect(@Req() req: Request) {
-    return req.user;
+  async googleAuthRedirect(@Req() req: Request) {
+    const googleUser = req.user as {
+      id: string;
+      name: string;
+      email: string;
+      accessToken: string;
+    };
+
+    return await this.authService.googleLogin(googleUser);
   }
 }

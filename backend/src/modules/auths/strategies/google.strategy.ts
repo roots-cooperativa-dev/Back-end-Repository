@@ -7,11 +7,25 @@ import { ConfigService } from '@nestjs/config';
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private configService: ConfigService) {
     super({
-      clientID: configService.get<string>('Google0Auth.clientId'),
-      clientSecret: configService.get<string>('Google0Auth.clientSecret'),
-      callbackURL: configService.get<string>('Google0Auth.callbackUrl'),
+      clientID: GoogleStrategy.getEnvVar(configService, 'Google0Auth.clientId'),
+      clientSecret: GoogleStrategy.getEnvVar(
+        configService,
+        'Google0Auth.clientSecret',
+      ),
+      callbackURL: GoogleStrategy.getEnvVar(
+        configService,
+        'Google0Auth.callbackUrl',
+      ),
       scope: ['email', 'profile'],
     });
+  }
+
+  private static getEnvVar(configService: ConfigService, key: string): string {
+    const value = configService.get<string>(key);
+    if (!value) {
+      throw new Error(`Missing required environment variable: ${key}`);
+    }
+    return value;
   }
 
   validate(accessToken: string, refreshToken: string, profile: Profile) {

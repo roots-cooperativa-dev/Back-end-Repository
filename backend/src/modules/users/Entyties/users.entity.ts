@@ -19,7 +19,7 @@ export class Users {
   @Column({ type: 'varchar', length: 50, unique: true, nullable: false })
   email: string;
 
-  @Column({ type: 'date', length: 50, nullable: false })
+  @Column({ type: 'date', nullable: false })
   birthdate: Date;
 
   @Column({ type: 'varchar', length: 50, unique: true, nullable: false })
@@ -31,23 +31,11 @@ export class Users {
   @Column({ type: 'bigint' })
   phone: number;
 
-  @Column({ type: 'varchar', length: 50 })
-  country: string;
-
-  @Column({ type: 'text' })
-  address: string;
-
-  @Column({ type: 'varchar', length: 50 })
-  city: string;
-
   @Column({ type: 'boolean', default: false })
   isAdmin: boolean;
 
   @Column({ type: 'boolean', default: false })
   isDonator: boolean;
-
-  @Column({ type: 'boolean', default: false })
-  isActive: boolean;
 
   @CreateDateColumn()
   createdAt?: Date;

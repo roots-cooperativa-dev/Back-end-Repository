@@ -10,6 +10,7 @@ import {
   IsDateString,
   IsEmail,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Length,
@@ -41,6 +42,14 @@ export class CreateUserDto {
   @IsOptional()
   @IsDateString()
   birthdate: string;
+
+  @ApiProperty({
+    description: 'This field must contain the phone number',
+    example: 1234567890,
+  })
+  @IsOptional()
+  @IsNumber()
+  phone: number;
 
   @ApiProperty({
     description: 'This field must contain the username',
@@ -76,10 +85,12 @@ export class CreateUserDto {
   confirmPassword: string;
 
   @ApiHideProperty()
+  @IsOptional()
   @IsBoolean()
   isAdmin?: boolean;
 
   @ApiHideProperty()
+  @IsOptional()
   @IsBoolean()
   isDonator?: boolean;
 }

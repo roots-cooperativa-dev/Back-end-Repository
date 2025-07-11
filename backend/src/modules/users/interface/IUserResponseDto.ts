@@ -4,7 +4,8 @@ export interface IUserResponseDto {
   id: string;
   name: string;
   email: string;
-  birthdate: string;
+  birthdate: Date;
+  phone: number;
   username: string;
 }
 
@@ -14,7 +15,8 @@ export class ResponseUserDto {
       id: user.id,
       name: user.name,
       email: user.email,
-      birthdate: user.birthdate ? user.birthdate.toISOString() : '',
+      birthdate: user.birthdate,
+      phone: user.phone,
       username: user.username,
     };
   }

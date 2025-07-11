@@ -62,7 +62,6 @@ export class UsersService {
 
     const updatedUser = await this.usersRepository.findOne({
       where: { id },
-      relations: ['orders'],
     });
 
     if (!updatedUser) {
