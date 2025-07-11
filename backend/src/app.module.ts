@@ -4,12 +4,13 @@ import typeOrmConfig from './config/SupabaseDB';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourceOptions } from 'typeorm';
 import { UsersModule } from './modules/users/users.module';
+import google0authConfig from './config/google-0auth.config';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [typeOrmConfig],
+      load: [typeOrmConfig, google0authConfig],
     }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],

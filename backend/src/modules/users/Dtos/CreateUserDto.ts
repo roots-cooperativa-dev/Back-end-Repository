@@ -3,8 +3,10 @@ import {
   ApiProperty,
   ApiHideProperty,
   PartialType,
+  OmitType,
 } from '@nestjs/swagger';
 import {
+  IsBoolean,
   IsDateString,
   IsEmail,
   IsNotEmpty,
@@ -49,7 +51,7 @@ export class CreateUserDto {
   @Length(3, 80)
   username: string;
 
-  @ApiHideProperty()
+  @ApiProperty()
   @IsNotEmpty()
   @IsString()
   @Matches(
@@ -60,10 +62,35 @@ export class CreateUserDto {
     },
   )
   password: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  @Matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,15}$/,
+    {
+      message:
+        'The confirmPassword must have at least one uppercase letter, one lowercase letter, one number, and one special character. (!@#$%^&*)',
+    },
+  )
+  confirmPassword: string;
+
+  @ApiHideProperty()
+  @IsBoolean()
+  isAdmin?: boolean;
+
+  @ApiHideProperty()
+  @IsBoolean()
+  isDonator?: boolean;
 }
 
 export class LoginUserDto extends PickType(CreateUserDto, [
   'email',
   'password',
 ]) {}
+
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
+
+export class CreateUserDbDto extends OmitType(CreateUserDto, [
+  'confirmPassword',
+] as const) {}

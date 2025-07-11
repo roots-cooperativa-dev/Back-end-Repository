@@ -1,4 +1,4 @@
-import { Users } from './Entyties/users.entity';
+import { Users } from '../Entyties/users.entity';
 
 export interface IUserResponseDto {
   id: string;
@@ -7,6 +7,7 @@ export interface IUserResponseDto {
   birthdate: string;
   username: string;
 }
+
 export class ResponseUserDto {
   static toDTO(user: Users): IUserResponseDto {
     return {
@@ -25,6 +26,7 @@ export class ResponseUserDto {
 
 export interface IUserResponseWithAdmin extends IUserResponseDto {
   isAdmin: boolean;
+  isDonator: boolean;
 }
 
 export class ResponseUserWithAdminDto {
@@ -32,6 +34,7 @@ export class ResponseUserWithAdminDto {
     return {
       ...ResponseUserDto.toDTO(user),
       isAdmin: user.isAdmin,
+      isDonator: user.isDonator,
     };
   }
 

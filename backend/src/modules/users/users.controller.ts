@@ -8,6 +8,9 @@ import {
   Put,
   Body,
   ParseIntPipe,
+  UsePipes,
+  ValidationPipe,
+  Delete,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -20,40 +23,68 @@ import { Roles, UserRole } from 'src/decorator/role.decorator';
 import { AuthGuard } from 'src/guards/auth.guards';
 import { UpdateUserDto } from './Dtos/CreateUserDto';
 import { RoleGuard } from 'src/guards/auth.guards.admin';
+import {
+  IUserResponseDto,
+  ResponseUserDto,
+  ResponseUserWithAdminDto,
+} from './interface/IUserResponseDto';
 
 @ApiBearerAuth()
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Users list' })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
   @Get()
-  getUsers(
+  async getUsers(
     @Query('page', ParseIntPipe) page = 1,
     @Query('limit', ParseIntPipe) limit = 5,
-  ) {
-    return this.usersService.getUsers(page, limit);
+  ): Promise<ResponseUserWithAdminDto[]> {
+    const users = await this.usersService.getUsers(page, limit);
+    return ResponseUserWithAdminDto.toDTOList(users);
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user by id' })
   @ApiResponse({ status: 200, description: 'Users by id' })
   @UseGuards(AuthGuard)
   @Get(':id')
-  getUserById(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usersService.getUserById(id);
+  async getUserById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ResponseUserDto> {
+    return ResponseUserDto.toDTO(await this.usersService.getUserById(id));
   }
 
-  @ApiOperation({ summary: 'Update user by id' })
-  @ApiResponse({ status: 200, description: 'Update user by id' })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update user by ID' })
+  @ApiResponse({ status: 200, description: 'User updated successfully' })
   @UseGuards(AuthGuard)
   @Put(':id')
-  updateUserById(
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async updateUser(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
-    return this.usersService.updateUserById(id, updateUserDto);
+    @Body() updateData: Partial<UpdateUserDto>,
+  ): Promise<IUserResponseDto> {
+    return ResponseUserDto.toDTO(
+      await this.usersService.updateUserService(id, updateData),
+    );
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete user by ID' })
+  @ApiResponse({ status: 200, description: 'User deleted successfully' })
+  @Delete(':id')
+  @UseGuards(AuthGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async deleteUser(@Param('id', ParseUUIDPipe) id: string) {
+    await this.usersService.deleteUserService(id);
+    return {
+      message: `Usuario con id ${id} eliminado correctamente`,
+    };
   }
 }
