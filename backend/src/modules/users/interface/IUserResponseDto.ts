@@ -1,19 +1,22 @@
-import { Users } from './Entyties/users.entity';
+import { Users } from '../Entyties/users.entity';
 
 export interface IUserResponseDto {
   id: string;
   name: string;
   email: string;
-  birthdate: string;
+  birthdate: Date;
+  phone: number;
   username: string;
 }
+
 export class ResponseUserDto {
   static toDTO(user: Users): IUserResponseDto {
     return {
       id: user.id,
       name: user.name,
       email: user.email,
-      birthdate: user.birthdate ? user.birthdate.toISOString() : '',
+      birthdate: user.birthdate,
+      phone: user.phone,
       username: user.username,
     };
   }
@@ -25,6 +28,7 @@ export class ResponseUserDto {
 
 export interface IUserResponseWithAdmin extends IUserResponseDto {
   isAdmin: boolean;
+  isDonator: boolean;
 }
 
 export class ResponseUserWithAdminDto {
@@ -32,6 +36,7 @@ export class ResponseUserWithAdminDto {
     return {
       ...ResponseUserDto.toDTO(user),
       isAdmin: user.isAdmin,
+      isDonator: user.isDonator,
     };
   }
 
