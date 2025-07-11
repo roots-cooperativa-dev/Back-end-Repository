@@ -3,7 +3,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeOrmConfig from './config/SupabaseDB';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourceOptions } from 'typeorm';
-import { UserModule } from './user/user.module';
+import { UsersModule } from './modules/users/users.module';
+import { AuthsModule } from './modules/auths/auths.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -21,7 +23,9 @@ import { UserModule } from './user/user.module';
         return config;
       },
     }),
-    UserModule,
+    UsersModule,
+    AuthsModule,
+    JwtModule,
   ],
   controllers: [],
   providers: [],
