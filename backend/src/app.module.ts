@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeOrmConfig from './config/SupabaseDB';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourceOptions } from 'typeorm';
-import { UserModule } from './user/user.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -21,7 +21,7 @@ import { UserModule } from './user/user.module';
         return config;
       },
     }),
-    UserModule,
+    UsersModule,
   ],
   controllers: [],
   providers: [],
