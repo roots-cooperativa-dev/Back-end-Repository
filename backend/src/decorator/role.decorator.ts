@@ -1,5 +1,4 @@
 import { SetMetadata } from '@nestjs/common';
-
 export enum UserRole {
   USER = 'user',
   DONOR_USER = 'donorUser',
