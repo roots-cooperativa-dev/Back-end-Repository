@@ -6,6 +6,7 @@ import { DataSourceOptions } from 'typeorm';
 import { UsersModule } from './modules/users/users.module';
 import { AuthsModule } from './modules/auths/auths.module';
 import { JwtModule } from '@nestjs/jwt';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { JwtModule } from '@nestjs/jwt';
     UsersModule,
     AuthsModule,
     JwtModule,
+    ProductsModule,
   ],
   controllers: [],
   providers: [],
