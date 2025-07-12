@@ -60,7 +60,10 @@ export class CreateUserDto {
   @Length(3, 80)
   username: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'This field must contain the password',
+    example: 'Carli87@',
+  })
   @IsNotEmpty()
   @IsString()
   @Matches(
@@ -72,7 +75,10 @@ export class CreateUserDto {
   )
   password: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    description: 'This field must contain the confirm password',
+    example: 'Carli87@',
+  })
   @IsNotEmpty()
   @IsString()
   @Matches(

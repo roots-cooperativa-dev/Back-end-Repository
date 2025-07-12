@@ -16,12 +16,15 @@ export class UsersService {
     private readonly usersRepository: Repository<Users>,
   ) {}
 
-  async getUsers(page: number, limit: number): Promise<Users[]> {
-    return this.usersRepository.find({
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { createdAt: 'DESC' },
-    });
+  async getUsers(page?: number, limit?: number): Promise<Users[]> {
+    if (page && limit) {
+      return await this.usersRepository.find({
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+    } else {
+      return await this.usersRepository.find();
+    }
   }
 
   async getUserById(id: string): Promise<Users> {
@@ -73,7 +76,7 @@ export class UsersService {
     return updatedUser;
   }
 
-  async deleteUserService(id: number | string): Promise<{ id: string }> {
+  async deleteUserService(id: string): Promise<{ id: string }> {
     const result = await this.usersRepository.delete({ id: String(id) });
     if (!result.affected) {
       throw new NotFoundException(`Usuario con id ${id} no encontrado`);
