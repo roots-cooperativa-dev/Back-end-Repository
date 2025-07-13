@@ -30,12 +30,7 @@ export class Product_size {
   @Column({ type: 'int', nullable: false })
   stock: number;
 
-  @Column()
-  product_Id: string;
-
-  @ManyToOne(() => Product, (product) => product.sizes, {
-    onDelete: 'CASCADE',
-  })
+  @ManyToOne(() => Product, (product) => product.sizes)
   @JoinColumn({ name: 'product_id' })
   product: Product;
 }
