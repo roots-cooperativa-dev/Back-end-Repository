@@ -17,7 +17,14 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "typeorm": "ts-node ./node_modules/typeorm/cli",
+    "migration:run": "cross-env NODE_ENV=development npm run typeorm migration:run -- -d ./src/config/SupabaseDB.ts",
+    "migration:generate": "npm run typeorm migration:generate -- -d ./src/config/SupabaseDB.ts",
+    "migration:create": "npm run typeorm -- migration:create",
+    "migration:revert": "npm run typeorm -- migration:revert -d ./src/config/SupabaseDB.ts",
+    "migration:show": "npm run typeorm -- migration:show -d ./src/config/SupabaseDB.ts",
+    "migration:build-run": "npm run build && npm run migration:run"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.3",
