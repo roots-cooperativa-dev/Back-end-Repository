@@ -1,4 +1,10 @@
-import { IsArray, IsNotEmpty, IsString, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsNotEmpty,
+  IsString,
+  IsUUID,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateProductSizeDTO } from './CreateProductSize.dto';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
@@ -23,6 +29,11 @@ export class CreateProductDTO {
   @ValidateNested({ each: true })
   @Type(() => CreateProductSizeDTO)
   sizes: CreateProductSizeDTO[];
+
+  @ApiProperty({ type: [String], description: 'Array of file IDs' })
+  @IsArray()
+  @IsUUID('all', { each: true })
+  file_Ids: string[];
 }
 
 export class UpdateProductDTO extends PartialType(CreateProductDTO) {}
