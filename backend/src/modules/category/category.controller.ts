@@ -9,6 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
@@ -37,6 +38,7 @@ export class CategoryController {
     return await this.categoryService.findAllCategory();
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new category' })
   @ApiBody({ type: CreateCategoryDTO })
   @ApiResponse({
@@ -54,6 +56,7 @@ export class CategoryController {
     return await this.categoryService.createCategory(dto);
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update category information by ID' })
   @ApiParam({
     name: 'id',
@@ -80,6 +83,7 @@ export class CategoryController {
     return await this.categoryService.updateCategory(id, dto);
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete category by ID' })
   @ApiParam({
     name: 'id',

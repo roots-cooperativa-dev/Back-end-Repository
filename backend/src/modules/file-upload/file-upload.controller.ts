@@ -10,7 +10,12 @@ import {
 } from '@nestjs/common';
 import { FileUploadService } from './file-upload.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+} from '@nestjs/swagger';
 import { Roles, UserRole } from 'src/decorator/role.decorator';
 import { AuthGuard } from 'src/guards/auth.guards';
 import { RoleGuard } from 'src/guards/auth.guards.admin';
@@ -19,6 +24,7 @@ import { RoleGuard } from 'src/guards/auth.guards.admin';
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
+  @ApiBearerAuth()
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
   @Post('uploadImg')
