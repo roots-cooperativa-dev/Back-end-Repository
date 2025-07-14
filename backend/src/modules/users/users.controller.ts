@@ -10,6 +10,8 @@ import {
   Body,
   ParseUUIDPipe,
   ValidationPipe,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -38,7 +40,7 @@ import {
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Retrieve all users with pagination' })
+  @ApiOperation({ summary: 'Retrieve all users with pagintion' })
   @ApiQuery({
     name: 'page',
     description: 'Page number',
@@ -142,10 +144,6 @@ export class UsersController {
     description: 'User unique identifier',
   })
   @ApiResponse({
-    status: 200,
-    description: 'User deleted successfully',
-  })
-  @ApiResponse({
     status: 401,
     description: 'Unauthorized - Invalid or missing token',
   })
@@ -155,6 +153,7 @@ export class UsersController {
   })
   @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   async deleteUser(@Param('id', ParseUUIDPipe) id: string) {
     await this.usersService.deleteUserService(id);

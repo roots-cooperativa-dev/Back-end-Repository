@@ -16,37 +16,15 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  // app.enableCors({
-  //   origin: (
-  //     origin: string | undefined,
-  //     callback: (err: Error | null, allow?: boolean) => void,
-  //   ) => {
-  //     if (!origin || origin.startsWith('http://localhost:3001')) {
-  //       callback(null, true);
-  //     } else {
-  //       callback(new Error('Not allowed by CORS'));
-  //     }
-  //   },
-  //   credentials: true,
-  // });
-
   app.enableCors({
-    origin: (
-      origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean) => void,
-    ) => {
-      const allowedOrigins = [
-        'http://localhost:3000',
-        'http://127.0.0.1:3000',
-        'http://localhost:3001', // si querés permitir también peticiones desde el backend
-      ];
-
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:5173',
+      'https://sitio-web-rootscoop.vercel.app/',
+      'https://roots-api-te93.onrender.com',
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
 
