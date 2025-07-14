@@ -40,7 +40,7 @@ import {
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Retrieve all users with pagination' })
+  @ApiOperation({ summary: 'Retrieve all users with pagintion' })
   @ApiQuery({
     name: 'page',
     description: 'Page number',
