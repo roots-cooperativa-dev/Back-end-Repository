@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entity/category.entity';
 import { Repository } from 'typeorm';
@@ -12,26 +16,46 @@ export class CategoryService {
   ) {}
 
   async createCategory(dto: CreateCategoryDTO): Promise<Category> {
-    const category = this.categoryRepository.create(dto);
-    return await this.categoryRepository.save(category);
+    try {
+      const category = this.categoryRepository.create(dto);
+      return await this.categoryRepository.save(category);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Failed to create category');
+    }
   }
 
   async findAllCategory(): Promise<Category[]> {
-    return await this.categoryRepository.find();
+    try {
+      return await this.categoryRepository.find();
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Failed to fetch categories');
+    }
   }
 
   async updateCategory(id: string, dto: UpdateCategoryDTO): Promise<Category> {
-    const category = await this.categoryRepository.findOneBy({ id });
-    if (!category) throw new NotFoundException(`Category ${id} not found`);
+    try {
+      const category = await this.categoryRepository.findOneBy({ id });
+      if (!category) throw new NotFoundException(`Category ${id} not found`);
 
-    this.categoryRepository.merge(category, dto);
-    return await this.categoryRepository.save(category);
+      this.categoryRepository.merge(category, dto);
+      return await this.categoryRepository.save(category);
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(`Failed to update category ${id}`);
+    }
   }
 
   async deleteCategory(id: string): Promise<{ message: string }> {
-    const result = await this.categoryRepository.delete(id);
-    if (!result.affected)
-      throw new NotFoundException(`Category ${id} not found`);
-    return { message: `Category ${id} deleted.` };
+    try {
+      const result = await this.categoryRepository.delete(id);
+      if (!result.affected)
+        throw new NotFoundException(`Category ${id} not found`);
+      return { message: `Category ${id} deleted.` };
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(`Failed to delete category ${id}`);
+    }
   }
 }

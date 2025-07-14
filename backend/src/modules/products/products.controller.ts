@@ -6,8 +6,10 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
@@ -18,6 +20,9 @@ import {
 import { ProductsService } from './products.service';
 import { CreateProductDTO, UpdateProductDTO } from './DTO/CreateProduct.dto';
 import { Product } from './entities/products.entity';
+import { Roles, UserRole } from 'src/decorator/role.decorator';
+import { AuthGuard } from 'src/guards/auth.guards';
+import { RoleGuard } from 'src/guards/auth.guards.admin';
 
 @ApiTags('Products')
 @Controller('products')
@@ -35,6 +40,7 @@ export class ProductsController {
     return await this.productsService.findAll();
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new product with sizes' })
   @ApiBody({ type: CreateProductDTO })
   @ApiResponse({
@@ -46,6 +52,8 @@ export class ProductsController {
     status: 400,
     description: 'Invalid product data provided',
   })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
   @Post()
   async create(@Body() dto: CreateProductDTO) {
     return await this.productsService.createProduct(dto);
@@ -73,6 +81,7 @@ export class ProductsController {
     return await this.productsService.getProductById(id);
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Update product information by ID' })
   @ApiParam({
     name: 'id',
@@ -93,11 +102,14 @@ export class ProductsController {
     status: 404,
     description: 'Product not found',
   })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
   @Put(':id')
   async update(@Param('id') id: string, @Body() dto: UpdateProductDTO) {
     return await this.productsService.updateProduct(id, dto);
   }
 
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete product by ID (soft delete)' })
   @ApiParam({
     name: 'id',
@@ -112,6 +124,8 @@ export class ProductsController {
     status: 404,
     description: 'Product not found',
   })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.productsService.deleteProduct(id);

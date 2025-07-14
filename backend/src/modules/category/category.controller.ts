@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -17,6 +18,9 @@ import {
 
 import { CategoryService } from './category.service';
 import { CreateCategoryDTO, UpdateCategoryDTO } from './DTO/category.dto';
+import { Roles, UserRole } from 'src/decorator/role.decorator';
+import { AuthGuard } from 'src/guards/auth.guards';
+import { RoleGuard } from 'src/guards/auth.guards.admin';
 
 @ApiTags('Categories')
 @Controller('category')
@@ -43,6 +47,8 @@ export class CategoryController {
     status: 400,
     description: 'Invalid category data provided',
   })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
   @Post()
   async create(@Body() dto: CreateCategoryDTO) {
     return await this.categoryService.createCategory(dto);
@@ -67,6 +73,8 @@ export class CategoryController {
     status: 404,
     description: 'Category not found',
   })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
   @Put(':id')
   async update(@Param('id') id: string, @Body() dto: UpdateCategoryDTO) {
     return await this.categoryService.updateCategory(id, dto);
@@ -86,6 +94,8 @@ export class CategoryController {
     status: 404,
     description: 'Category not found',
   })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
   @Delete(':id')
   async delete(@Param('id') id: string) {
     return await this.categoryService.deleteCategory(id);
