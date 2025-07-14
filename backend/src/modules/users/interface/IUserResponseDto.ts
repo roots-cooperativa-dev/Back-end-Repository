@@ -1,3 +1,4 @@
+import { IDonateResponseDtoUser } from 'src/modules/donations/interface/IDonateResponse';
 import { Users } from '../Entyties/users.entity';
 
 export interface IUserResponseDto {
@@ -7,6 +8,7 @@ export interface IUserResponseDto {
   birthdate: Date;
   phone: number;
   username: string;
+  donates?: IDonateResponseDtoUser[];
 }
 
 export class ResponseUserDto {
@@ -18,6 +20,19 @@ export class ResponseUserDto {
       birthdate: user.birthdate,
       phone: user.phone,
       username: user.username,
+      donates:
+        user.donates?.map((donate) => ({
+          id: donate.id,
+          pagoId: donate.pagoId,
+          status: donate.status,
+          statusDetail: donate.statusDetail,
+          transactionAmount: donate.transactionAmount,
+          currencyId: donate.currencyId,
+          paymentTypeId: donate.paymentTypeId,
+          paymentMethodId: donate.paymentMethodId,
+          dateApproved: donate.dateApproved,
+          createdAt: donate.createdAt,
+        })) ?? [],
     };
   }
 

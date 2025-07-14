@@ -1,7 +1,10 @@
+import { Donate } from 'src/modules/donations/entities/donation.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -42,4 +45,8 @@ export class Users {
 
   @UpdateDateColumn()
   updatedAt?: Date;
+
+  @OneToMany(() => Donate, (donate) => donate.user)
+  @JoinColumn()
+  donates: Donate[];
 }
