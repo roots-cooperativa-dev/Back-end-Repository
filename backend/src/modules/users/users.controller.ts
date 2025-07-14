@@ -10,6 +10,8 @@ import {
   Body,
   ParseUUIDPipe,
   ValidationPipe,
+  HttpStatus,
+  HttpCode,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -142,10 +144,6 @@ export class UsersController {
     description: 'User unique identifier',
   })
   @ApiResponse({
-    status: 200,
-    description: 'User deleted successfully',
-  })
-  @ApiResponse({
     status: 401,
     description: 'Unauthorized - Invalid or missing token',
   })
@@ -155,6 +153,7 @@ export class UsersController {
   })
   @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   async deleteUser(@Param('id', ParseUUIDPipe) id: string) {
     await this.usersService.deleteUserService(id);
