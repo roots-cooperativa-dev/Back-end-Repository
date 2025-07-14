@@ -16,6 +16,11 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
+  app.enableCors({
+    origin: 'http://localhost:3001',
+    credentials: true,
+  });
+
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Demo Nest API')
     .setDescription('API de prueba')
