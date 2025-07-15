@@ -21,7 +21,7 @@ async function bootstrap(): Promise<void> {
       'http://localhost:3000',
       'http://127.0.0.1:3000',
       'http://localhost:5173',
-      'https://sitio-web-rootscoop.vercel.app/',
+      'https://frontend-rootscoop.vercel.app',
       'https://roots-api-te93.onrender.com',
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
@@ -29,7 +29,7 @@ async function bootstrap(): Promise<void> {
   });
 
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('Demo Nest API')
+    .setTitle('API')
     .setDescription('API de prueba')
     .setVersion('1.0.0')
     .addBearerAuth()
@@ -41,8 +41,8 @@ async function bootstrap(): Promise<void> {
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
 
-  logger.log(`🚀 Servidor corriendo en http://localhost:${port}`);
-  logger.log(`📚 Swagger en http://localhost:${port}/api/docs`);
+  logger.log(`🚀 Frontend corriendo en https://frontend-rootscoop.vercel.app`);
+  logger.log(`📚 Swagger en https://roots-api-te93.onrender.com/api/docs`);
 }
 
 bootstrap().catch((error) => {
