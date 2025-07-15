@@ -2,6 +2,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -9,6 +10,7 @@ import {
 import { Product_size } from './products_size.entity';
 import { Category } from 'src/modules/category/entity/category.entity';
 import { File } from 'src/modules/file-upload/entity/file-upload.entity';
+import { OrderDetail } from 'src/modules/orders/entities/orderDetails.entity';
 
 @Entity({
   name: 'products',
@@ -35,4 +37,7 @@ export class Product {
 
   @OneToMany(() => File, (file) => file.product, { cascade: true })
   files: File[];
+
+  @ManyToMany(() => OrderDetail, (orderDetail) => orderDetail.products)
+  orderDetails: OrderDetail[];
 }
