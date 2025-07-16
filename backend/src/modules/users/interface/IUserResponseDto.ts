@@ -1,4 +1,3 @@
-import { IDonateResponseDtoUser } from 'src/modules/donations/interface/IDonateResponse';
 import { Users } from '../Entyties/users.entity';
 
 export interface IUserResponseDto {
@@ -9,6 +8,19 @@ export interface IUserResponseDto {
   phone: number;
   username: string;
   donates?: IDonateResponseDtoUser[];
+}
+
+export interface IDonateResponseDtoUser {
+  id: string;
+  pagoId: string;
+  status: string;
+  statusDetail: string;
+  transactionAmount: number;
+  currencyId: string;
+  paymentTypeId: string;
+  paymentMethodId: string;
+  dateApproved: Date;
+  createdAt: Date;
 }
 
 export class ResponseUserDto {
