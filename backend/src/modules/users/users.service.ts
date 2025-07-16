@@ -7,7 +7,7 @@ import {
 import { Users } from './Entyties/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CreateUserDbDto, UpdateUserDto } from './Dtos/CreateUserDto';
+import { CreateUserDbDto, UpdateUserDbDto } from './Dtos/CreateUserDto';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +28,13 @@ export class UsersService {
   }
 
   async getUserById(id: string): Promise<Users> {
-    const user = await this.usersRepository.findOne({ where: { id } });
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['donates'],
+    });
+
+    console.log('👤 Usuario con donaciones:', user?.donates);
+
     if (!user) {
       throw new NotFoundException(`Usuario con id ${id} no encontrado`);
     }
@@ -54,7 +60,7 @@ export class UsersService {
 
   async updateUserService(
     id: string,
-    dto: Partial<UpdateUserDto>,
+    dto: Partial<UpdateUserDbDto>,
   ): Promise<Users> {
     if ('isAdmin' in dto) delete dto.isAdmin;
 
