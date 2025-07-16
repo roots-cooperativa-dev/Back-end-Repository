@@ -1,9 +1,12 @@
 import {
+  Body,
   Controller,
   FileTypeValidator,
+  Get,
   MaxFileSizeValidator,
   ParseFilePipe,
   Post,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -15,6 +18,8 @@ import {
   ApiBody,
   ApiConsumes,
   ApiOperation,
+  ApiQuery,
+  ApiResponse,
 } from '@nestjs/swagger';
 import { Roles, UserRole } from 'src/decorator/role.decorator';
 import { AuthGuard } from 'src/guards/auth.guards';
@@ -39,6 +44,10 @@ export class FileUploadController {
           type: 'string',
           format: 'binary',
         },
+        name: {
+          type: 'string',
+          example: 'Foto de portada',
+        },
       },
     },
   })
@@ -57,7 +66,22 @@ export class FileUploadController {
       }),
     )
     file: Express.Multer.File,
+    @Body('name') name: string,
   ) {
-    return this.fileUploadService.uploadImg(file);
+    return this.fileUploadService.uploadImg(file, name);
+  }
+
+  @Get()
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Retrieve all available files' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
+  @ApiResponse({ status: 200, description: 'List of files' })
+  getOrders(@Query('page') page: string, @Query('limit') limit: string) {
+    const pageNum = page ? +page : 1;
+    const limitNum = limit ? +limit : 10;
+    return this.fileUploadService.getAllFiles(pageNum, limitNum);
   }
 }

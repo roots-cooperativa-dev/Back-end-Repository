@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -13,6 +14,7 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -30,14 +32,17 @@ export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
   @ApiOperation({ summary: 'Retrieve all available products' })
+  @ApiQuery({ name: 'page', required: false })
+  @ApiQuery({ name: 'limit', required: false })
   @ApiResponse({
     status: 200,
     description: 'Successfully retrieved all products',
-    type: [Product],
   })
   @Get()
-  async findAll() {
-    return await this.productsService.findAll();
+  async findAll(@Query('page') page: string, @Query('limit') limit: string) {
+    const pageNum = parseInt(page, 10);
+    const limitNum = parseInt(limit, 10);
+    return await this.productsService.findAll(pageNum, limitNum);
   }
 
   @ApiBearerAuth()

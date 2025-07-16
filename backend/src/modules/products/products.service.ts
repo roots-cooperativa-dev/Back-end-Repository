@@ -66,11 +66,15 @@ export class ProductsService {
     }
   }
 
-  async findAll(): Promise<Product[]> {
+  async findAll(page = 1, limit = 10): Promise<Product[]> {
     try {
+      const skip = (page - 1) * limit;
       return await this.productRepository.find({
         where: { isDeleted: false },
         relations: ['sizes', 'category', 'files'],
+        skip,
+        take: limit,
+        order: { name: 'ASC' },
       });
     } catch (error) {
       console.log(error);
