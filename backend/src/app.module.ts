@@ -10,6 +10,7 @@ import { ProductsModule } from './modules/products/products.module';
 import { CategoryModule } from './modules/category/category.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { DonationsModule } from './modules/donations/donations.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { OrdersModule } from './modules/orders/orders.module';
     CategoryModule,
     FileUploadModule,
     OrdersModule,
+    DonationsModule,
   ],
   controllers: [],
   providers: [],
