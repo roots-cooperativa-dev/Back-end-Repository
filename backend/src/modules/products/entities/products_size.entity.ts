@@ -24,7 +24,7 @@ export class Product_size {
   @Column({ type: 'enum', enum: SizeEnum })
   size: SizeEnum;
 
-  @Column({ type: 'decimal', precision: 10, nullable: false })
+  @Column()
   price: number;
 
   @Column({ type: 'int', nullable: false })
