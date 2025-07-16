@@ -7,6 +7,20 @@ export interface IUserResponseDto {
   birthdate: Date;
   phone: number;
   username: string;
+  donates?: IDonateResponseDtoUser[];
+}
+
+export interface IDonateResponseDtoUser {
+  id: string;
+  pagoId: string;
+  status: string;
+  statusDetail: string;
+  transactionAmount: number;
+  currencyId: string;
+  paymentTypeId: string;
+  paymentMethodId: string;
+  dateApproved: Date;
+  createdAt: Date;
 }
 
 export class ResponseUserDto {
@@ -18,6 +32,19 @@ export class ResponseUserDto {
       birthdate: user.birthdate,
       phone: user.phone,
       username: user.username,
+      donates:
+        user.donates?.map((donate) => ({
+          id: donate.id,
+          pagoId: donate.pagoId,
+          status: donate.status,
+          statusDetail: donate.statusDetail,
+          transactionAmount: donate.transactionAmount,
+          currencyId: donate.currencyId,
+          paymentTypeId: donate.paymentTypeId,
+          paymentMethodId: donate.paymentMethodId,
+          dateApproved: donate.dateApproved,
+          createdAt: donate.createdAt,
+        })) ?? [],
     };
   }
 

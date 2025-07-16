@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { OrderDetail } from './entities/orderDetails.entity';
 import { Users } from '../users/Entyties/users.entity';
 import { Product } from '../products/entities/products.entity';
 import { Product_size } from '../products/entities/products_size.entity';
+import { AuthsModule } from '../auths/auths.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { Product_size } from '../products/entities/products_size.entity';
       Product,
       Product_size,
     ]),
+    forwardRef(() => AuthsModule),
   ],
   controllers: [OrdersController],
   providers: [OrdersService],
