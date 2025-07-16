@@ -27,7 +27,7 @@ import { UsersService } from './users.service';
 import { Roles, UserRole } from 'src/decorator/role.decorator';
 import { AuthGuard } from 'src/guards/auth.guards';
 import { RoleGuard } from 'src/guards/auth.guards.admin';
-import { UpdateUserDto } from './Dtos/CreateUserDto';
+import { UpdateUserDbDto } from './Dtos/CreateUserDto';
 import {
   IUserResponseDto,
   ResponseUserDto,
@@ -108,7 +108,7 @@ export class UsersController {
     type: String,
     description: 'User unique identifier',
   })
-  @ApiBody({ type: UpdateUserDto })
+  @ApiBody({ type: UpdateUserDbDto })
   @ApiResponse({
     status: 200,
     description: 'User updated successfully',
@@ -130,7 +130,7 @@ export class UsersController {
   @Put(':id')
   async updateUser(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateData: Partial<UpdateUserDto>,
+    @Body() updateData: Partial<UpdateUserDbDto>,
   ): Promise<IUserResponseDto> {
     return ResponseUserDto.toDTO(
       await this.usersService.updateUserService(id, updateData),

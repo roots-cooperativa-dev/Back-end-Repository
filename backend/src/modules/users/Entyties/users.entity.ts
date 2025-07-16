@@ -1,3 +1,4 @@
+import { Donate } from 'src/modules/donations/entities/donation.entity';
 import { Order } from 'src/modules/orders/entities/order.entity';
 import {
   Column,
@@ -44,6 +45,9 @@ export class Users {
 
   @UpdateDateColumn()
   updatedAt?: Date;
+
+  @OneToMany(() => Donate, (donate) => donate.user)
+  donates: Donate[];
 
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];

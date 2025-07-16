@@ -111,3 +111,7 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {}
 export class CreateUserDbDto extends OmitType(CreateUserDto, [
   'confirmPassword',
 ] as const) {}
+
+export class UpdateUserDbDto extends OmitType(UpdateUserDto, [
+  'confirmPassword',
+] as const) {}
