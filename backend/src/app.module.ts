@@ -9,7 +9,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { ProductsModule } from './modules/products/products.module';
 import { CategoryModule } from './modules/category/category.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
-import { DonationsModule } from './modules/donations/donations.module';
+import { OrdersModule } from './modules/orders/orders.module';
 
 @Module({
   imports: [
@@ -33,7 +33,7 @@ import { DonationsModule } from './modules/donations/donations.module';
     ProductsModule,
     CategoryModule,
     FileUploadModule,
-    DonationsModule,
+    OrdersModule,
   ],
   controllers: [],
   providers: [],
