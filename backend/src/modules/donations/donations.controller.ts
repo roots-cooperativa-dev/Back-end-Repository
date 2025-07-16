@@ -11,12 +11,12 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
 import { DonationsService } from './donations.service';
 import { CreateDonateDto } from './dto/create-donation.dto';
-import { Donate } from './entities/donation.entity';
 import { ResponseDonateDto } from './interface/IDonateResponse';
 
 @ApiTags('Donations')
@@ -25,21 +25,20 @@ export class DonationsController {
   constructor(private readonly donationsService: DonationsService) {}
 
   @Post(':id')
-  @ApiOperation({ summary: 'Crear una nueva donación asociada a un usuario' })
+  @ApiOperation({ summary: 'Create a new donation associated with a user' })
   @ApiParam({
     name: 'id',
     type: String,
-    description: 'ID del usuario que dona',
+    description: 'ID of the donating user',
   })
   @ApiBody({ type: CreateDonateDto })
   @ApiResponse({
     status: 201,
-    description: 'Donación creada con éxito',
-    type: Donate,
+    description: 'Donation successfully created',
   })
   @ApiResponse({
     status: 400,
-    description: 'Datos inválidos o usuario no encontrado',
+    description: 'Invalid data or user not found',
   })
   async createDonation(
     @Param('id', ParseUUIDPipe) userId: string,
@@ -49,35 +48,48 @@ export class DonationsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Obtener todas las donaciones' })
+  @ApiOperation({ summary: 'Get all donations' })
+  @ApiQuery({
+    name: 'page',
+    description: 'Page number',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Items per page',
+    required: false,
+  })
   @ApiResponse({
     status: 200,
-    description: 'Lista de donaciones obtenida correctamente',
-    type: [Donate],
+    description: 'List of donations successfully retrieved',
   })
   async findAll(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
-  ): Promise<Donate[]> {
-    return this.donationsService.findAll(page, limit);
+  ): Promise<ResponseDonateDto[]> {
+    const pageNumber = page ? Number(page) : undefined;
+    const limitNumber = limit ? Number(limit) : undefined;
+    return this.donationsService.findAll(pageNumber, limitNumber);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obtener una donación por su ID' })
+  @ApiOperation({ summary: 'Get a donation by its ID' })
   @ApiParam({
     name: 'id',
     type: String,
-    description: 'ID de la donación',
+    description: 'ID of the donation',
   })
   @ApiResponse({
     status: 200,
-    description: 'Donación encontrada',
+    description: 'Donation found',
   })
   @ApiResponse({
     status: 404,
-    description: 'Donación no encontrada',
+    description: 'Donation not found',
   })
-  async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Donate> {
+  async findOne(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ResponseDonateDto> {
     return this.donationsService.findOne(id);
   }
 }
