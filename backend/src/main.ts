@@ -44,6 +44,7 @@ async function bootstrap(): Promise<void> {
 
   logger.log(`🚀 Frontend corriendo en https://frontend-rootscoop.vercel.app`);
   logger.log(`📚 Swagger en https://roots-api-te93.onrender.com/api/docs`);
+  logger.log(`📚 Swagger en http://localhost:3000/api/docs`);
 }
 
 bootstrap().catch((error) => {
