@@ -72,7 +72,7 @@ export class OrdersService {
   async createOrder(
     userId: string,
     products: { product_id: string; size_id: string }[],
-  ): Promise<Order> {
+  ): Promise<any> {
     try {
       const user = await this.userRepository.findOne({ where: { id: userId } });
       if (!user)
@@ -123,7 +123,27 @@ export class OrdersService {
       const savedDetail = await this.orderDetailRepository.save(orderDetail);
       savedOrder.orderDetail = savedDetail;
 
-      return await this.orderRepository.save(savedOrder);
+      return {
+        id: savedOrder.id,
+        date: savedOrder.date,
+        order_status: savedOrder.status,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          username: user.username,
+        },
+        orderDetail: {
+          id: savedDetail.id,
+          total: savedDetail.total,
+          products: productEntities.map((product) => ({
+            id: product.id,
+            name: product.name,
+            details: product.details,
+            size: product.sizes,
+          })),
+        },
+      };
     } catch (error) {
       console.error(error);
       throw new InternalServerErrorException('Could not create order');

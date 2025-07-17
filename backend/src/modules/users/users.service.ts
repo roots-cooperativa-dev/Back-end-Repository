@@ -30,7 +30,7 @@ export class UsersService {
   async getUserById(id: string): Promise<Users> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      relations: ['donates'],
+      relations: ['donates', 'orders'],
     });
 
     console.log('👤 Usuario con donaciones:', user?.donates);

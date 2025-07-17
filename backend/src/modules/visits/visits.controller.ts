@@ -33,30 +33,30 @@ import {
   ApiBody,
 } from '@nestjs/swagger';
 
-@ApiTags('Visitas y Agendamientos')
+@ApiTags('Visits & Appointments')
 @ApiBearerAuth()
 @Controller('visits')
 @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 export class VisitsController {
   constructor(private readonly visitsService: VisitsService) {}
 
-  @ApiOperation({ summary: 'Crear una nueva visita (Solo Admin)' })
+  @ApiOperation({ summary: 'Create a new visit (Just Admin)' })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Visita creada exitosamente.',
+    description: 'Visit created succesfully.',
     type: CreateVisitDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'No autorizado',
+    description: 'Unauthorized',
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
-    description: 'Acceso denegado. Se requiere rol de Administrador.',
+    description: 'Access denied. Administrator role required.',
   })
   @ApiBody({
     type: CreateVisitDto,
-    description: 'Datos para crear una nueva visita',
+    description: 'To create a visit',
   })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
@@ -65,18 +65,35 @@ export class VisitsController {
   async create(@Body() createVisitDto: CreateVisitDto) {
     return this.visitsService.createVisit(createVisitDto);
   }
-
   @ApiOperation({
     summary:
-      'Obtener todas las visitas disponibles (Todos los usuarios autenticados)',
+      'Get all appointments scheduled by the current user (All authenticated users)',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Lista de visitas obtenida exitosamente.',
+    description: 'Appointments successfully obtained.',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'No autorizado. Token JWT inválido o ausente.',
+    description: 'UNAUTHORIZED.',
+  })
+  @UseGuards(AuthGuard)
+  @Get('my-appointments')
+  async findMyAppointments(@Req() req: AuthRequest) {
+    const userId = req.user.sub;
+    return this.visitsService.findAppointmentsByUser(userId);
+  }
+
+  @ApiOperation({
+    summary: 'Get all available visits (All authenticated users)',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Visit list successfully obtained.',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Unauthorized. Invalid or missing JWT token.',
   })
   @UseGuards(AuthGuard)
   @Get()
@@ -85,25 +102,25 @@ export class VisitsController {
   }
 
   @ApiOperation({
-    summary: 'Obtener una visita por su ID (Todos los usuarios autenticados)',
+    summary: 'Get a visit by your ID (All authenticated users)',
   })
   @ApiParam({
     name: 'id',
-    description: 'ID de la visita',
+    description: 'visit ID',
     type: 'string',
     format: 'uuid',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Visita obtenida exitosamente.',
+    description: 'Visit successfully obtained.',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Visita no encontrada.',
+    description: 'Visit not found.',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'No autorizado. Token JWT inválido o ausente.',
+    description: 'Unauthorized. Invalid or missing JWT token.',
   })
   @UseGuards(AuthGuard)
   @Get(':id')
@@ -111,32 +128,32 @@ export class VisitsController {
     return this.visitsService.findOneVisit(id);
   }
 
-  @ApiOperation({ summary: 'Actualizar una visita existente (Solo Admin)' })
+  @ApiOperation({ summary: 'Update an existing visit (Admin only)' })
   @ApiParam({
     name: 'id',
-    description: 'ID de la visita a actualizar',
+    description: 'visit ID',
     type: 'string',
     format: 'uuid',
   })
   @ApiBody({
     type: UpdateVisitDto,
-    description: 'Datos para actualizar la visita',
+    description: 'Data to update the visit',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Visita actualizada exitosamente.',
+    description: 'Visit successfully updated.',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Visita no encontrada.',
+    description: 'Visit not found.',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'No autorizado.',
+    description: 'Unauthorized.',
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
-    description: 'Acceso denegado. Se requiere rol de Administrador.',
+    description: 'Access denied. Administrator role required..',
   })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
@@ -148,28 +165,28 @@ export class VisitsController {
     return this.visitsService.updateVisit(id, updateVisitDto);
   }
 
-  @ApiOperation({ summary: 'Eliminar una visita (Solo Admin)' })
+  @ApiOperation({ summary: 'Delete a visit (Admin only)' })
   @ApiParam({
     name: 'id',
-    description: 'ID de la visita a eliminar',
+    description: 'visit ID',
     type: 'string',
     format: 'uuid',
   })
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,
-    description: 'Visita eliminada exitosamente.',
+    description: 'Visit successfully deleted.',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Visita no encontrada.',
+    description: 'Visit not found.',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'No autorizado.',
+    description: 'UNAUTHORIZED.',
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
-    description: 'Acceso denegado. Se requiere rol de Administrador.',
+    description: 'Access denied. Administrator role required.',
   })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
@@ -180,38 +197,38 @@ export class VisitsController {
   }
 
   @ApiOperation({
-    summary: 'Añadir una franja horaria (slot) a una visita (Solo Admin)',
+    summary: 'Add a time slot to a visit (Admin Only)',
   })
   @ApiParam({
     name: 'id',
-    description: 'ID de la visita a la que se añadirá el slot',
+    description: 'ID of the visit to which the slot will be added',
     type: 'string',
     format: 'uuid',
   })
   @ApiBody({
     type: CreateVisitSlotDto,
-    description: 'Datos para crear una nueva franja horaria',
+    description: 'Data to create a new time slot',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Franja horaria creada exitosamente.',
+    description: 'Time slot created successfully.',
     type: CreateVisitSlotDto,
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Datos inválidos o el slot ya existe.',
+    description: 'Invalid data or the slot already exists.',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Visita no encontrada.',
+    description: 'Visit not found.',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'No autorizado.',
+    description: 'UNAUTHORIZED.',
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
-    description: 'Acceso denegado. Se requiere rol de Administrador.',
+    description: 'Access denied. Administrator role required.',
   })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
@@ -225,26 +242,25 @@ export class VisitsController {
   }
 
   @ApiOperation({
-    summary:
-      'Obtener todas las franjas horarias (slots) de una visita (Todos los usuarios autenticados)',
+    summary: 'Get all time slots for a visit (All authenticated users)',
   })
   @ApiParam({
     name: 'id',
-    description: 'ID de la visita para la que se buscan los slots',
+    description: 'visit ID',
     type: 'string',
     format: 'uuid',
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Franjas horarias obtenidas exitosamente.',
+    description: 'Time slots successfully obtained.',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
-    description: 'Visita no encontrada.',
+    description: 'Visit not found.',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'No autorizado.',
+    description: 'UNAUTHORIZED.',
   })
   @UseGuards(AuthGuard)
   @Get(':id/slots')
@@ -254,28 +270,27 @@ export class VisitsController {
 
   @ApiOperation({
     summary:
-      'Agendar una nueva cita para un slot disponible (Usuarios Visitadores/Donadores)',
+      'Schedule a new appointment for an available slot (Visiting/Donating Users)',
   })
   @ApiBody({
     type: CreateAppointmentDto,
-    description: 'Datos para agendar una cita',
+    description: 'Information to schedule an appointment',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Cita agendada exitosamente.',
+    description: 'Appointment successfully scheduled.',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description:
-      'Datos inválidos, slot no encontrado, o capacidad del slot excedida.',
+    description: 'Invalid data, slot not found, or slot capacity exceeded.',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'No autorizado.',
+    description: 'UNAUTHORIZED.',
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
-    description: 'Acceso denegado. Se requiere rol de Usuario o Donador.',
+    description: 'Access denied. User or Donor role required.',
   })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.USER, UserRole.DONOR_USER)
@@ -291,49 +306,30 @@ export class VisitsController {
 
   @ApiOperation({
     summary:
-      'Obtener todas las citas agendadas por el usuario actual (Todos los usuarios autenticados)',
-  })
-  @ApiResponse({
-    status: HttpStatus.OK,
-    description: 'Citas obtenidas exitosamente.',
-  })
-  @ApiResponse({
-    status: HttpStatus.UNAUTHORIZED,
-    description: 'No autorizado.',
-  })
-  @UseGuards(AuthGuard)
-  @Get('my-appointments')
-  async findMyAppointments(@Req() req: AuthRequest) {
-    const userId = req.user.sub;
-    return this.visitsService.findAppointmentsByUser(userId);
-  }
-
-  @ApiOperation({
-    summary:
-      'Cancelar una cita agendada (Todos los usuarios autenticados, solo sus propias citas)',
+      'Cancel a scheduled appointment (All authenticated users, only your own appointments)',
   })
   @ApiParam({
     name: 'appointmentId',
-    description: 'ID de la cita a cancelar',
+    description: 'ID of the appointment to cancel',
     type: 'string',
     format: 'uuid',
   })
   @ApiResponse({
     status: HttpStatus.NO_CONTENT,
-    description: 'Cita cancelada exitosamente.',
+    description: 'Appointment successfully cancelled.',
   })
   @ApiResponse({
     status: HttpStatus.NOT_FOUND,
     description:
-      'Cita no encontrada o el usuario no tiene permiso para cancelarla.',
+      'Appointment not found or the user does not have permission to cancel it.',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'La cita ya ha sido cancelada o completada.',
+    description: 'The appointment has already been cancelled or completed.',
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
-    description: 'No autorizado.',
+    description: 'UNAUTHORIZED.',
   })
   @UseGuards(AuthGuard)
   @Delete('appointments/:appointmentId/cancel')
@@ -346,140 +342,3 @@ export class VisitsController {
     await this.visitsService.cancelAppointment(appointmentId, userId);
   }
 }
-// import {
-//   Controller,
-//   Get,
-//   Post,
-//   Body,
-//   Param,
-//   Delete,
-//   Put,
-//   HttpCode,
-//   HttpStatus,
-//   ValidationPipe,
-//   UsePipes,
-//   UseGuards,
-//   Req,
-// } from '@nestjs/common';
-// import { VisitsService } from './visits.service';
-// import { CreateVisitDto } from './dto/create-visit.dto';
-// import { UpdateVisitDto } from './dto/update-visit.dto';
-// import { CreateVisitSlotDto } from './dto/create-visit-slot.dto';
-// import { CreateAppointmentDto } from './dto/create-appointment.dto';
-
-// import { AuthGuard } from 'src/guards/auth.guards';
-// import { RoleGuard } from 'src/guards/auth.guards.admin';
-// import { Roles, UserRole } from 'src/decorator/role.decorator';
-
-// import { AuthRequest } from 'src/common/auth-request.interface';
-// import {
-//   ApiBearerAuth,
-//   ApiOperation,
-//   ApiResponse,
-//   ApiTags,
-// } from '@nestjs/swagger';
-
-// @ApiTags('Visitas y Agendamientos')
-// @ApiBearerAuth('access-token')
-// @Controller('visits')
-// @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-// export class VisitsController {
-//   constructor(private readonly visitsService: VisitsService) {}
-
-//   @ApiOperation({ summary: 'Crear una nueva visita (Solo Admin)' })
-//   @ApiResponse({
-//     status: HttpStatus.CREATED,
-//     description: 'Visita creada exitosamente.',
-//   })
-//   @ApiResponse({
-//     status: HttpStatus.UNAUTHORIZED,
-//     description: 'No autorizado.',
-//   })
-//   @ApiResponse({
-//     status: HttpStatus.FORBIDDEN,
-//     description: 'Acceso denegado. Se requiere rol de Administrador.',
-//   })
-//   @UseGuards(AuthGuard, RoleGuard)
-//   @Roles(UserRole.ADMIN)
-//   @Post()
-//   @HttpCode(HttpStatus.CREATED)
-//   async create(@Body() createVisitDto: CreateVisitDto) {
-//     return this.visitsService.createVisit(createVisitDto);
-//   }
-
-//   @UseGuards(AuthGuard)
-//   @Get()
-//   async findAll() {
-//     return this.visitsService.findAllVisits();
-//   }
-
-//   @UseGuards(AuthGuard)
-//   @Get(':id')
-//   async findOne(@Param('id') id: string) {
-//     return this.visitsService.findOneVisit(id);
-//   }
-
-//   @UseGuards(AuthGuard, RoleGuard)
-//   @Roles(UserRole.ADMIN)
-//   @Put(':id')
-//   async update(
-//     @Param('id') id: string,
-//     @Body() updateVisitDto: UpdateVisitDto,
-//   ) {
-//     return this.visitsService.updateVisit(id, updateVisitDto);
-//   }
-
-//   @UseGuards(AuthGuard, RoleGuard)
-//   @Roles(UserRole.ADMIN)
-//   @Delete(':id')
-//   @HttpCode(HttpStatus.NO_CONTENT)
-//   async remove(@Param('id') id: string) {
-//     await this.visitsService.removeVisit(id);
-//   }
-
-//   @UseGuards(AuthGuard, RoleGuard)
-//   @Roles(UserRole.ADMIN)
-//   @Post(':id/slots')
-//   @HttpCode(HttpStatus.CREATED)
-//   async addSlot(
-//     @Param('id') visitId: string,
-//     @Body() createVisitSlotDto: CreateVisitSlotDto,
-//   ) {
-//     return this.visitsService.addVisitSlot(visitId, createVisitSlotDto);
-//   }
-
-//   @UseGuards(AuthGuard)
-//   @Get(':id/slots')
-//   async getSlots(@Param('id') visitId: string) {
-//     return this.visitsService.findVisitSlotsByVisit(visitId);
-//   }
-
-//   @UseGuards(AuthGuard, RoleGuard)
-//   @Roles(UserRole.USER, UserRole.DONOR_USER)
-//   @HttpCode(HttpStatus.CREATED)
-//   async createAppointment(
-//     @Body() createAppointmentDto: CreateAppointmentDto,
-//     @Req() req: AuthRequest,
-//   ) {
-//     createAppointmentDto.userId = req.user.sub;
-//     return this.visitsService.createAppointment(createAppointmentDto);
-//   }
-
-//   @UseGuards(AuthGuard)
-//   @Get('my-appointments')
-//   async findMyAppointments(@Req() req: AuthRequest) {
-//     const userId = req.user.sub;
-//     return this.visitsService.findAppointmentsByUser(userId);
-//   }
-
-//   @UseGuards(AuthGuard)
-//   @Delete('appointments/:appointmentId/cancel')
-//   @HttpCode(HttpStatus.NO_CONTENT)
-//   async cancelAppointment(
-//     @Param('appointmentId') appointmentId: string,
-//     @Req() req: AuthRequest,
-//   ) {
-//     const userId = req.user.sub;
-//     await this.visitsService.cancelAppointment(appointmentId, userId);
-//   }
-// }

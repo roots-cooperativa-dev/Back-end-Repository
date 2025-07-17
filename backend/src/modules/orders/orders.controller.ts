@@ -53,7 +53,7 @@ export class OrdersController {
   @ApiOperation({ summary: 'Retrieve all available orders' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
-  @ApiResponse({ status: 200, description: 'List of orders', type: [Order] })
+  @ApiResponse({ status: 200, description: 'List of orders' })
   getOrders(@Query('page') page: string, @Query('limit') limit: string) {
     const pageNum = page ? +page : 1;
     const limitNum = limit ? +limit : 10;

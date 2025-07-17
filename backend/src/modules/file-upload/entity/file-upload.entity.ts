@@ -6,6 +6,9 @@ export class File {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ type: 'varchar', length: 100, nullable: false })
+  name: string;
+
   @Column()
   url: string;
 
