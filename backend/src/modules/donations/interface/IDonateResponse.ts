@@ -30,4 +30,8 @@ export class ResponseDonateDto {
       userId: donate.user.id,
     };
   }
+
+  static toDTOList(donate: Donate[]): IDonateResponseDto[] {
+    return donate.map((donate) => this.toDTO(donate));
+  }
 }
