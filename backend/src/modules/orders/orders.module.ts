@@ -8,6 +8,8 @@ import { Users } from '../users/Entyties/users.entity';
 import { Product } from '../products/entities/products.entity';
 import { Product_size } from '../products/entities/products_size.entity';
 import { AuthsModule } from '../auths/auths.module';
+import { Cart } from './entities/cart.entity';
+import { CartItem } from './entities/cartItem.entity';
 
 @Module({
   imports: [
@@ -17,6 +19,8 @@ import { AuthsModule } from '../auths/auths.module';
       Users,
       Product,
       Product_size,
+      Cart,
+      CartItem,
     ]),
     forwardRef(() => AuthsModule),
   ],

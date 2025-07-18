@@ -1,4 +1,3 @@
-// src/modules/mail/mail.service.ts
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
@@ -10,12 +9,15 @@ export class MailService {
 
   constructor(private configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
-      host: this.configService.get<string>('MAIL_HOST'),
-      port: this.configService.get<number>('MAIL_PORT'),
-      secure: this.configService.get<boolean>('MAIL_SECURE'),
+      host: this.configService.get<string>('EMAIL_HOST'),
+      port: this.configService.get<number>('EMAIL_PORT'),
+      secure: this.configService.get<string>('MAIL_SECURE') === 'true',
       auth: {
-        user: this.configService.get<string>('MAIL_USER'),
-        pass: this.configService.get<string>('MAIL_PASS'),
+        user: this.configService.get<string>('EMAIL_USER'),
+        pass: this.configService.get<string>('EMAIL_PASS'),
+      },
+      tls: {
+        rejectUnauthorized: false,
       },
     });
   }
@@ -28,7 +30,7 @@ export class MailService {
   ): Promise<void> {
     try {
       await this.transporter.sendMail({
-        from: `"Tu Aplicación" <${this.configService.get<string>('MAIL_FROM')}>`,
+        from: `"ROOTS COOPERATIVA" <${this.configService.get<string>('EMAIL_FROM')}>`,
         to,
         subject,
         text,
@@ -99,6 +101,21 @@ export class MailService {
       <p>Esperamos que disfrutes de todas nuestras funcionalidades.</p>
       <p>Saludos cordiales,</p>
       <p>El equipo de Tu Aplicación.</p>
+    `;
+    await this.sendMail(userEmail, subject, text, html);
+  }
+  async sendLoginNotification(
+    userEmail: string,
+    userName: string,
+  ): Promise<void> {
+    const subject = 'Inicio de Sesión en tu Cuenta';
+    const text = `Hola ${userName},\n\nSe ha iniciado sesión en tu cuenta de ROOTS COOPERATIVA.\n\nSi no fuiste tú, por favor, contacta a soporte inmediatamente.\n\nSaludos,\nEl equipo de ROOTS COOPERATIVA.`;
+    const html = `
+      <p>Hola <strong>${userName}</strong>,</p>
+      <p>Se ha iniciado sesión en tu cuenta de <strong>ROOTS COOPERATIVA</strong>.</p>
+      <p>Si no fuiste tú, por favor, <a href="#">contacta a soporte inmediatamente</a>.</p>
+      <p>Saludos cordiales,</p>
+      <p>El equipo de ROOTS COOPERATIVA.</p>
     `;
     await this.sendMail(userEmail, subject, text, html);
   }

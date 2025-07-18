@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -13,6 +14,7 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -29,13 +31,28 @@ export class CategoryController {
   constructor(private readonly categoryService: CategoryService) {}
 
   @ApiOperation({ summary: 'Retrieve all available categories' })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Page number (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Number of categories per page (default: 3)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Successfully retrieved all categories',
   })
   @Get()
-  async findAll() {
-    return await this.categoryService.findAllCategory();
+  async findAll(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 3,
+  ) {
+    return await this.categoryService.findAllCategory(page, limit);
   }
 
   @ApiBearerAuth()

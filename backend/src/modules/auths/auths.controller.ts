@@ -4,21 +4,29 @@ import {
   Get,
   Post,
   Req,
+  Res,
+  UseFilters,
   UseGuards,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthGuard as PassportAuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
+import { Request, Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 import { AuthsService } from './auths.service';
 import { CreateUserDto, LoginUserDto } from '../users/Dtos/CreateUserDto';
+import { GoogleUser } from './strategies/google.strategy';
+import { AuthExceptionFilter } from './validate/auth.filter';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthsController {
-  constructor(private readonly authService: AuthsService) {}
+  constructor(
+    private readonly authService: AuthsService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @ApiOperation({ summary: 'Sign in user' })
   @ApiBody({ type: LoginUserDto })
@@ -70,24 +78,21 @@ export class AuthsController {
 
   @ApiOperation({ summary: 'Google OAuth callback handler' })
   @ApiResponse({
-    status: 200,
-    description:
-      'Google authentication successful, returns user data and token',
+    status: 302,
+    description: 'Redirects to frontend with token or error',
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Google authentication failed',
-  })
+  @UseFilters(AuthExceptionFilter)
   @UseGuards(PassportAuthGuard('google'))
   @Get('google/callback')
-  async googleAuthRedirect(@Req() req: Request) {
-    const googleUser = req.user as {
-      id: string;
-      name: string;
-      email: string;
-      accessToken: string;
-    };
+  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
+    const googleUser = req.user as GoogleUser;
+    const frontendUrl = this.configService.get<string>(
+      'GoogleOAuth.frontendUrl',
+    );
 
-    return await this.authService.googleLogin(googleUser);
+    const result = await this.authService.googleLogin(googleUser);
+    return res.redirect(
+      `${frontendUrl}/auth/callback?token=${result.accessToken}&userId=${result.user.id}`,
+    );
   }
 }
