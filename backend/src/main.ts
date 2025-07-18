@@ -31,7 +31,7 @@ async function bootstrap(): Promise<void> {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('API')
-    .setDescription('API de prueba')
+    .setDescription('API de pruebas')
     .setVersion('1.0.0')
     .addBearerAuth()
     .build();
