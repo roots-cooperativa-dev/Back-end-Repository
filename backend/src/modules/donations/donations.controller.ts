@@ -1,14 +1,5 @@
+import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  ParseUUIDPipe,
-  Query,
-} from '@nestjs/common';
-import {
-  ApiBody,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -16,14 +7,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { DonationsService } from './donations.service';
-import { CreateDonateDto } from './dto/create-donation.dto';
 import { ResponseDonateDto } from './interface/IDonateResponse';
 
 @ApiTags('Donations')
 @Controller('donations')
 export class DonationsController {
   constructor(private readonly donationsService: DonationsService) {}
-
+  
   @Post(':id')
   @ApiOperation({ summary: 'Create a new donation associated with a user' })
   @ApiParam({
@@ -46,7 +36,6 @@ export class DonationsController {
   ): Promise<ResponseDonateDto> {
     return await this.donationsService.create(userId, createDonationDto);
   }
-
   @Get()
   @ApiOperation({ summary: 'Get all donations' })
   @ApiQuery({
