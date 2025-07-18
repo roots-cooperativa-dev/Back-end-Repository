@@ -25,9 +25,20 @@ export class CategoryService {
     }
   }
 
-  async findAllCategory(): Promise<Category[]> {
+  async findAllCategory(
+    page: number,
+    limit: number,
+  ): Promise<{ categories: Category[]; total: number; pages: number }> {
     try {
-      return await this.categoryRepository.find();
+      const skip = (page - 1) * limit;
+      const [categories, total] = await this.categoryRepository.findAndCount({
+        take: limit,
+        skip: skip,
+      });
+
+      const pages = Math.ceil(total / limit);
+
+      return { categories, total, pages };
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Failed to fetch categories');

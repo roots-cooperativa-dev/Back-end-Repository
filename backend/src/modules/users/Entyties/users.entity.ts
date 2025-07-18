@@ -1,4 +1,5 @@
 import { Donate } from 'src/modules/donations/entities/donation.entity';
+import { Cart } from 'src/modules/orders/entities/cart.entity';
 import { Order } from 'src/modules/orders/entities/order.entity';
 import { Appointment } from 'src/modules/visits/entities/appointment.entity';
 import {
@@ -6,6 +7,7 @@ import {
   CreateDateColumn,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -55,4 +57,7 @@ export class Users {
 
   @OneToMany(() => Appointment, (appointment) => appointment.user)
   appointments: Appointment[];
+
+  @OneToOne(() => Cart, (cart) => cart.user)
+  cart: Cart;
 }

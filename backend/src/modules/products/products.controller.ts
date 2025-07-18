@@ -8,6 +8,8 @@ import {
   Put,
   Query,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -24,24 +26,66 @@ import { CreateProductDTO, UpdateProductDTO } from './DTO/CreateProduct.dto';
 import { Roles, UserRole } from 'src/decorator/role.decorator';
 import { AuthGuard } from 'src/guards/auth.guards';
 import { RoleGuard } from 'src/guards/auth.guards.admin';
+import { ProductFilterDTO } from './DTO/ProductFilter.dto';
 
 @ApiTags('Products')
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @ApiOperation({ summary: 'Retrieve all available products' })
+  @ApiOperation({
+    summary: 'Retrieve all available products with optional filters',
+  })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({
+    name: 'minPrice',
+    required: false,
+    type: Number,
+    description: 'Minimum price for product search',
+  })
+  @ApiQuery({
+    name: 'maxPrice',
+    required: false,
+    type: Number,
+    description: 'Maximum price for product search',
+  })
+  @ApiQuery({
+    name: 'categoryId',
+    required: false,
+    type: String,
+    description: 'Category ID to filter products',
+  })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    type: String,
+    description: 'Keyword to search in product names or details',
+  })
   @ApiResponse({
     status: 200,
     description: 'Successfully retrieved all products',
   })
   @Get()
-  async findAll(@Query('page') page: string, @Query('limit') limit: string) {
-    const pageNum = parseInt(page, 10);
-    const limitNum = parseInt(limit, 10);
-    return await this.productsService.findAll(pageNum, limitNum);
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  async findAll(@Query() filters: ProductFilterDTO) {
+    const {
+      page = 1,
+      limit = 10,
+      minPrice,
+      maxPrice,
+      categoryId,
+      name,
+    } = filters;
+
+    return await this.productsService.findAll(
+      page,
+      limit,
+      minPrice,
+      maxPrice,
+      categoryId,
+      name,
+    );
   }
 
   @ApiBearerAuth()
