@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   InternalServerErrorException,
+  ConflictException,
 } from '@nestjs/common';
 import { Product } from '../products/entities/products.entity';
 import { UpdateOrderStatusDTO } from './DTO/updateOrderStatus.dto';
@@ -11,7 +12,11 @@ import { OrderDetail } from './entities/orderDetails.entity';
 import { Users } from 'src/modules/users/Entyties/users.entity';
 import { Product_size } from 'src/modules/products/entities/products_size.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
+import { Cart } from './entities/cart.entity';
+import { CartItem } from './entities/cartItem.entity';
+import { UpdateCartItemDTO } from './DTO/updateCartItem.dto';
+import { AddToCartDTO } from './DTO/addToCart.dto';
 
 @Injectable()
 export class OrdersService {
@@ -30,13 +35,404 @@ export class OrdersService {
 
     @InjectRepository(Product_size)
     private readonly productSizeRepository: Repository<Product_size>,
+
+    @InjectRepository(Cart)
+    private readonly cartRepository: Repository<Cart>,
+
+    @InjectRepository(CartItem)
+    private readonly cartItemRepository: Repository<CartItem>,
+
+    private dataSource: DataSource,
   ) {}
+
+  async getOrCreateCart(userId: string): Promise<Cart> {
+    let cart = await this.cartRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user', 'items', 'items.product', 'items.productSize'],
+    });
+
+    if (!cart) {
+      const user = await this.userRepository.findOne({ where: { id: userId } });
+      if (!user) {
+        throw new NotFoundException(`User with ID ${userId} not found`);
+      }
+      cart = this.cartRepository.create({ user, total: 0 });
+      await this.cartRepository.save(cart);
+    }
+    return cart;
+  }
+
+  async getCart(userId: string): Promise<Cart> {
+    const cart = await this.cartRepository.findOne({
+      where: { user: { id: userId } },
+      relations: ['user', 'items', 'items.product', 'items.productSize'],
+    });
+    if (!cart) {
+      throw new NotFoundException(`Cart not found for user ID ${userId}`);
+    }
+    return cart;
+  }
+
+  async addProductToCart(userId: string, dto: AddToCartDTO): Promise<Cart> {
+    const { productId, productSizeId, quantity } = dto;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      let cart: Cart | null = await queryRunner.manager.findOne(Cart, {
+        where: { user: { id: userId } },
+        relations: ['user', 'items', 'items.product', 'items.productSize'],
+      });
+
+      if (!cart) {
+        const user = await queryRunner.manager.findOne(Users, {
+          where: { id: userId },
+        });
+        if (!user) {
+          throw new NotFoundException(`User with ID ${userId} not found`);
+        }
+        cart = queryRunner.manager.create(Cart, { user, total: 0 });
+        await queryRunner.manager.save(cart);
+      }
+
+      const product = await queryRunner.manager.findOne(Product, {
+        where: { id: productId },
+      });
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${productId} not found`);
+      }
+
+      const productSize = await queryRunner.manager.findOne(Product_size, {
+        where: { id: productSizeId, product: { id: productId } },
+      });
+      if (!productSize) {
+        throw new NotFoundException(
+          `Product size with ID ${productSizeId} not found for product ${productId}`,
+        );
+      }
+
+      let cartItem = cart.items.find(
+        (item) =>
+          item.product.id === productId &&
+          item.productSize.id === productSizeId,
+      );
+
+      let newQuantity = quantity;
+      if (cartItem) {
+        newQuantity = cartItem.quantity + quantity;
+      }
+
+      if (productSize.stock < newQuantity) {
+        throw new BadRequestException(
+          `Not enough stock for ${product.name} (size: ${productSize.size}). Desired quantity: ${newQuantity}, Available: ${productSize.stock}`,
+        );
+      }
+
+      const itemPrice = Number(productSize.price);
+      if (isNaN(itemPrice)) {
+        throw new InternalServerErrorException(
+          'Product price is not a valid number.',
+        );
+      }
+
+      if (cartItem) {
+        cartItem.quantity = newQuantity;
+        cartItem.subtotal = parseFloat(
+          (newQuantity * Number(cartItem.priceAtAddition)).toFixed(2),
+        );
+      } else {
+        cartItem = queryRunner.manager.create(CartItem, {
+          cart,
+          product,
+          productSize,
+          quantity,
+          priceAtAddition: itemPrice,
+          subtotal: parseFloat((quantity * itemPrice).toFixed(2)),
+        });
+        cart.items.push(cartItem);
+      }
+
+      await queryRunner.manager.save(cartItem);
+
+      cart.total = parseFloat(
+        cart.items
+          .reduce((sum, item) => sum + Number(item.subtotal), 0)
+          .toFixed(2),
+      );
+
+      await queryRunner.manager.save(cart);
+
+      await queryRunner.commitTransaction();
+      return this.getCart(userId);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error(error);
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException ||
+        error instanceof ConflictException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not add product to cart');
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async updateCartItemQuantity(
+    userId: string,
+    cartItemId: string,
+    dto: UpdateCartItemDTO,
+  ): Promise<Cart> {
+    const { quantity } = dto;
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const cart = await queryRunner.manager.findOne(Cart, {
+        where: { user: { id: userId } },
+        relations: ['items', 'items.product', 'items.productSize'],
+      });
+
+      if (!cart) {
+        throw new NotFoundException(`Cart not found for user ID ${userId}`);
+      }
+
+      const cartItem = cart.items.find((item) => item.id === cartItemId);
+
+      if (!cartItem) {
+        throw new NotFoundException(
+          `Cart item with ID ${cartItemId} not found in your cart`,
+        );
+      }
+
+      if (quantity === 0) {
+        await queryRunner.manager.remove(cartItem);
+        cart.items = cart.items.filter((item) => item.id !== cartItemId);
+      } else {
+        const productSize = await queryRunner.manager.findOne(Product_size, {
+          where: { id: cartItem.productSize.id },
+        });
+
+        if (!productSize) {
+          throw new NotFoundException(
+            `Associated product size not found for cart item ${cartItemId}`,
+          );
+        }
+
+        if (productSize.stock < quantity) {
+          throw new BadRequestException(
+            `Not enough stock for ${cartItem.product.name} (size: ${productSize.size}). Desired quantity: ${quantity}, Available: ${productSize.stock}`,
+          );
+        }
+
+        cartItem.quantity = quantity;
+        cartItem.subtotal = parseFloat(
+          (quantity * Number(cartItem.priceAtAddition)).toFixed(2),
+        );
+        await queryRunner.manager.save(cartItem);
+      }
+
+      cart.total = parseFloat(
+        cart.items
+          .reduce((sum, item) => sum + Number(item.subtotal), 0)
+          .toFixed(2),
+      );
+
+      await queryRunner.manager.save(cart);
+
+      await queryRunner.commitTransaction();
+      return this.getCart(userId);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error(error);
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Could not update cart item quantity',
+      );
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async removeCartItem(userId: string, itemId: string) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const cart = await queryRunner.manager.findOne(Cart, {
+        where: { user: { id: userId } },
+        relations: ['items', 'items.productSize'],
+      });
+
+      if (!cart) {
+        throw new NotFoundException('Cart not found');
+      }
+
+      const itemToRemove = cart.items.find((item) => item.id === itemId);
+
+      if (!itemToRemove) {
+        throw new NotFoundException('Item not found in cart');
+      }
+
+      await queryRunner.manager.remove(itemToRemove);
+
+      cart.items = cart.items.filter((item) => item.id !== itemId);
+      cart.total = parseFloat(
+        cart.items
+          .reduce((sum, item) => sum + Number(item.subtotal), 0)
+          .toFixed(2),
+      );
+
+      await queryRunner.manager.save(cart);
+
+      await queryRunner.commitTransaction();
+      return { message: 'Item removed from cart', cart };
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error(error);
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Could not remove cart item');
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async checkoutCart(userId: string): Promise<Order> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const cart = await queryRunner.manager.findOne(Cart, {
+        where: { user: { id: userId } },
+        relations: ['user', 'items', 'items.product', 'items.productSize'],
+      });
+
+      if (!cart || cart.items.length === 0) {
+        throw new BadRequestException(
+          'Cart is empty. Cannot proceed with checkout.',
+        );
+      }
+
+      const productEntitiesForOrderDetail: Product[] = [];
+      const orderDetailProductsWithQuantity: {
+        product: Product;
+        quantity: number;
+        priceAtAddition: number;
+      }[] = [];
+      let orderTotal = 0;
+
+      for (const cartItem of cart.items) {
+        const productSize = await queryRunner.manager.findOne(Product_size, {
+          where: { id: cartItem.productSize.id },
+        });
+
+        if (!productSize || productSize.stock < cartItem.quantity) {
+          throw new BadRequestException(
+            `Insufficient stock for product: ${cartItem.product.name} (size: ${
+              cartItem.productSize.size
+            }). Available: ${productSize?.stock || 0}, Desired: ${
+              cartItem.quantity
+            }. Please update your cart.`,
+          );
+        }
+
+        const itemPrice = Number(cartItem.priceAtAddition);
+        if (isNaN(itemPrice)) {
+          throw new InternalServerErrorException(
+            `Product price for cart item ${cartItem.id} is not a valid number.`,
+          );
+        }
+
+        orderTotal += cartItem.subtotal;
+
+        const product = await queryRunner.manager.findOne(Product, {
+          where: { id: cartItem.product.id },
+        });
+        if (!product) {
+          throw new InternalServerErrorException(
+            `Product with ID ${cartItem.product.id} not found during checkout.`,
+          );
+        }
+        productEntitiesForOrderDetail.push(product);
+        orderDetailProductsWithQuantity.push({
+          product,
+          quantity: cartItem.quantity,
+          priceAtAddition: itemPrice,
+        });
+
+        productSize.stock -= cartItem.quantity;
+        await queryRunner.manager.save(productSize);
+      }
+
+      const newOrder = queryRunner.manager.create(Order, {
+        user: cart.user,
+        status: 'active',
+      });
+      const savedOrder = await queryRunner.manager.save(newOrder);
+
+      const orderDetail = queryRunner.manager.create(OrderDetail, {
+        order: savedOrder,
+        products: productEntitiesForOrderDetail, // La relación ManyToMany con Product
+        total: parseFloat(orderTotal.toFixed(2)),
+      });
+      const savedDetail = await queryRunner.manager.save(orderDetail);
+
+      savedOrder.orderDetail = savedDetail;
+      await queryRunner.manager.save(savedOrder);
+
+      await queryRunner.manager.remove(cart.items);
+
+      cart.items = [];
+      cart.total = 0;
+      await queryRunner.manager.save(cart);
+
+      await queryRunner.commitTransaction();
+      return this.getOrderById(savedOrder.id);
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      console.error(error);
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Could not complete checkout process',
+      );
+    } finally {
+      await queryRunner.release();
+    }
+  }
 
   async getOrderById(id: string): Promise<Order> {
     try {
       const order = await this.orderRepository.findOne({
         where: { id },
-        relations: ['user', 'orderDetail', 'orderDetail.products'],
+        relations: [
+          'user',
+          'orderDetail',
+          'orderDetail.products',
+          'orderDetail.products.sizes',
+        ],
       });
 
       if (!order) {
@@ -58,7 +454,12 @@ export class OrdersService {
       const [orders, total] = await this.orderRepository.findAndCount({
         skip: (page - 1) * limit,
         take: limit,
-        relations: ['user', 'orderDetail', 'orderDetail.products'],
+        relations: [
+          'user',
+          'orderDetail',
+          'orderDetail.products',
+          'orderDetail.products.sizes',
+        ],
         order: { date: 'DESC' },
       });
 
@@ -73,8 +474,14 @@ export class OrdersService {
     userId: string,
     products: { product_id: string; size_id: string }[],
   ): Promise<any> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     try {
-      const user = await this.userRepository.findOne({ where: { id: userId } });
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+      });
       if (!user)
         throw new NotFoundException(`User with ID ${userId} not found`);
 
@@ -82,7 +489,7 @@ export class OrdersService {
       const productEntities: Product[] = [];
 
       for (const item of products) {
-        const product = await this.productRepository.findOne({
+        const product = await queryRunner.manager.findOne(Product, {
           where: { id: item.product_id },
           relations: ['sizes'],
         });
@@ -108,20 +515,25 @@ export class OrdersService {
         productEntities.push(product);
 
         size.stock -= 1;
-        await this.productSizeRepository.save(size);
+        await queryRunner.manager.save(size);
       }
 
-      const newOrder = this.orderRepository.create({ user });
-      const savedOrder = await this.orderRepository.save(newOrder);
+      total = parseFloat(total.toFixed(2));
 
-      const orderDetail = this.orderDetailRepository.create({
+      const newOrder = queryRunner.manager.create(Order, { user });
+      const savedOrder = await queryRunner.manager.save(newOrder);
+
+      const orderDetail = queryRunner.manager.create(OrderDetail, {
         order: savedOrder,
         products: productEntities,
         total,
       });
 
-      const savedDetail = await this.orderDetailRepository.save(orderDetail);
+      const savedDetail = await queryRunner.manager.save(orderDetail);
       savedOrder.orderDetail = savedDetail;
+      await queryRunner.manager.save(savedOrder);
+
+      await queryRunner.commitTransaction();
 
       return {
         id: savedOrder.id,
@@ -145,8 +557,16 @@ export class OrdersService {
         },
       };
     } catch (error) {
-      console.error(error);
+      await queryRunner.rollbackTransaction();
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
       throw new InternalServerErrorException('Could not create order');
+    } finally {
+      await queryRunner.release();
     }
   }
 

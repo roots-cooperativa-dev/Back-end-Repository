@@ -66,19 +66,58 @@ export class ProductsService {
     }
   }
 
-  async findAll(page = 1, limit = 10): Promise<Product[]> {
+  async findAll(
+    page = 1,
+    limit = 10,
+    minPrice?: number,
+    maxPrice?: number,
+    categoryId?: string,
+    name?: string,
+  ): Promise<Product[]> {
     try {
       const skip = (page - 1) * limit;
-      return await this.productRepository.find({
-        where: { isDeleted: false },
-        relations: ['sizes', 'category', 'files'],
-        skip,
-        take: limit,
-        order: { name: 'ASC' },
+
+      const queryBuilder = this.productRepository.createQueryBuilder('product');
+
+      queryBuilder
+        .leftJoinAndSelect('product.sizes', 'product_size')
+        .leftJoinAndSelect('product.category', 'category')
+        .leftJoinAndSelect('product.files', 'file');
+
+      queryBuilder.where('product.isDeleted = :isDeleted', {
+        isDeleted: false,
       });
+
+      if (name) {
+        queryBuilder.andWhere(
+          '(LOWER(product.name) LIKE LOWER(:name) OR LOWER(product.details) LIKE LOWER(:name))',
+          { name: `%${name}%` },
+        );
+      }
+
+      if (categoryId) {
+        queryBuilder.andWhere('category.id = :categoryId', { categoryId });
+      }
+
+      if (minPrice !== undefined) {
+        queryBuilder.andWhere('product_size.price >= :minPrice', { minPrice });
+      }
+
+      if (maxPrice !== undefined) {
+        queryBuilder.andWhere('product_size.price <= :maxPrice', { maxPrice });
+      }
+
+      queryBuilder.skip(skip);
+      queryBuilder.take(limit);
+
+      queryBuilder.orderBy('product.name', 'ASC');
+
+      return await queryBuilder.getMany();
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Error retrieving products');
+      throw new InternalServerErrorException(
+        'Error retrieving products with filters',
+      );
     }
   }
 
