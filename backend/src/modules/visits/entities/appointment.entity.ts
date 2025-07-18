@@ -4,18 +4,28 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
+  JoinColumn,
 } from 'typeorm';
-import { VisitSlot } from './visit-slot.entity';
+import { VisitSlot } from 'src/modules/visits/entities/visit-slot.entity';
+import { Users } from 'src/modules/users/Entyties/users.entity';
+
+export enum AppointmentStatus {
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  CANCELLED = 'cancelled',
+  COMPLETED = 'completed',
+}
 @Entity('appointments')
 export class Appointment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ type: 'uuid' })
   userId: string;
 
-  @Column({ default: 'pending' })
-  status: string;
+  @Column({ default: AppointmentStatus.PENDING })
+  status: AppointmentStatus;
 
   @CreateDateColumn()
   bookedAt: Date;
@@ -23,8 +33,14 @@ export class Appointment {
   @Column({ type: 'int', default: 1 })
   numberOfPeople: number;
 
-  @Column()
+  @Column({ type: 'uuid' })
   visitSlotId: string;
+
+  @ManyToOne(() => Users, (user) => user.appointments, {
+    onDelete: 'RESTRICT',
+  })
+  @JoinColumn({ name: 'userId' })
+  user: Users;
 
   @ManyToOne(() => VisitSlot, (visitSlot) => visitSlot.appointments, {
     onDelete: 'RESTRICT',

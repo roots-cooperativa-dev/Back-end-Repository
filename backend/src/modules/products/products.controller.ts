@@ -21,7 +21,6 @@ import {
 
 import { ProductsService } from './products.service';
 import { CreateProductDTO, UpdateProductDTO } from './DTO/CreateProduct.dto';
-import { Product } from './entities/products.entity';
 import { Roles, UserRole } from 'src/decorator/role.decorator';
 import { AuthGuard } from 'src/guards/auth.guards';
 import { RoleGuard } from 'src/guards/auth.guards.admin';
@@ -51,7 +50,6 @@ export class ProductsController {
   @ApiResponse({
     status: 201,
     description: 'Product created successfully',
-    type: Product,
   })
   @ApiResponse({
     status: 400,
@@ -75,7 +73,6 @@ export class ProductsController {
   @ApiResponse({
     status: 200,
     description: 'Successfully retrieved product with details',
-    type: Product,
   })
   @ApiResponse({
     status: 404,
@@ -97,7 +94,6 @@ export class ProductsController {
   @ApiResponse({
     status: 200,
     description: 'Product updated successfully',
-    type: Product,
   })
   @ApiResponse({
     status: 400,
