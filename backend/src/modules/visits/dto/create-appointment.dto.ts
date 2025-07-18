@@ -10,7 +10,8 @@ import {
 
 export class CreateAppointmentDto {
   @ApiProperty({
-    description: 'ID único del slot de visita al que se desea agendar la cita.',
+    description:
+      'Unique ID of the visit slot for which you wish to schedule the appointment.',
     example: 'a1b2c3d4-e5f6-7890-1234-567890abcdef',
     format: 'uuid',
   })
@@ -19,7 +20,7 @@ export class CreateAppointmentDto {
   visitSlotId: string;
 
   @ApiProperty({
-    description: 'Número de personas para las que se agenda esta cita.',
+    description: 'Number of people for whom this appointment is scheduled.',
     example: 1,
     minimum: 1,
     required: false,
@@ -32,7 +33,7 @@ export class CreateAppointmentDto {
 
   @ApiProperty({
     description:
-      'ID único del usuario que agenda la cita. (Se obtiene automáticamente del token JWT y es opcional en el body de la solicitud)',
+      'Unique ID of the user scheduling the appointment. (Automatically obtained from the JWT token and optional in the request body.)',
     example: 'f9e8d7c6-b5a4-3210-fedc-ba9876543210',
     format: 'uuid',
     required: false,
