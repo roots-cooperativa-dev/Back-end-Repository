@@ -1,39 +1,26 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Strategy, Profile } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
-
-export interface GoogleUser {
-  id: string;
-  name: string;
-  email: string;
-  accessToken: string;
-}
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private configService: ConfigService) {
     super({
-      clientID: GoogleStrategy.getRequiredEnvVar(
+      clientID: GoogleStrategy.getEnvVar(configService, 'Google0Auth.clientId'),
+      clientSecret: GoogleStrategy.getEnvVar(
         configService,
-        'GoogleOAuth.clientId',
+        'Google0Auth.clientSecret',
       ),
-      clientSecret: GoogleStrategy.getRequiredEnvVar(
+      callbackURL: GoogleStrategy.getEnvVar(
         configService,
-        'GoogleOAuth.clientSecret',
-      ),
-      callbackURL: GoogleStrategy.getRequiredEnvVar(
-        configService,
-        'GoogleOAuth.callbackUrl',
+        'Google0Auth.callbackUrl',
       ),
       scope: ['email', 'profile'],
     });
   }
 
-  private static getRequiredEnvVar(
-    configService: ConfigService,
-    key: string,
-  ): string {
+  private static getEnvVar(configService: ConfigService, key: string): string {
     const value = configService.get<string>(key);
     if (!value) {
       throw new Error(`Missing required environment variable: ${key}`);
@@ -41,25 +28,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     return value;
   }
 
-  validate(
-    accessToken: string,
-    refreshToken: string,
-    profile: Profile,
-  ): GoogleUser {
+  validate(accessToken: string, refreshToken: string, profile: Profile) {
     const { id, displayName, emails } = profile;
-
-    if (!emails || !emails[0]?.value) {
-      throw new UnauthorizedException('No email found in Google profile');
-    }
-
-    if (!id || !displayName) {
-      throw new UnauthorizedException('Incomplete Google profile data');
-    }
-
     return {
       id,
       name: displayName,
-      email: emails[0].value,
+      email: emails?.[0]?.value,
       accessToken,
     };
   }
