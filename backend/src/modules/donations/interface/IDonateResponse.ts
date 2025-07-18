@@ -5,7 +5,7 @@ export interface IDonateResponseDto {
   pagoId: string;
   status: string;
   statusDetail: string;
-  transactionAmount: number;
+  amount: number;
   currencyId: string;
   paymentTypeId: string;
   paymentMethodId: string;
@@ -22,7 +22,7 @@ export class ResponseDonateDto {
       pagoId: donate.pagoId,
       status: donate.status,
       statusDetail: donate.statusDetail,
-      transactionAmount: donate.transactionAmount,
+      amount: donate.amount,
       currencyId: donate.currencyId,
       paymentTypeId: donate.paymentTypeId,
       paymentMethodId: donate.paymentMethodId,
