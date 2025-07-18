@@ -5,9 +5,10 @@ import {
   ManyToOne,
   OneToMany,
   Index,
+  JoinColumn,
 } from 'typeorm';
 import { Visit } from './visit.entity';
-import { Appointment } from './appointment.entity';
+import { Appointment } from 'src/modules/visits/entities/appointment.entity';
 
 @Entity('visit_slots')
 @Index(['date', 'startTime', 'visitId'], { unique: true })
@@ -33,13 +34,15 @@ export class VisitSlot {
   @Column({ type: 'int', default: 0 })
   currentAppointmentsCount: number;
 
-  @Column()
+  @Column({ type: 'uuid' })
   visitId: string;
 
   @ManyToOne(() => Visit, (visit) => visit.availableSlots, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'visitId' })
   visit: Visit;
+
   @OneToMany(() => Appointment, (appointment) => appointment.visitSlot)
   appointments: Appointment[];
 }
