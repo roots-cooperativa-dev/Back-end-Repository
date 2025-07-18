@@ -13,7 +13,29 @@ import { ResponseDonateDto } from './interface/IDonateResponse';
 @Controller('donations')
 export class DonationsController {
   constructor(private readonly donationsService: DonationsService) {}
-
+  
+  @Post(':id')
+  @ApiOperation({ summary: 'Create a new donation associated with a user' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'ID of the donating user',
+  })
+  @ApiBody({ type: CreateDonateDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Donation successfully created',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid data or user not found',
+  })
+  async createDonation(
+    @Param('id', ParseUUIDPipe) userId: string,
+    @Body() createDonationDto: CreateDonateDto,
+  ): Promise<ResponseDonateDto> {
+    return await this.donationsService.create(userId, createDonationDto);
+  }
   @Get()
   @ApiOperation({ summary: 'Get all donations' })
   @ApiQuery({
@@ -29,7 +51,6 @@ export class DonationsController {
   @ApiResponse({
     status: 200,
     description: 'List of donations successfully retrieved',
-    type: [ResponseDonateDto],
   })
   async findAll(
     @Query('page') page?: number,
@@ -50,7 +71,6 @@ export class DonationsController {
   @ApiResponse({
     status: 200,
     description: 'Donation found',
-    type: ResponseDonateDto,
   })
   @ApiResponse({
     status: 404,

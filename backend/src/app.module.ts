@@ -11,6 +11,8 @@ import { CategoryModule } from './modules/category/category.module';
 import { FileUploadModule } from './modules/file-upload/file-upload.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { VisitsModule } from './modules/visits/visits.module';
+import { DonationsModule } from './modules/donations/donations.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -36,6 +38,8 @@ import { VisitsModule } from './modules/visits/visits.module';
     FileUploadModule,
     OrdersModule,
     VisitsModule,
+    DonationsModule,
+    MailModule,
   ],
   controllers: [],
   providers: [],

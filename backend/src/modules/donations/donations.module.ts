@@ -8,7 +8,6 @@ import { Users } from '../users/Entyties/users.entity';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PaymentsModule } from '../payments/payment.module';
 import { PaymentCompletedListener } from '../payments/listener/payment.listener';
-
 @Module({
   imports: [
     TypeOrmModule.forFeature([Donate, Users]),
@@ -27,5 +26,6 @@ import { PaymentCompletedListener } from '../payments/listener/payment.listener'
   controllers: [DonationsController],
   providers: [DonationsService, PaymentCompletedListener],
   exports: [DonationsService],
+  providers: [DonationsService],
 })
 export class DonationsModule {}
