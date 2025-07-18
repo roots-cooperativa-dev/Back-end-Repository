@@ -15,6 +15,7 @@ export interface IDonateResponseDto {
 }
 
 export class ResponseDonateDto {
+  id: any;
   static toDTO(donate: Donate): IDonateResponseDto {
     return {
       id: donate.id,
