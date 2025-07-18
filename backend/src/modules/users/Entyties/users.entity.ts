@@ -1,5 +1,6 @@
 import { Donate } from 'src/modules/donations/entities/donation.entity';
 import { Order } from 'src/modules/orders/entities/order.entity';
+import { Appointment } from 'src/modules/visits/entities/appointment.entity';
 import {
   Column,
   CreateDateColumn,
@@ -51,4 +52,7 @@ export class Users {
 
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
+
+  @OneToMany(() => Appointment, (appointment) => appointment.user)
+  appointments: Appointment[];
 }
