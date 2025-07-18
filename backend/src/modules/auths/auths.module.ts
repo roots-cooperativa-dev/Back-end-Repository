@@ -9,11 +9,13 @@ import { AuthsController } from './auths.controller';
 import { AuthGuard } from '../../guards/auth.guards';
 import { GoogleStrategy } from './strategies/google.strategy';
 import google0authConfig from 'src/config/google-0auth.config';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
     PassportModule,
+    MailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
