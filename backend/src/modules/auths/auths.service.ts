@@ -1,65 +1,46 @@
 import {
   BadRequestException,
   Injectable,
-  InternalServerErrorException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { CreateUserDto } from '../users/Dtos/CreateUserDto';
 import { ResponseUserDto } from '../users/interface/IUserResponseDto';
+import { GoogleUser } from './strategies/google.strategy';
+import { AuthValidations } from './validate/auth.validate';
+import { AuthResponse, IUserAuthResponse } from './interface/IAuth.interface';
 
 @Injectable()
 export class AuthsService {
   constructor(
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
-  async signin(email: string, password: string) {
-    if (!email || !password) {
-      throw new BadRequestException('Credenciales inválidas');
-    }
+  async signin(email: string, password: string): Promise<AuthResponse> {
+    AuthValidations.validateCredentials(email, password);
 
     const user = await this.userService.findByEmail(email);
-
-    const isMatch = user && (await bcrypt.compare(password, user.password));
-
-    if (!user || !isMatch) {
-      throw new BadRequestException('Credenciales inválidas');
+    if (!user) {
+      throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      name: user.name,
-      isAdmin: user.isAdmin,
-      isDonator: user.isDonator,
-    };
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
 
-    const accessToken = await this.jwtService.signAsync(payload);
-
-    return {
-      accessToken,
-      expiresIn: 3600,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
-    };
+    return this.generateAuthResponse(user);
   }
 
-  async signup(data: CreateUserDto) {
+  async signup(data: CreateUserDto): Promise<ResponseUserDto> {
     const { password, confirmPassword, ...rest } = data;
 
-    if (!password || !confirmPassword) {
-      throw new BadRequestException('Debe proporcionar ambas contraseñas');
-    }
-
-    if (password !== confirmPassword) {
-      throw new BadRequestException('Las contraseñas no coinciden');
-    }
+    AuthValidations.validatePasswordMatch(password, confirmPassword);
 
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -71,40 +52,46 @@ export class AuthsService {
       });
 
       return ResponseUserDto.toDTO(createdUser);
-    } catch (err) {
-      console.error('[AuthsService:signup] →', err);
-      throw new InternalServerErrorException('Error al registrar usuario');
+    } catch (error) {
+      AuthValidations.handleSignupError(error);
     }
   }
 
-  async googleLogin(googleUser: {
-    id: string;
-    name: string;
-    email: string;
-    accessToken: string;
-  }) {
+  async googleLogin(googleUser: GoogleUser): Promise<AuthResponse> {
+    if (!googleUser.email) {
+      throw new BadRequestException(
+        'Email requerido para autenticación con Google',
+      );
+    }
+
     let user = await this.userService.findByEmail(googleUser.email);
 
     if (!user) {
-      const randomPassword = await bcrypt.hash(
-        Math.random().toString(36).slice(-8) + 'Aa1!',
-        10,
-      );
-
-      const username = googleUser.email.split('@')[0]; // Crea username del email
-
-      user = await this.userService.createUserService({
-        name: googleUser.name,
-        email: googleUser.email,
-        birthdate: new Date().toISOString().split('T')[0],
-        username,
-        password: randomPassword,
-        phone: 0,
-        isAdmin: false,
-        isDonator: false,
-      });
+      user = await this.createUserFromGoogleProfile(googleUser);
     }
 
+    return this.generateAuthResponse(user);
+  }
+
+  private async createUserFromGoogleProfile(googleUser: GoogleUser) {
+    const randomPassword = await AuthValidations.generateRandomPassword();
+    const username = AuthValidations.generateUsernameFromEmail(
+      googleUser.email,
+    );
+
+    return await this.userService.createUserService({
+      name: googleUser.name,
+      email: googleUser.email,
+      birthdate: new Date().toISOString().split('T')[0],
+      username,
+      password: randomPassword,
+      phone: 0,
+      isAdmin: false,
+      isDonator: false,
+    });
+  }
+
+  private generateAuthResponse(user: IUserAuthResponse): AuthResponse {
     const payload = {
       sub: user.id,
       email: user.email,
@@ -113,10 +100,11 @@ export class AuthsService {
       isDonator: user.isDonator,
     };
 
-    const accessToken = await this.jwtService.signAsync(payload);
+    const accessToken = this.jwtService.sign(payload);
 
     return {
       accessToken,
+      expiresIn: 3600,
       user: {
         id: user.id,
         name: user.name,

@@ -13,7 +13,7 @@ export class Donate {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   pagoId: string;
 
   @Column()
@@ -23,7 +23,7 @@ export class Donate {
   statusDetail: string;
 
   @Column('float')
-  transactionAmount: number;
+  amount: number; // Cambié transactionAmount a amount para que coincida con el DTO
 
   @Column()
   currencyId: string;

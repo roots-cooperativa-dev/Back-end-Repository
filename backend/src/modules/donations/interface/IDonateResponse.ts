@@ -5,7 +5,7 @@ export interface IDonateResponseDto {
   pagoId: string;
   status: string;
   statusDetail: string;
-  transactionAmount: number;
+  amount: number;
   currencyId: string;
   paymentTypeId: string;
   paymentMethodId: string;
@@ -15,13 +15,14 @@ export interface IDonateResponseDto {
 }
 
 export class ResponseDonateDto {
+  id: any;
   static toDTO(donate: Donate): IDonateResponseDto {
     return {
       id: donate.id,
       pagoId: donate.pagoId,
       status: donate.status,
       statusDetail: donate.statusDetail,
-      transactionAmount: donate.transactionAmount,
+      amount: donate.amount,
       currencyId: donate.currencyId,
       paymentTypeId: donate.paymentTypeId,
       paymentMethodId: donate.paymentMethodId,
