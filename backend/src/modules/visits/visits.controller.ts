@@ -12,18 +12,17 @@ import {
   UsePipes,
   UseGuards,
   Req,
+  BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { VisitsService } from './visits.service';
 import { CreateVisitDto } from './dto/create-visit.dto';
-import { UpdateVisitDto } from './dto/update-visit.dto';
+import { UpdateVisitDto } from './dto/create-visit.dto';
 import { CreateVisitSlotDto } from './dto/create-visit-slot.dto';
-import { CreateAppointmentDto } from './dto/create-appointment.dto';
 
 import { AuthGuard } from 'src/guards/auth.guards';
 import { RoleGuard } from 'src/guards/auth.guards.admin';
 import { Roles, UserRole } from 'src/decorator/role.decorator';
-
-import { AuthRequest } from 'src/common/auth-request.interface';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -32,6 +31,10 @@ import {
   ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
+import { AppointmentStatus } from './entities/appointment.entity';
+import { CreateAppointmentDto } from './dto/create-appointment.dto';
+import { AuthRequest } from 'src/common/auth-request.interface';
+import { error } from 'console';
 
 @ApiTags('Visits & Appointments')
 @ApiBearerAuth()
@@ -39,6 +42,92 @@ import {
 @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
 export class VisitsController {
   constructor(private readonly visitsService: VisitsService) {}
+
+  @ApiOperation({
+    summary: 'Get all appointments with pending status (Admins only)',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Pending appointments successfully obtained.',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'UNAUTHORIZED.',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Access FORBIDDEN (JUST ADMIN).',
+  })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('appointments/pending')
+  async findPendingAppointments() {
+    const pendingAppointments =
+      await this.visitsService.findPendingAppointments();
+    if (pendingAppointments.length === 0) {
+      throw new NotFoundException('No pending appointments found.');
+    }
+    console.log(error);
+    return pendingAppointments;
+  }
+
+  @ApiOperation({
+    summary:
+      'Update the status of an appointment (Approve/Reject) (Admins only)',
+  })
+  @ApiParam({
+    name: 'appointmentId',
+    description: 'ID de la cita a actualizar',
+    type: 'string',
+    format: 'uuid',
+  })
+  @ApiParam({
+    name: 'status',
+    description: 'New appointment status (approved, rejected, cancelled)',
+    enum: AppointmentStatus,
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Appointment status updated successfully.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'Appointment not found.',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid transition state.',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'UNAUTHORIZED.',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Access FORBIDDEN (just admin).',
+  })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  @Put('appointments/:appointmentId/status/:status')
+  async updateAppointmentStatus(
+    @Param('appointmentId') appointmentId: string,
+    @Param('status') status: AppointmentStatus,
+  ) {
+    if (!Object.values(AppointmentStatus).includes(status)) {
+      throw new BadRequestException('Appointment status invalid.');
+    }
+    if (
+      status !== AppointmentStatus.APPROVED &&
+      status !== AppointmentStatus.REJECTED &&
+      status !== AppointmentStatus.CANCELLED
+    ) {
+      throw new BadRequestException(
+        'You can only approve, reject or cancel on this.',
+      );
+    }
+
+    return this.visitsService.updateAppointmentStatus(appointmentId, status);
+  }
 
   @ApiOperation({ summary: 'Create a new visit (Just Admin)' })
   @ApiResponse({

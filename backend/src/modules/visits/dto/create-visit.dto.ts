@@ -1,9 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { IsString, IsNotEmpty, IsInt, Min, IsOptional } from 'class-validator';
 
 export class CreateVisitDto {
   @ApiProperty({
-    description: 'Título de la visita',
+    description: 'Title of the visit',
     example: 'Visita a la planta de la Mosca Soldado',
   })
   @IsString()
@@ -11,7 +11,7 @@ export class CreateVisitDto {
   title: string;
 
   @ApiProperty({
-    description: 'Descripción detallada de la visita',
+    description: 'Detailed description of the visit',
     required: false,
     example: 'Explora los beneficios de la Mosca Soldado y sus instalaciones.',
   })
@@ -20,7 +20,7 @@ export class CreateVisitDto {
   description?: string;
 
   @ApiProperty({
-    description: 'Número máximo de personas por grupo en esta visita',
+    description: 'Maximum number of people per group on this visit',
     required: false,
     example: 20,
   })
@@ -29,3 +29,5 @@ export class CreateVisitDto {
   @IsOptional()
   people?: number;
 }
+
+export class UpdateVisitDto extends PartialType(CreateVisitDto) {}
