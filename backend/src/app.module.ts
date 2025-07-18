@@ -13,6 +13,7 @@ import { OrdersModule } from './modules/orders/orders.module';
 import { VisitsModule } from './modules/visits/visits.module';
 import { DonationsModule } from './modules/donations/donations.module';
 import { MailModule } from './modules/mail/mail.module';
+import { PaymentsModule } from './modules/payments/payment.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { MailModule } from './modules/mail/mail.module';
     OrdersModule,
     VisitsModule,
     DonationsModule,
+    PaymentsModule,
     MailModule,
   ],
   controllers: [],

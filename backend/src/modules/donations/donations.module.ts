@@ -26,6 +26,5 @@ import { PaymentCompletedListener } from '../payments/listener/payment.listener'
   controllers: [DonationsController],
   providers: [DonationsService, PaymentCompletedListener],
   exports: [DonationsService],
-  providers: [DonationsService],
 })
 export class DonationsModule {}
