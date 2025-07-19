@@ -7,6 +7,8 @@ export interface IUserResponseDto {
   birthdate: Date;
   phone: number;
   username: string;
+  isAdmin?: boolean;
+  isDonator?: boolean;
   donates?: IDonateResponseDtoUser[];
 }
 
@@ -32,6 +34,8 @@ export class ResponseUserDto {
       birthdate: user.birthdate,
       phone: user.phone,
       username: user.username,
+      isAdmin: user.isAdmin,
+      isDonator: user.isDonator,
       donates:
         user.donates?.map((donate) => ({
           id: donate.id,

@@ -12,6 +12,7 @@ import { ResponseUserDto } from '../users/interface/IUserResponseDto';
 import { GoogleUser } from './strategies/google.strategy';
 import { AuthValidations } from './validate/auth.validate';
 import { AuthResponse, IUserAuthResponse } from './interface/IAuth.interface';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthsService {
@@ -19,6 +20,7 @@ export class AuthsService {
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly mailService: MailService,
   ) {}
 
   async signin(email: string, password: string): Promise<AuthResponse> {
@@ -33,7 +35,18 @@ export class AuthsService {
     if (!isValidPassword) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
-
+    try {
+      await this.mailService.sendLoginNotification(
+        user.email,
+        user.name || user.username || 'Usuario',
+      );
+      console.log(`Correo de notificación de login enviado a ${user.email}`);
+    } catch (error) {
+      console.error(
+        `Error al enviar correo de notificación de login a ${user.email}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
     return this.generateAuthResponse(user);
   }
 
@@ -50,6 +63,18 @@ export class AuthsService {
         isAdmin: false,
         isDonator: false,
       });
+      try {
+        await this.mailService.sendWelcomeEmail(
+          createdUser.email,
+          createdUser.name || createdUser.username || 'Usuario',
+        );
+        console.log(`Correo de bienvenida enviado a ${createdUser.email}`);
+      } catch (error) {
+        console.error(
+          `Error al enviar correo de bienvenida a ${createdUser.email}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      }
 
       return ResponseUserDto.toDTO(createdUser);
     } catch (error) {
@@ -65,9 +90,35 @@ export class AuthsService {
     }
 
     let user = await this.userService.findByEmail(googleUser.email);
+    let isNewUser = false;
 
     if (!user) {
       user = await this.createUserFromGoogleProfile(googleUser);
+      isNewUser = true;
+    }
+    try {
+      if (isNewUser) {
+        await this.mailService.sendWelcomeEmail(
+          user.email,
+          user.name || user.username || 'Usuario',
+        );
+        console.log(
+          `Correo de bienvenida (Google) enviado a ${user.email} (nuevo usuario).`,
+        );
+      } else {
+        await this.mailService.sendLoginNotification(
+          user.email,
+          user.name || user.username || 'Usuario',
+        );
+        console.log(
+          `Correo de notificación de login (Google) enviado a ${user.email} (usuario existente).`,
+        );
+      }
+    } catch (error) {
+      console.error(
+        `Error al enviar correo (bienvenida o login) para ${user.email}:`,
+        error instanceof Error ? error.message : String(error),
+      );
     }
 
     return this.generateAuthResponse(user);
