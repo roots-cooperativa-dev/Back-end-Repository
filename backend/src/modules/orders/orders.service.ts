@@ -97,6 +97,10 @@ export class OrdersService {
         await queryRunner.manager.save(cart);
       }
 
+      if (!cart.items) {
+        cart.items = [];
+      }
+
       const product = await queryRunner.manager.findOne(Product, {
         where: { id: productId },
       });
@@ -203,7 +207,21 @@ export class OrdersService {
         throw new NotFoundException(`Cart not found for user ID ${userId}`);
       }
 
-      const cartItem = cart.items.find((item) => item.id === cartItemId);
+      if (!cart.items) {
+        cart.items = [];
+      }
+
+      const cartItemIndex = cart.items.findIndex(
+        (item) => item.id === cartItemId,
+      );
+
+      if (cartItemIndex === -1) {
+        throw new NotFoundException(
+          `Cart item with ID ${cartItemId} not found in your cart`,
+        );
+      }
+
+      const cartItem = cart.items[cartItemIndex];
 
       if (!cartItem) {
         throw new NotFoundException(
@@ -213,7 +231,7 @@ export class OrdersService {
 
       if (quantity === 0) {
         await queryRunner.manager.remove(cartItem);
-        cart.items = cart.items.filter((item) => item.id !== cartItemId);
+        cart.items.splice(cartItemIndex, 1);
       } else {
         const productSize = await queryRunner.manager.findOne(Product_size, {
           where: { id: cartItem.productSize.id },
@@ -271,18 +289,33 @@ export class OrdersService {
     await queryRunner.startTransaction();
 
     try {
+      const itemToRemove = await queryRunner.manager.findOne(CartItem, {
+        where: { id: itemId, cart: { user: { id: userId } } },
+      });
+
+      if (!itemToRemove) {
+        throw new NotFoundException(
+          `Cart item with ID ${itemId} not found in your cart or does not belong to your user.`,
+        );
+      }
       const cart = await queryRunner.manager.findOne(Cart, {
         where: { user: { id: userId } },
-        relations: ['items', 'items.productSize'],
+        relations: ['items', 'items.product', 'items.productSize'],
       });
 
       if (!cart) {
-        throw new NotFoundException('Cart not found');
+        throw new NotFoundException('Cart not found for user');
       }
 
-      const itemToRemove = cart.items.find((item) => item.id === itemId);
+      if (!cart.items) {
+        cart.items = [];
+      }
 
-      if (!itemToRemove) {
+      const itemToRemoveIndex = cart.items.findIndex(
+        (item) => item.id === itemId,
+      );
+
+      if (itemToRemoveIndex === -1) {
         throw new NotFoundException('Item not found in cart');
       }
 
