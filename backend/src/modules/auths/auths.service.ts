@@ -44,7 +44,7 @@ export class AuthsService {
     } catch (error) {
       console.error(
         `Error al enviar correo de notificación de login a ${user.email}:`,
-        error,
+        error instanceof Error ? error.message : String(error),
       );
     }
     return this.generateAuthResponse(user);
@@ -72,7 +72,7 @@ export class AuthsService {
       } catch (error) {
         console.error(
           `Error al enviar correo de bienvenida a ${createdUser.email}:`,
-          error,
+          error instanceof Error ? error.message : String(error),
         );
       }
 
@@ -117,7 +117,7 @@ export class AuthsService {
     } catch (error) {
       console.error(
         `Error al enviar correo (bienvenida o login) para ${user.email}:`,
-        error,
+        error instanceof Error ? error.message : String(error),
       );
     }
 
