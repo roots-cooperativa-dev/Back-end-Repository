@@ -36,8 +36,8 @@ export class ProductsController {
   @ApiOperation({
     summary: 'Retrieve all available products with optional filters',
   })
-  @ApiQuery({ name: 'page', required: false })
-  @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({ name: 'page', required: true })
+  @ApiQuery({ name: 'limit', required: true })
   @ApiQuery({
     name: 'minPrice',
     required: false,
