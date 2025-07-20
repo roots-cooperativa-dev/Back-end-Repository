@@ -1,17 +1,24 @@
-import { IsOptional, IsNumber, IsString, IsUUID, Min } from 'class-validator';
+import {
+  IsOptional,
+  IsNumber,
+  IsString,
+  IsUUID,
+  Min,
+  IsDefined,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ProductFilterDTO {
   @ApiProperty({ example: '1' })
-  @IsOptional()
+  @IsDefined({ message: 'page is required' })
   @Type(() => Number)
   @IsNumber()
   @Min(1)
   page?: number;
 
   @ApiProperty({ example: '10' })
-  @IsOptional()
+  @IsDefined({ message: 'limit is required' })
   @Type(() => Number)
   @IsNumber()
   @Min(1)

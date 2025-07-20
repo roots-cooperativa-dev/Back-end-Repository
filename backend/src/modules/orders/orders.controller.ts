@@ -45,11 +45,11 @@ export class OrdersController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Obtener el carrito de compras del usuario autenticado',
+    summary: 'Get the authenticated users shopping cart',
   })
   @ApiResponse({
     status: 200,
-    description: 'Carrito de compras del usuario',
+    description: 'User shopping cart',
   })
   async getMyCart(@Req() req: AuthenticatedRequest) {
     return this.ordersService.getCart(req.user.sub);
@@ -59,12 +59,12 @@ export class OrdersController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Agregar un producto (con talla y cantidad) al carrito de compras',
+    summary: 'Add a product (with size and quantity) to the shopping cart',
   })
   @ApiBody({ type: AddToCartDTO })
   @ApiResponse({
     status: 200,
-    description: 'Producto agregado/actualizado en el carrito',
+    description: 'Product added/updated in cart',
   })
   async addProductToCart(
     @Req() req: AuthenticatedRequest,
@@ -77,15 +77,15 @@ export class OrdersController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Proceder con la compra (convertir carrito en orden)',
+    summary: 'Proceed with purchase (convert cart to order)',
   })
   @ApiResponse({
     status: 201,
-    description: 'Orden creada exitosamente desde el carrito',
+    description: 'Order created successfully from the cart',
   })
   @ApiResponse({
     status: 400,
-    description: 'Carrito vacío o stock insuficiente',
+    description: 'Empty cart or insufficient stock',
   })
   async checkoutCart(@Req() req: AuthenticatedRequest) {
     return this.ordersService.checkoutCart(req.user.sub);
@@ -151,21 +151,21 @@ export class OrdersController {
   @Put('cart/items/:cartItemId')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Actualizar la cantidad de un ítem en el carrito' })
+  @ApiOperation({ summary: 'Update the quantity of an item in the cart' })
   @ApiParam({
     name: 'cartItemId',
     type: 'string',
-    description: 'ID del ítem del carrito a actualizar',
+    description: 'ID of the cart item to update',
   })
   @ApiBody({ type: UpdateCartItemDTO })
   @ApiResponse({
     status: 200,
-    description: 'Cantidad del ítem del carrito actualizada',
+    description: 'Cart item quantity updated',
   })
-  @ApiResponse({ status: 404, description: 'Ítem del carrito no encontrado' })
+  @ApiResponse({ status: 404, description: 'Cart item not found' })
   @ApiResponse({
     status: 400,
-    description: 'Cantidad inválida o stock insuficiente',
+    description: 'Invalid quantity or insufficient stock',
   })
   async updateCartItemQuantity(
     @Req() req: AuthenticatedRequest,
@@ -182,14 +182,14 @@ export class OrdersController {
   @Delete('cart/items/:cartItemId')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Eliminar un ítem del carrito de compras' })
+  @ApiOperation({ summary: 'Remove an item from the shopping cart' })
   @ApiParam({
     name: 'cartItemId',
     type: 'string',
-    description: 'ID del ítem del carrito a eliminar',
+    description: 'ID of the cart item to delete',
   })
-  @ApiResponse({ status: 200, description: 'Ítem eliminado del carrito' })
-  @ApiResponse({ status: 404, description: 'Ítem del carrito no encontrado' })
+  @ApiResponse({ status: 200, description: 'Item removed from cart' })
+  @ApiResponse({ status: 404, description: 'Cart item not found' })
   async removeCartItem(
     @Req() req: AuthenticatedRequest,
     @Param('cartItemId', ParseUUIDPipe) cartItemId: string,
