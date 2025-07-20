@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/products.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Product_size } from './entities/products_size.entity';
 import { CreateProductDTO, UpdateProductDTO } from './DTO/CreateProduct.dto';
 import { Category } from '../category/entity/category.entity';
@@ -150,7 +150,9 @@ export class ProductsService {
     }
 
     if (data.file_Ids) {
-      const files = await this.fileRepository.findByIds(data.file_Ids);
+      const files = await this.fileRepository.findBy({
+        id: In(data.file_Ids),
+      });
       if (files.length !== data.file_Ids.length) {
         throw new BadRequestException('One or more file IDs are invalid');
       }
