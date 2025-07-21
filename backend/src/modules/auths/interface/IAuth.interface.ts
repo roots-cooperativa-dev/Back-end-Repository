@@ -21,3 +21,10 @@ export interface IUserAuthResponse {
   isAdmin: boolean;
   isDonator: boolean;
 }
+
+export interface GoogleUser {
+  id: string;
+  name: string;
+  email: string;
+  accessToken: string;
+}

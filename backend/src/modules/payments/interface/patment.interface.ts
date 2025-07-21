@@ -40,5 +40,5 @@ export interface PaymentCompletedEvent {
 export interface IPaymentService {
   createPreference(userId: string, dto: any): Promise<any>;
   getPaymentStatus(paymentId: string): Promise<any>;
-  handleWebhook(notification: any): Promise<void>;
+  handleWebhook(notification: WebhookNotificationDto): Promise<void>;
 }

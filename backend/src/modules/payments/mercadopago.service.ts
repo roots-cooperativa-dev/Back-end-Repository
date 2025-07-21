@@ -1,4 +1,10 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Logger,
+  NotFoundException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -76,21 +82,38 @@ export class MercadoPagoService {
     try {
       const response = await this.preference.create({ body: preferenceData });
 
+      if (!response.id || !response.init_point) {
+        throw new BadRequestException('Invalid response from MercadoPago');
+      }
+
       this.logger.log(
         `Payment preference created: ${response.id} for user: ${userId}`,
       );
 
       return {
-        preferenceId: response.id!,
-        initPoint: response.init_point!,
+        preferenceId: response.id,
+        initPoint: response.init_point,
         sandboxInitPoint: response.sandbox_init_point!,
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(
-        `Error creating payment preference for user ${userId}: ${message}`,
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error; // Re-lanzar errores conocidos
+      }
+
+      if (error instanceof Error) {
+        this.logger.error(
+          `MercadoPago API Error: ${error.message}`,
+          error.stack,
+        );
+      } else {
+        this.logger.error(`MercadoPago API Error: ${String(error)}`);
+      }
+      throw new InternalServerErrorException(
+        'Payment service temporarily unavailable',
       );
-      throw new BadRequestException('Failed to create payment preference');
     }
   }
 
