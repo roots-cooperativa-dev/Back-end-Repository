@@ -100,7 +100,7 @@ export class MercadoPagoService {
         error instanceof NotFoundException ||
         error instanceof BadRequestException
       ) {
-        throw error; // Re-lanzar errores conocidos
+        throw error;
       }
 
       if (error instanceof Error) {
