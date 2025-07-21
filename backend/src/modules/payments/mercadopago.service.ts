@@ -66,12 +66,12 @@ export class MercadoPagoService {
         },
       ],
       back_urls: {
-        success: `${this.configService.get<string>('FRONTEND_URL')}/donation/success`,
-        failure: `${this.configService.get<string>('FRONTEND_URL')}/donation/failure`,
-        pending: `${this.configService.get<string>('FRONTEND_URL')}/donation/pending`,
+        success: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/success`,
+        failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/failure`,
+        pending: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/pending`,
       },
       auto_return: 'approved' as const,
-      notification_url: `${this.configService.get<string>('BACKEND_URL')}/payments/webhook`,
+      notification_url: `${this.configService.get<string>('BACKEND_MP_URL')}/payments/webhook`,
       external_reference: userId,
       payment_methods: {
         excluded_payment_types: [{ id: 'atm' }],
