@@ -2,8 +2,8 @@ import {
   Injectable,
   BadRequestException,
   Logger,
-  NotFoundException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,6 +19,13 @@ import {
   MercadoPagoPaymentInfo,
   WebhookNotificationDto,
 } from './interface/patment.interface';
+
+type MercadoPagoApiError = Error & {
+  cause?: unknown;
+  response?: {
+    body?: unknown;
+  };
+};
 
 @Injectable()
 export class MercadoPagoService {
@@ -66,12 +73,12 @@ export class MercadoPagoService {
         },
       ],
       back_urls: {
-        success: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/success`,
-        failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/failure`,
-        pending: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/pending`,
+        success: `${this.configService.get<string>('FRONTEND_URL')}/donation/success`,
+        failure: `${this.configService.get<string>('FRONTEND_URL')}/donation/failure`,
+        pending: `${this.configService.get<string>('FRONTEND_URL')}/donation/pending`,
       },
       auto_return: 'approved' as const,
-      notification_url: `${this.configService.get<string>('BACKEND_MP_URL')}/payments/webhook`,
+      notification_url: `${this.configService.get<string>('BACKEND_URL')}/payments/webhook`,
       external_reference: userId,
       payment_methods: {
         excluded_payment_types: [{ id: 'atm' }],
@@ -82,17 +89,13 @@ export class MercadoPagoService {
     try {
       const response = await this.preference.create({ body: preferenceData });
 
-      if (!response.id || !response.init_point) {
-        throw new BadRequestException('Invalid response from MercadoPago');
-      }
-
       this.logger.log(
         `Payment preference created: ${response.id} for user: ${userId}`,
       );
 
       return {
-        preferenceId: response.id,
-        initPoint: response.init_point,
+        preferenceId: response.id!,
+        initPoint: response.init_point!,
         sandboxInitPoint: response.sandbox_init_point!,
       };
     } catch (error) {
@@ -104,13 +107,18 @@ export class MercadoPagoService {
       }
 
       if (error instanceof Error) {
-        this.logger.error(
-          `MercadoPago API Error: ${error.message}`,
-          error.stack,
-        );
+        const typedError = error as MercadoPagoApiError;
+
+        this.logger.error('MercadoPago API Error:', {
+          message: typedError.message,
+          cause: typedError.cause,
+          body: typedError.response?.body,
+          stack: typedError.stack,
+        });
       } else {
         this.logger.error(`MercadoPago API Error: ${String(error)}`);
       }
+
       throw new InternalServerErrorException(
         'Payment service temporarily unavailable',
       );
