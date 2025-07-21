@@ -17,8 +17,9 @@ import { ConfigService } from '@nestjs/config';
 
 import { AuthsService } from './auths.service';
 import { CreateUserDto, LoginUserDto } from '../users/Dtos/CreateUserDto';
-import { GoogleUser } from './strategies/google.strategy';
+
 import { AuthExceptionFilter } from './validate/auth.filter';
+import { GoogleUser } from './interface/IAuth.interface';
 
 @ApiTags('Auth')
 @Controller('auth')

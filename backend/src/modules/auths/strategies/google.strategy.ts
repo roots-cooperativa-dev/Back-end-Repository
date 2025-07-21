@@ -2,13 +2,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Strategy, Profile } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
-
-export interface GoogleUser {
-  id: string;
-  name: string;
-  email: string;
-  accessToken: string;
-}
+import { GoogleUser } from '../interface/IAuth.interface';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
