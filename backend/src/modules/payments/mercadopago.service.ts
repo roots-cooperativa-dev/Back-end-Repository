@@ -61,6 +61,9 @@ export class MercadoPagoService {
       throw new BadRequestException(`User with ID ${userId} not found`);
     }
 
+    // Modo test para evitar el login con email
+    const isTestMode = true;
+
     const preferenceData = {
       items: [
         {
@@ -84,6 +87,11 @@ export class MercadoPagoService {
         excluded_payment_types: [{ id: 'atm' }],
         installments: 12,
       },
+      ...(isTestMode && {
+        payer: {
+          email: 'test_user_40523000@testuser.com',
+        },
+      }),
     };
 
     try {
