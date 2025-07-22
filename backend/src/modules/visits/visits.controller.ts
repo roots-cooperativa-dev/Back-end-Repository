@@ -14,6 +14,7 @@ import {
   Req,
   BadRequestException,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { VisitsService } from './visits.service';
 import { CreateVisitDto } from './dto/create-visit.dto';
@@ -30,8 +31,10 @@ import {
   ApiTags,
   ApiParam,
   ApiBody,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { AppointmentStatus } from './entities/appointment.entity';
+import { Appointment } from './entities/appointment.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { AuthRequest } from 'src/common/auth-request.interface';
 import { error } from 'console';
@@ -69,6 +72,66 @@ export class VisitsController {
     }
     console.log(error);
     return pendingAppointments;
+  }
+  @ApiOperation({
+    summary:
+      'Get all appointments, optionally filtered by status (Admins only)',
+    description:
+      'Retrieves all appointments. Can be filtered by providing a "status" query parameter (e.g., ?status=APPROVED).',
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Appointments successfully obtained.',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'UNAUTHORIZED.',
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Access FORBIDDEN (JUST ADMIN).',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid appointment status provided.',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: 'No appointments found for the specified criteria.',
+  })
+  @ApiQuery({
+    name: 'status',
+    enum: AppointmentStatus,
+    description:
+      'Optional: Filter appointments by status (PENDING, APPROVED, REJECTED, CANCELED).',
+    required: false,
+  })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  @Get('allAppointments')
+  async findAllAppointmentsFiltered(
+    @Query('status') status?: AppointmentStatus,
+  ): Promise<Appointment[]> {
+    let appointments: Appointment[];
+
+    if (status) {
+      if (!Object.values(AppointmentStatus).includes(status)) {
+        throw new BadRequestException(
+          `Invalid appointment status: "${status}". Allowed values are: ${Object.values(AppointmentStatus).join(', ')}.`,
+        );
+      }
+      appointments = await this.visitsService.findAppointmentsByStatus(status);
+    } else {
+      appointments = await this.visitsService.findAllAppointments();
+    }
+
+    if (appointments.length === 0) {
+      throw new NotFoundException(
+        `No appointments found${status ? ` with status "${status}"` : ''}.`,
+      );
+    }
+
+    return appointments;
   }
 
   @ApiOperation({
@@ -166,11 +229,41 @@ export class VisitsController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'UNAUTHORIZED.',
   })
+  @ApiQuery({
+    name: 'status',
+    enum: AppointmentStatus,
+    description:
+      'Opcional: Filtrar citas por estado (PENDING, APPROVED, REJECTED, CANCELED).',
+    required: false,
+  })
   @UseGuards(AuthGuard)
   @Get('my-appointments')
-  async findMyAppointments(@Req() req: AuthRequest) {
+  async findMyAppointments(
+    @Req() req: AuthRequest,
+    @Query('status') status?: AppointmentStatus,
+  ): Promise<Appointment[]> {
     const userId = req.user.sub;
-    return this.visitsService.findAppointmentsByUser(userId);
+    let appointments: Appointment[];
+    if (status) {
+      if (!Object.values(AppointmentStatus).includes(status)) {
+        throw new BadRequestException(
+          `Estado de cita inválido: "${status}". Los valores permitidos son: ${Object.values(AppointmentStatus).join(', ')}.`,
+        );
+      }
+      appointments = await this.visitsService.findAppointmentsByUserAndStatus(
+        userId,
+        status,
+      );
+    } else {
+      appointments = await this.visitsService.findAppointmentsByUser(userId);
+    }
+    if (appointments.length === 0) {
+      throw new NotFoundException(
+        `No se encontraron citas para el usuario con ID ${userId}${status ? ` y estado "${status}"` : ''}.`,
+      );
+    }
+
+    return appointments;
   }
 
   @ApiOperation({

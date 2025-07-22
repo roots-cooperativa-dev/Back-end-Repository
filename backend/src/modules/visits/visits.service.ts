@@ -240,79 +240,6 @@ export class VisitsService {
 
     return savedAppointment;
   }
-
-  // async createAppointment(
-  //   createAppointmentDto: CreateAppointmentDto,
-  // ): Promise<Appointment> {
-  //   const { visitSlotId, userId, numberOfPeople } = createAppointmentDto;
-
-  //   if (!userId) {
-  //     throw new BadRequestException(
-  //       'User ID is not available to create the appointment.',
-  //     );
-  //   }
-  //   if (!numberOfPeople || numberOfPeople <= 0) {
-  //     throw new BadRequestException('The number of people must be at least 1.');
-  //   }
-
-  //   const visitSlot = await this.visitSlotsRepository.findOne({
-  //     where: { id: visitSlotId },
-  //     relations: ['visit'],
-  //   });
-
-  //   if (!visitSlot) {
-  //     throw new NotFoundException(
-  //       `Visit slot with ID ${visitSlotId} not found.`,
-  //     );
-  //   }
-
-  //   const pendingAndApprovedAppointments =
-  //     await this.appointmentsRepository.find({
-  //       where: {
-  //         visitSlotId: visitSlot.id,
-  //         status: In([AppointmentStatus.PENDING, AppointmentStatus.APPROVED]),
-  //       },
-  //       select: ['numberOfPeople'],
-  //     });
-
-  //   const currentBookedPeople = pendingAndApprovedAppointments.reduce(
-  //     (sum, appt) => sum + appt.numberOfPeople,
-  //     0,
-  //   );
-  //   if (currentBookedPeople + numberOfPeople > visitSlot.maxAppointments) {
-  //     const remainingCapacity = visitSlot.maxAppointments - currentBookedPeople;
-  //     throw new BadRequestException(
-  //       `Only ${remainingCapacity} spaces are available at this time.`,
-  //     );
-  //   }
-  //   const newAppointment = this.appointmentsRepository.create({
-  //     ...createAppointmentDto,
-  //     userId: userId,
-  //     visitSlot: visitSlot,
-  //     status: AppointmentStatus.PENDING,
-  //     bookedAt: new Date(),
-  //   });
-
-  //   const savedAppointment =
-  //     await this.appointmentsRepository.save(newAppointment);
-
-  //   visitSlot.currentAppointmentsCount += numberOfPeople;
-  //   await this.visitSlotsRepository.save(visitSlot);
-  //   const user = await this.usersRepository.findOne({ where: { id: userId } });
-  //   if (user) {
-  //     await this.mailService.sendAppointmentPendingNotification(
-  //       user.email,
-  //       user.name || user.email,
-  //       visitSlot.visit.title,
-  //       visitSlot.date.toDateString(),
-  //       visitSlot.startTime,
-  //       numberOfPeople,
-  //     );
-  //   }
-
-  //   return savedAppointment;
-  // }
-
   async findAppointmentsByUser(userId: string): Promise<Appointment[]> {
     const appointments = await this.appointmentsRepository.find({
       where: { userId },
@@ -326,6 +253,20 @@ export class VisitsService {
       );
     }
 
+    return appointments;
+  }
+  async findAppointmentsByUserAndStatus(
+    userId: string,
+    status: AppointmentStatus,
+  ): Promise<Appointment[]> {
+    const appointments = await this.appointmentsRepository.find({
+      where: {
+        user: { id: userId },
+        status: status,
+      },
+      relations: ['visitSlot', 'visitSlot.visit'],
+      order: { bookedAt: 'DESC' },
+    });
     return appointments;
   }
   async updateAppointmentStatus(
@@ -380,6 +321,22 @@ export class VisitsService {
   async findPendingAppointments(): Promise<Appointment[]> {
     return this.appointmentsRepository.find({
       where: { status: AppointmentStatus.PENDING },
+      relations: ['visitSlot', 'visitSlot.visit', 'user'],
+      order: { bookedAt: 'ASC' },
+    });
+  }
+  async findAllAppointments(): Promise<Appointment[]> {
+    return this.appointmentsRepository.find({
+      relations: ['visitSlot', 'visitSlot.visit', 'user'],
+      order: { bookedAt: 'ASC' },
+    });
+  }
+
+  async findAppointmentsByStatus(
+    status: AppointmentStatus,
+  ): Promise<Appointment[]> {
+    return this.appointmentsRepository.find({
+      where: { status: status },
       relations: ['visitSlot', 'visitSlot.visit', 'user'],
       order: { bookedAt: 'ASC' },
     });
