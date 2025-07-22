@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -117,6 +118,35 @@ export class OrdersController {
     const pageNum = page ? +page : 1;
     const limitNum = limit ? +limit : 10;
     return this.ordersService.getAllOrders(pageNum, limitNum);
+  }
+
+  @Get('my-orders')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary:
+      'Get all orders of the logged-in user with pagination and optional status filter',
+  })
+  @ApiQuery({ name: 'page', required: true })
+  @ApiQuery({ name: 'limit', required: true })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['active', 'cancelled', 'processed', 'finalized'],
+    description: 'Optional order status filter',
+  })
+  @ApiResponse({ status: 200, description: 'List of user orders' })
+  async getMyOrder(
+    @Req() req: AuthenticatedRequest,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+    @Query('status') status?: string,
+  ) {
+    if (isNaN(page) || isNaN(limit)) {
+      throw new BadRequestException('Page and limit must be valid numbers');
+    }
+
+    return this.ordersService.getUserOrders(req.user.sub, page, limit, status);
   }
 
   @Get(':id')
