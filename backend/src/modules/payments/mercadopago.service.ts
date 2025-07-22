@@ -60,9 +60,10 @@ export class MercadoPagoService {
       this.logger.warn(`User with ID ${userId} not found`);
       throw new BadRequestException(`User with ID ${userId} not found`);
     }
-
-    const isTestMode =
-      this.configService.get<string>('NODE_ENV') !== 'production';
+    const amount = Number(dto.amount);
+    if (isNaN(amount) || amount <= 0) {
+      throw new BadRequestException('Invalid donation amount');
+    }
 
     const preferenceData = {
       items: [
@@ -72,7 +73,7 @@ export class MercadoPagoService {
           description: dto.message || 'Voluntary donation',
           unit_price: Number(dto.amount),
           quantity: 1,
-          currency_id: dto.currency || 'ARS',
+          currency_id: (dto.currency || 'ARS').trim().toUpperCase(),
         },
       ],
       back_urls: {
@@ -87,14 +88,12 @@ export class MercadoPagoService {
         excluded_payment_types: [{ id: 'atm' }],
         installments: 12,
       },
-      ...(isTestMode && {
-        payer: {
-          email:
-            this.configService.get<string>('MP_TEST_EMAIL') ||
-            'test_user_655770494@testuser.com',
-        },
-      }),
     };
+
+    this.logger.error(
+      'Failed preference data:',
+      JSON.stringify(preferenceData, null, 2),
+    );
 
     try {
       const response = await this.preference.create({ body: preferenceData });
