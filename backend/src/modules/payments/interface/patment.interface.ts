@@ -1,3 +1,9 @@
+import {
+  CreatePreferenceDto,
+  PaymentStatusDto,
+  PreferenceResponseDto,
+} from '../dto/create-payment.dto';
+
 export interface MercadoPagoPaymentInfo {
   id: number | string;
   status: string;
@@ -38,7 +44,10 @@ export interface PaymentCompletedEvent {
 }
 
 export interface IPaymentService {
-  createPreference(userId: string, dto: any): Promise<any>;
-  getPaymentStatus(paymentId: string): Promise<any>;
+  createPreference(
+    userId: string,
+    dto: CreatePreferenceDto,
+  ): Promise<PreferenceResponseDto>;
+  getPaymentStatus(paymentId: string): Promise<PaymentStatusDto>;
   handleWebhook(notification: WebhookNotificationDto): Promise<void>;
 }

@@ -50,12 +50,20 @@ export class PaymentsService implements IPaymentService {
 
   async handleWebhook(notification: WebhookNotificationDto): Promise<void> {
     try {
-      this.logger.log(`Processing webhook: ${JSON.stringify(notification)}`);
+      this.logger.log(`Processing webhook notification`);
+      this.logger.debug(
+        `Webhook type: ${notification.type}, ID: ${notification.data?.id}`,
+      );
 
       const paymentInfo =
         await this.mercadoPagoService.processWebhook(notification);
 
       if (paymentInfo && paymentInfo.status === 'approved') {
+        if (!paymentInfo.external_reference) {
+          this.logger.error('Payment approved but no external_reference found');
+          return;
+        }
+
         const event: PaymentCompletedEvent = {
           paymentId: paymentInfo.id.toString(),
           userId: paymentInfo.external_reference,
@@ -70,14 +78,17 @@ export class PaymentsService implements IPaymentService {
 
         await this.eventEmitter.emitAsync('payment.completed', event);
         this.logger.log(
-          `Payment completed event emitted for payment: ${paymentInfo.id}`,
+          `✅ Payment completed event emitted for payment: ${paymentInfo.id}`,
+        );
+      } else {
+        this.logger.log(
+          `Payment status: ${paymentInfo?.status || 'unknown'} - No event emitted`,
         );
       }
     } catch (error) {
       this.logger.error(
-        `Error processing webhook: ${(error as Error).message || error}`,
+        `❌ Error processing webhook: ${(error as Error).message || error}`,
       );
-      throw error;
     }
   }
 }

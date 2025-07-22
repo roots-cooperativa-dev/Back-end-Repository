@@ -61,8 +61,8 @@ export class MercadoPagoService {
       throw new BadRequestException(`User with ID ${userId} not found`);
     }
 
-    // Modo test para evitar el login con email
-    const isTestMode = true;
+    const isTestMode =
+      this.configService.get<string>('NODE_ENV') !== 'production';
 
     const preferenceData = {
       items: [
@@ -76,12 +76,12 @@ export class MercadoPagoService {
         },
       ],
       back_urls: {
-        success: `${this.configService.get<string>('FRONTEND_URL')}/donation/success`,
-        failure: `${this.configService.get<string>('FRONTEND_URL')}/donation/failure`,
-        pending: `${this.configService.get<string>('FRONTEND_URL')}/donation/pending`,
+        success: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/success`,
+        failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/failure`,
+        pending: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/pending`,
       },
       auto_return: 'approved' as const,
-      notification_url: `${this.configService.get<string>('BACKEND_URL')}/payments/webhook`,
+      notification_url: `${this.configService.get<string>('BACKEND_MP_URL')}/payments/webhook`,
       external_reference: userId,
       payment_methods: {
         excluded_payment_types: [{ id: 'atm' }],
@@ -89,7 +89,9 @@ export class MercadoPagoService {
       },
       ...(isTestMode && {
         payer: {
-          email: 'test_user_40523000@testuser.com',
+          email:
+            this.configService.get<string>('MP_TEST_EMAIL') ||
+            'test_user_655770494@testuser.com',
         },
       }),
     };
@@ -97,14 +99,20 @@ export class MercadoPagoService {
     try {
       const response = await this.preference.create({ body: preferenceData });
 
+      if (!response.id || !response.init_point) {
+        throw new InternalServerErrorException(
+          'Invalid response from MercadoPago',
+        );
+      }
+
       this.logger.log(
-        `Payment preference created: ${response.id} for user: ${userId}`,
+        `✅ Payment preference created: ${response.id} for user: ${userId}`,
       );
 
       return {
-        preferenceId: response.id!,
-        initPoint: response.init_point!,
-        sandboxInitPoint: response.sandbox_init_point!,
+        preferenceId: response.id,
+        initPoint: response.init_point,
+        sandboxInitPoint: response.sandbox_init_point || response.init_point,
       };
     } catch (error) {
       if (
@@ -116,12 +124,10 @@ export class MercadoPagoService {
 
       if (error instanceof Error) {
         const typedError = error as MercadoPagoApiError;
-
         this.logger.error('MercadoPago API Error:', {
           message: typedError.message,
           cause: typedError.cause,
           body: typedError.response?.body,
-          stack: typedError.stack,
         });
       } else {
         this.logger.error(`MercadoPago API Error: ${String(error)}`);
@@ -137,18 +143,34 @@ export class MercadoPagoService {
     notification: unknown,
   ): Promise<MercadoPagoPaymentInfo | null> {
     try {
+      if (!notification || typeof notification !== 'object') {
+        this.logger.warn('Invalid webhook notification format received');
+        return null;
+      }
+
       const notif = notification as WebhookNotificationDto;
+
+      if (!notif.type || !notif.data?.id) {
+        this.logger.warn('Webhook notification missing required fields:', {
+          type: notif.type,
+          dataId: notif.data?.id,
+        });
+        return null;
+      }
 
       if (notif.type === 'payment') {
         const paymentId = notif.data.id;
+        this.logger.log(`Processing payment webhook for ID: ${paymentId}`);
         return await this.getPaymentInfo(paymentId);
       }
 
+      this.logger.log(`Ignoring webhook of type: ${notif.type}`);
       return null;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`Error processing webhook: ${message}`);
-      throw new BadRequestException('Failed to process webhook');
+
+      return null;
     }
   }
 
