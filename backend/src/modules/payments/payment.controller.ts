@@ -5,6 +5,8 @@ import {
   Param,
   ParseUUIDPipe,
   Get,
+  Req,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -13,17 +15,51 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Request } from 'express';
 import { PaymentsService } from './payment.service';
 import {
   CreatePreferenceDto,
   PaymentStatusDto,
   PreferenceResponseDto,
 } from './dto/create-payment.dto';
-import { WebhookNotificationDto } from './interface/patment.interface';
+import { WebhookNotificationDto } from './dto/create-payment.dto';
+import { WebhookNotificationDto as WebhookNotificationInterface } from './interface/patment.interface';
+
+// Type guard corregido para evitar unsafe member access
+function isValidWebhookData(data: unknown): data is { id: string } {
+  if (typeof data !== 'object' || data === null) {
+    return false;
+  }
+
+  // Safe access usando 'in' operator y type assertion solo después de verificación
+  if (!('id' in data)) {
+    return false;
+  }
+
+  // Verificar que el id sea string después de confirmar que existe
+  const dataWithId = data as Record<string, unknown>;
+  return typeof dataWithId.id === 'string';
+}
+
+// Type guard para verificar estructura básica del webhook
+function hasWebhookStructure(
+  obj: unknown,
+): obj is { type: string; data: unknown } {
+  return (
+    typeof obj === 'object' && obj !== null && 'type' in obj && 'data' in obj
+  );
+}
+
+// Interface para el objeto de respuesta con error
+interface WebhookResponse {
+  status: string;
+  message?: string;
+}
 
 @ApiTags('Payments')
 @Controller('payments')
 export class PaymentsController {
+  private readonly logger = new Logger(PaymentsController.name);
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post('create-preference/:userId')
@@ -55,15 +91,136 @@ export class PaymentsController {
 
   @Post('webhook')
   @ApiOperation({ summary: 'Receive payment webhook notifications' })
+  @ApiBody({ type: WebhookNotificationDto })
   @ApiResponse({
     status: 200,
     description: 'Webhook processed successfully',
   })
   async handleWebhook(
-    @Body() notification: WebhookNotificationDto,
-  ): Promise<{ status: string }> {
-    await this.paymentsService.handleWebhook(notification);
-    return { status: 'success' };
+    @Body() notification: unknown,
+    @Req() req: Request,
+  ): Promise<WebhookResponse> {
+    try {
+      this.logger.log('=== WEBHOOK DEBUG START ===');
+
+      // Log completo del body recibido (safe)
+      this.logger.log(`Raw body: ${JSON.stringify(notification, null, 2)}`);
+
+      // Log de headers importantes
+      this.logger.log(`Content-Type: ${req.headers['content-type'] || 'N/A'}`);
+      this.logger.log(`User-Agent: ${req.headers['user-agent'] || 'N/A'}`);
+
+      const xSignature = req.headers['x-signature'];
+      const xSignatureStr = Array.isArray(xSignature)
+        ? xSignature.join(', ')
+        : xSignature || 'N/A';
+      this.logger.log(`X-Signature: ${xSignatureStr}`);
+
+      // Verificar si el body está vacío
+      if (
+        !notification ||
+        (typeof notification === 'object' &&
+          Object.keys(notification).length === 0)
+      ) {
+        this.logger.warn('⚠️ Empty webhook body received');
+        return { status: 'empty_body' };
+      }
+
+      // Verificar estructura básica con type guard
+      if (!hasWebhookStructure(notification)) {
+        this.logger.warn('❌ Invalid webhook structure - missing type or data');
+        return { status: 'invalid_structure' };
+      }
+
+      // Safe access después de verificación
+      const notificationKeys =
+        typeof notification === 'object' && notification !== null
+          ? Object.keys(notification).join(', ')
+          : 'unknown';
+
+      this.logger.log(`Notification keys: ${notificationKeys}`);
+      this.logger.log(`Type: ${notification.type}`);
+      this.logger.log(`Data: ${JSON.stringify(notification.data)}`);
+
+      // Safe access para ID
+      const notificationId =
+        typeof notification === 'object' &&
+        notification !== null &&
+        'id' in notification
+          ? String((notification as Record<string, unknown>).id)
+          : 'unknown';
+      this.logger.log(`ID: ${notificationId}`);
+
+      // Verificar si tiene datos válidos con type guards
+      if (notification.type && isValidWebhookData(notification.data)) {
+        this.logger.log('✅ Valid webhook structure, processing...');
+
+        // Helper function para safe access
+        const safeGet = (obj: unknown, key: string): unknown => {
+          return typeof obj === 'object' && obj !== null && key in obj
+            ? (obj as Record<string, unknown>)[key]
+            : undefined;
+        };
+
+        // Crear objeto usando la interfaz correcta que espera el servicio
+        const validatedNotification: WebhookNotificationInterface = {
+          id: Number(safeGet(notification, 'id')) || 0,
+          type: notification.type,
+          data: { id: notification.data.id },
+          // Asegurar que live_mode sea siempre boolean (never undefined)
+          live_mode:
+            safeGet(notification, 'live_mode') !== undefined
+              ? Boolean(safeGet(notification, 'live_mode'))
+              : false,
+          // La interfaz requiere string, no string | undefined
+          date_created:
+            safeGet(notification, 'date_created') !== undefined
+              ? String(safeGet(notification, 'date_created'))
+              : '',
+          // La interfaz requiere number, no number | undefined
+          application_id:
+            safeGet(notification, 'application_id') !== undefined
+              ? Number(safeGet(notification, 'application_id')) || 0
+              : 0,
+          // La interfaz requiere string, no string | undefined
+          user_id:
+            safeGet(notification, 'user_id') !== undefined
+              ? String(safeGet(notification, 'user_id'))
+              : '',
+          // La interfaz requiere number, no number | undefined
+          version:
+            safeGet(notification, 'version') !== undefined
+              ? Number(safeGet(notification, 'version')) || 0
+              : 0,
+          // La interfaz requiere string, no string | undefined
+          api_version:
+            safeGet(notification, 'api_version') !== undefined
+              ? String(safeGet(notification, 'api_version'))
+              : '',
+          // La interfaz requiere string, no string | undefined
+          action:
+            safeGet(notification, 'action') !== undefined
+              ? String(safeGet(notification, 'action'))
+              : '',
+        };
+
+        await this.paymentsService.handleWebhook(validatedNotification);
+        this.logger.log('=== WEBHOOK DEBUG END - SUCCESS ===');
+        return { status: 'success' };
+      } else {
+        this.logger.warn('❌ Invalid webhook structure');
+        this.logger.log('=== WEBHOOK DEBUG END - INVALID ===');
+        return { status: 'invalid_structure' };
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(`❌ Webhook handler error: ${errorMessage}`);
+      this.logger.log('=== WEBHOOK DEBUG END - ERROR ===');
+
+      // Siempre devolver 200 para que MercadoPago no reintente
+      return { status: 'error', message: errorMessage };
+    }
   }
 
   @Get('status/:paymentId')

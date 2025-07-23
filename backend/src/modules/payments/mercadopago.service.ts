@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  Logger,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -20,12 +14,20 @@ import {
   WebhookNotificationDto,
 } from './interface/patment.interface';
 
-type MercadoPagoApiError = Error & {
-  cause?: unknown;
+// Interface para tipar mejor los errores de MercadoPago
+interface MercadoPagoError extends Error {
+  message: string;
   response?: {
-    body?: unknown;
+    data: unknown;
+    status?: number;
   };
-};
+  status?: number;
+}
+
+// Type guard para verificar si es un error de MercadoPago
+function isMercadoPagoError(error: unknown): error is MercadoPagoError {
+  return error instanceof Error && ('response' in error || 'status' in error);
+}
 
 @Injectable()
 export class MercadoPagoService {
@@ -39,8 +41,14 @@ export class MercadoPagoService {
     @InjectRepository(Users)
     private readonly userRepository: Repository<Users>,
   ) {
+    const accessToken = this.configService.get<string>('MP_ACCESS_TOKEN');
+
+    if (!accessToken) {
+      throw new Error('MP_ACCESS_TOKEN is required but not provided');
+    }
+
     this.client = new MercadoPagoConfig({
-      accessToken: this.configService.get<string>('MP_ACCESS_TOKEN') || '',
+      accessToken,
       options: {
         timeout: 5000,
       },
@@ -60,81 +68,45 @@ export class MercadoPagoService {
       this.logger.warn(`User with ID ${userId} not found`);
       throw new BadRequestException(`User with ID ${userId} not found`);
     }
-    const amount = Number(dto.amount);
-    if (isNaN(amount) || amount <= 0) {
-      throw new BadRequestException('Invalid donation amount');
-    }
 
     const preferenceData = {
       items: [
         {
-          id: `donation-${userId}`,
-          title: 'Donation to ROOTS',
-          description: dto.message || 'Voluntary donation',
-          unit_price: Number(dto.amount),
+          id: `donation-${user.id}`,
+          title: 'Dononacion a ROOTS',
           quantity: 1,
-          currency_id: (dto.currency || 'ARS').trim().toUpperCase(),
+          currency_id: 'ARS',
+          unit_price: dto.amount,
         },
       ],
       back_urls: {
-        success: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/success`,
-        failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/failure`,
-        pending: `${this.configService.get<string>('FRONTEND_MP_URL')}/donation/pending`,
+        success: 'https://tusitio.com/success',
+        failure: 'https://tusitio.com/failure',
+        pending: 'https://tusitio.com/pending',
       },
-      auto_return: 'approved' as const,
-      notification_url: `${this.configService.get<string>('BACKEND_MP_URL')}/payments/webhook`,
-      external_reference: userId,
-      payment_methods: {
-        excluded_payment_types: [{ id: 'atm' }],
-        installments: 12,
-      },
+      auto_return: 'approved',
+      notification_url: `https://aad887979793.ngrok-free.app/payments/webhook`,
+      external_reference: user.id,
     };
-
-    this.logger.error(
-      'Failed preference data:',
-      JSON.stringify(preferenceData, null, 2),
-    );
 
     try {
       const response = await this.preference.create({ body: preferenceData });
 
-      if (!response.id || !response.init_point) {
-        throw new InternalServerErrorException(
-          'Invalid response from MercadoPago',
-        );
-      }
-
       this.logger.log(
-        `✅ Payment preference created: ${response.id} for user: ${userId}`,
+        `Payment preference created: ${response.id} for user: ${userId}`,
       );
 
       return {
-        preferenceId: response.id,
-        initPoint: response.init_point,
-        sandboxInitPoint: response.sandbox_init_point || response.init_point,
+        preferenceId: response.id!,
+        initPoint: response.init_point!,
+        sandboxInitPoint: response.sandbox_init_point!,
       };
     } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof BadRequestException
-      ) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
-        const typedError = error as MercadoPagoApiError;
-        this.logger.error('MercadoPago API Error:', {
-          message: typedError.message,
-          cause: typedError.cause,
-          body: typedError.response?.body,
-        });
-      } else {
-        this.logger.error(`MercadoPago API Error: ${String(error)}`);
-      }
-
-      throw new InternalServerErrorException(
-        'Payment service temporarily unavailable',
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(
+        `Error creating payment preference for user ${userId}: ${message}`,
       );
+      throw new BadRequestException('Failed to create payment preference');
     }
   }
 
@@ -160,6 +132,9 @@ export class MercadoPagoService {
       if (notif.type === 'payment') {
         const paymentId = notif.data.id;
         this.logger.log(`Processing payment webhook for ID: ${paymentId}`);
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
         return await this.getPaymentInfo(paymentId);
       }
 
@@ -167,8 +142,8 @@ export class MercadoPagoService {
       return null;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Error processing webhook: ${message}`);
-
+      const stack = error instanceof Error ? error.stack : undefined;
+      this.logger.error(`Error processing webhook: ${message}`, stack);
       return null;
     }
   }
@@ -195,12 +170,38 @@ export class MercadoPagoService {
     paymentId: string,
   ): Promise<MercadoPagoPaymentInfo> {
     try {
+      this.logger.log(`Fetching payment info for ID: ${paymentId}`);
+
       const paymentResponse = await this.payment.get({ id: paymentId });
+
+      this.logger.debug(`Payment response: ${JSON.stringify(paymentResponse)}`);
+
       return paymentResponse as MercadoPagoPaymentInfo;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Error fetching payment info: ${message}`);
-      throw new BadRequestException('Failed to fetch payment information');
+      let errorMessage = 'Unknown error';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        this.logger.error(`MercadoPago API Error: ${error.message}`);
+      }
+
+      if (isMercadoPagoError(error)) {
+        if (error.response?.data) {
+          this.logger.error(
+            `MercadoPago API Response: ${JSON.stringify(error.response.data)}`,
+          );
+        }
+
+        if (error.status) {
+          this.logger.error(`MercadoPago HTTP Status: ${error.status}`);
+        }
+      }
+
+      this.logger.error(`Error fetching payment info: ${errorMessage}`);
+
+      throw new BadRequestException(
+        `Failed to fetch payment information: ${errorMessage}`,
+      );
     }
   }
 }
