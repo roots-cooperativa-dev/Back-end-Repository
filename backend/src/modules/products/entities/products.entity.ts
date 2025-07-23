@@ -1,5 +1,6 @@
 import {
   Column,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToMany,
@@ -25,8 +26,11 @@ export class Product {
   @Column({ type: 'varchar', length: 255, nullable: false })
   details: string;
 
-  @Column({ default: false })
-  isDeleted: boolean;
+  @DeleteDateColumn({ name: 'deleted_at', select: false })
+  deletedAt: Date | null;
+
+  @Column({ default: true })
+  isActive: boolean;
 
   @ManyToOne(() => Category, (category) => category.products)
   @JoinColumn({ name: 'category_Id' })

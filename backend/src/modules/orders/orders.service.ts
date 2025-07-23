@@ -456,7 +456,7 @@ export class OrdersService {
 
       const orderDetail = queryRunner.manager.create(OrderDetail, {
         order: savedOrder,
-        products: productEntitiesForOrderDetail, // La relación ManyToMany con Product
+        products: productEntitiesForOrderDetail,
         total: parseFloat(orderTotal.toFixed(2)),
       });
       const savedDetail = await queryRunner.manager.save(orderDetail);

@@ -25,6 +25,36 @@ export class ProductsService {
     private readonly fileRepository: Repository<File>,
   ) {}
 
+  async updateProductStatusByStock(productId: string): Promise<void> {
+    try {
+      const product = await this.productRepository.findOne({
+        where: { id: productId },
+      });
+
+      if (!product) {
+        throw new NotFoundException(`Product with ID ${productId} not found`);
+      }
+
+      const sizes = await this.productSizeRepository.find({
+        where: { product: { id: productId } },
+      });
+
+      const totalStock = sizes.reduce((sum, size) => sum + size.stock, 0);
+
+      await this.productRepository.update(productId, {
+        isActive: totalStock > 0,
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        `Failed to update product status by stock for product ID ${productId}`,
+      );
+    }
+  }
+
   async createProduct(data: CreateProductDTO): Promise<Product> {
     const { name, details, category_Id, sizes, file_Ids } = data;
 
@@ -61,7 +91,6 @@ export class ProductsService {
 
       return this.getProductById(savedProduct.id);
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException('Error creating product');
     }
   }
@@ -80,13 +109,12 @@ export class ProductsService {
       const queryBuilder = this.productRepository.createQueryBuilder('product');
 
       queryBuilder
+        .withDeleted()
         .leftJoinAndSelect('product.sizes', 'product_size')
         .leftJoinAndSelect('product.category', 'category')
         .leftJoinAndSelect('product.files', 'file');
 
-      queryBuilder.where('product.isDeleted = :isDeleted', {
-        isDeleted: false,
-      });
+      queryBuilder.where('1 = 1');
 
       if (name) {
         queryBuilder.andWhere(
@@ -114,7 +142,6 @@ export class ProductsService {
 
       return await queryBuilder.getMany();
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException(
         'Error retrieving products with filters',
       );
@@ -174,22 +201,34 @@ export class ProductsService {
       }
       return this.getProductById(id);
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException(`Error updating product ${id}`);
     }
   }
 
   async deleteProduct(id: string): Promise<{ message: string }> {
     try {
-      const product = await this.getProductById(id);
+      const result = await this.productRepository.softDelete(id);
 
-      product.isDeleted = true;
-      await this.productRepository.save(product);
+      if (!result.affected) {
+        throw new NotFoundException(`Product ${id} not found`);
+      }
 
       return { message: `Product ${id} successfully removed.` };
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException(`Error deleting product ${id}`);
+    }
+  }
+
+  async restoreProduct(id: string): Promise<{ message: string }> {
+    try {
+      const result = await this.productRepository.restore(id);
+      if (!result.affected) {
+        throw new NotFoundException(`Product ${id} not found or not deleted`);
+      }
+
+      return { message: `Product ${id} restored.` };
+    } catch (error) {
+      throw new InternalServerErrorException(`Failed to restore product ${id}`);
     }
   }
 }

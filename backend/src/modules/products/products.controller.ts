@@ -175,4 +175,26 @@ export class ProductsController {
   async remove(@Param('id') id: string) {
     return await this.productsService.deleteProduct(id);
   }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Restore soft-deleted product by ID' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'Product unique identifier',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Product restored successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Product not found or not deleted',
+  })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  @Post('restore/:id')
+  async restore(@Param('id') id: string) {
+    return await this.productsService.restoreProduct(id);
+  }
 }
