@@ -36,6 +36,9 @@ export class Appointment {
   @Column({ type: 'uuid' })
   visitSlotId: string;
 
+  @Column({ type: 'text' })
+  description?: string;
+
   @ManyToOne(() => Users, (user) => user.appointments, {
     onDelete: 'RESTRICT',
   })

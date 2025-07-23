@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tu Orden Está en Proceso</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #392f5a; margin: 0; padding: 0; background-color: #ffffff;">
+  <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+
+    <div style="background-color: #7b6ca8; padding: 20px; text-align: center; border-bottom: 1px solid #a39ad9;">
+      <img
+        src="https://via.placeholder.com/180x60/9b8de3/ffffff?text=ROOTS+LOGO"
+        alt="Logo ROOTS COOPERATIVA"
+        style="max-width: 180px; height: auto; display: block; margin: 0 auto;"
+      />
+    </div>
+
+    <div style="padding: 30px;">
+      <p>Hola <strong style="color: #392f5a;">{{userName}}</strong>,</p>
+      <p>Tu orden <strong>#{{orderId}}</strong> se encuentra actualmente <strong style="color: #4caf50;">en proceso</strong>.</p>
+      <p>Te notificaremos nuevamente una vez que esté lista para retiro o haya sido enviada.</p>
+      <p>Podés ver los detalles en tu cuenta o contactarnos si tenés dudas.</p>
+      <p>Saludos cordiales,</p>
+      <p>El equipo de <strong>{{appName}}</strong>.</p>
+    </div>
+
+    <div style="background-color: #7b6ca8; padding: 20px; text-align: center; font-size: 0.9em; color: #ffdd00; border-top: 1px solid #a39ad9;">
+      <p>Este correo ha sido enviado por <strong style="color: #ffffff;">{{appName}}</strong>.</p>
+      <p><a href="https://frontend-rootscoop.vercel.app" style="color: #ffdd00; text-decoration: none;">Visita nuestro sitio web</a></p>
+    </div>
+
+  </div>
+</body>
+</html>
