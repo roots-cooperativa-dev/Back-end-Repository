@@ -121,4 +121,26 @@ export class CategoryController {
   async delete(@Param('id') id: string) {
     return await this.categoryService.deleteCategory(id);
   }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Restore soft-deleted category by ID' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'Category unique identifier',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Category restored successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Category not found or not deleted',
+  })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  @Post('restore/:id')
+  async restore(@Param('id') id: string) {
+    return await this.categoryService.restoreCategory(id);
+  }
 }
