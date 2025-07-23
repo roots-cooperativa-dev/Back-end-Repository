@@ -106,33 +106,72 @@ export class VisitsController {
       'Optional: Filter appointments by status (PENDING, APPROVED, REJECTED, CANCELED).',
     required: false,
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    example: 1,
+    description: 'Page number for pagination.',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    example: 10,
+    description: 'Number of items per page.',
+  })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
   @Get('allAppointments')
   async findAllAppointmentsFiltered(
     @Query('status') status?: AppointmentStatus,
-  ): Promise<Appointment[]> {
-    let appointments: Appointment[];
-
-    if (status) {
-      if (!Object.values(AppointmentStatus).includes(status)) {
-        throw new BadRequestException(
-          `Invalid appointment status: "${status}". Allowed values are: ${Object.values(AppointmentStatus).join(', ')}.`,
-        );
-      }
-      appointments = await this.visitsService.findAppointmentsByStatus(status);
-    } else {
-      appointments = await this.visitsService.findAllAppointments();
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+  ) {
+    if (status && !Object.values(AppointmentStatus).includes(status)) {
+      throw new BadRequestException(
+        `Invalid appointment status: "${status}". Allowed values are: ${Object.values(AppointmentStatus).join(', ')}.`,
+      );
     }
 
-    if (appointments.length === 0) {
+    const result = await this.visitsService.findAppointmentsPaginated(
+      status,
+      +page,
+      +limit,
+    );
+
+    if (result.data.length === 0) {
       throw new NotFoundException(
         `No appointments found${status ? ` with status "${status}"` : ''}.`,
       );
     }
 
-    return appointments;
+    return result;
   }
+  // async findAllAppointmentsFiltered(
+  //   @Query('status') status?: AppointmentStatus,
+  // ): Promise<Appointment[]> {
+  //   let appointments: Appointment[];
+
+  //   if (status) {
+  //     if (!Object.values(AppointmentStatus).includes(status)) {
+  //       throw new BadRequestException(
+  //         `Invalid appointment status: "${status}". Allowed values are: ${Object.values(AppointmentStatus).join(', ')}.`,
+  //       );
+  //     }
+  //     appointments = await this.visitsService.findAppointmentsByStatus(status);
+  //   } else {
+  //     appointments = await this.visitsService.findAllAppointments();
+  //   }
+
+  //   if (appointments.length === 0) {
+  //     throw new NotFoundException(
+  //       `No appointments found${status ? ` with status "${status}"` : ''}.`,
+  //     );
+  //   }
+
+  //   return appointments;
+  // }
 
   @ApiOperation({
     summary:
@@ -233,38 +272,117 @@ export class VisitsController {
     name: 'status',
     enum: AppointmentStatus,
     description:
-      'Opcional: Filtrar citas por estado (PENDING, APPROVED, REJECTED, CANCELED).',
+      'Optional: Filter appointments by status (PENDING, APPROVED, REJECTED, CANCELED).',
     required: false,
+  })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    description: 'Result page. Default is 1.',
+    required: false,
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    description: 'Number of items per page. Default is 10.',
+    required: false,
+    example: 10,
   })
   @UseGuards(AuthGuard)
   @Get('my-appointments')
   async findMyAppointments(
     @Req() req: AuthRequest,
     @Query('status') status?: AppointmentStatus,
-  ): Promise<Appointment[]> {
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
+  ): Promise<{ appointments: Appointment[]; totalCount: number }> {
     const userId = req.user.sub;
-    let appointments: Appointment[];
+
+    if (page < 1 || limit < 1) {
+      throw new BadRequestException(
+        'The values for "page" and "limit" must be positive.',
+      );
+    }
+    let result: { appointments: Appointment[]; totalCount: number };
+
     if (status) {
       if (!Object.values(AppointmentStatus).includes(status)) {
         throw new BadRequestException(
-          `Estado de cita inválido: "${status}". Los valores permitidos son: ${Object.values(AppointmentStatus).join(', ')}.`,
+          `Invalid appointment status: "${status}". The allowed values are: ${Object.values(AppointmentStatus).join(', ')}.`,
         );
       }
-      appointments = await this.visitsService.findAppointmentsByUserAndStatus(
-        userId,
-        status,
-      );
+      result =
+        await this.visitsService.findAppointmentsByUserAndStatusWithPagination(
+          userId,
+          status,
+          page,
+          limit,
+        );
     } else {
-      appointments = await this.visitsService.findAppointmentsByUser(userId);
-    }
-    if (appointments.length === 0) {
-      throw new NotFoundException(
-        `No se encontraron citas para el usuario con ID ${userId}${status ? ` y estado "${status}"` : ''}.`,
+      result = await this.visitsService.findAppointmentsByUserWithPagination(
+        userId,
+        page,
+        limit,
       );
     }
 
-    return appointments;
+    if (result.appointments.length === 0) {
+      throw new NotFoundException(
+        `No appointments found for user with ID ${userId}${status ? ` and status "${status}"` : ''}.`,
+      );
+    }
+
+    return result;
   }
+  // @ApiOperation({
+  //   summary:
+  //     'Get all appointments scheduled by the current user (All authenticated users)',
+  // })
+  // @ApiResponse({
+  //   status: HttpStatus.OK,
+  //   description: 'Appointments successfully obtained.',
+  // })
+  // @ApiResponse({
+  //   status: HttpStatus.UNAUTHORIZED,
+  //   description: 'UNAUTHORIZED.',
+  // })
+  // @ApiQuery({
+  //   name: 'status',
+  //   enum: AppointmentStatus,
+  //   description:
+  //     'Opcional: Filtrar citas por estado (PENDING, APPROVED, REJECTED, CANCELED).',
+  //   required: false,
+  // })
+  // @UseGuards(AuthGuard)
+  // @Get('my-appointments')
+  // async findMyAppointments(
+  //   @Req() req: AuthRequest,
+  //   @Query('status') status?: AppointmentStatus,
+  // ): Promise<Appointment[]> {
+  //   const userId = req.user.sub;
+  //   let appointments: Appointment[];
+  //   if (status) {
+  //     if (!Object.values(AppointmentStatus).includes(status)) {
+  //       throw new BadRequestException(
+  //         `Estado de cita inválido: "${status}". Los valores permitidos son: ${Object.values(AppointmentStatus).join(', ')}.`,
+  //       );
+  //     }
+  //     appointments = await this.visitsService.findAppointmentsByUserAndStatus(
+  //       userId,
+  //       status,
+  //     );
+  //   } else {
+  //     appointments = await this.visitsService.findAppointmentsByUser(userId);
+  //   }
+  //   if (appointments.length === 0) {
+  //     throw new NotFoundException(
+  //       `No se encontraron citas para el usuario con ID ${userId}${status ? ` y estado "${status}"` : ''}.`,
+  //     );
+  //   }
+
+  //   return appointments;
+  // }
 
   @ApiOperation({
     summary: 'Get all available visits (All authenticated users)',
@@ -277,10 +395,24 @@ export class VisitsController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'Unauthorized. Invalid or missing JWT token.',
   })
+  @ApiQuery({
+    name: 'page',
+    type: Number,
+    description: 'Page number. Default is 1.',
+    required: false,
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    description: 'Number of visits per page. Default is 5.',
+    required: false,
+    example: 5,
+  })
   @UseGuards(AuthGuard)
   @Get()
-  async findAll() {
-    return this.visitsService.findAllVisits();
+  async findAll(@Query('page') page = '1', @Query('limit') limit = '5') {
+    return this.visitsService.findAllVisitsPaginated(+page, +limit);
   }
 
   @ApiOperation({

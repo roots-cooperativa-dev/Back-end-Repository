@@ -191,4 +191,47 @@ export class MailService {
       context,
     );
   }
+  async sendOrderProcessingNotification(
+    userEmail: string,
+    userName: string,
+    orderId: string,
+  ): Promise<void> {
+    const subject = 'Tu Orden Está en Proceso';
+    const textAlt = `Hola ${userName},\n\nTu orden #${orderId} está siendo procesada. Te avisaremos cuando esté lista para retiro o envío.\n\nSaludos,\nROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      orderId,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      userEmail,
+      subject,
+      textAlt,
+      'order-processing.html',
+      context,
+    );
+  }
+  async sendUserDataChangedNotification(
+    userEmail: string,
+    userName: string,
+  ): Promise<void> {
+    const subject = 'Tus Datos Personales Han Sido Modificados';
+    const textAlt = `Hola ${userName},\n\nSe han modificado los datos de tu cuenta.\n\nSi no fuiste vos, contactá al equipo de soporte inmediatamente.\n\nROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      appName: 'ROOTS COOPERATIVA',
+      supportLink: 'https://frontend-rootscoop.vercel.app/contact',
+    };
+
+    await this.sendMail(
+      userEmail,
+      subject,
+      textAlt,
+      'data-changed.html',
+      context,
+    );
+  }
 }

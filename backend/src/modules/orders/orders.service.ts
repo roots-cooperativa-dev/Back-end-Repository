@@ -17,6 +17,7 @@ import { Cart } from './entities/cart.entity';
 import { CartItem } from './entities/cartItem.entity';
 import { UpdateCartItemDTO } from './DTO/updateCartItem.dto';
 import { AddToCartDTO } from './DTO/addToCart.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class OrdersService {
@@ -43,6 +44,7 @@ export class OrdersService {
     private readonly cartItemRepository: Repository<CartItem>,
 
     private dataSource: DataSource,
+    private readonly mailService: MailService,
   ) {}
   async getUserOrders(
     userId: string,
@@ -469,6 +471,15 @@ export class OrdersService {
       await queryRunner.manager.save(cart);
 
       await queryRunner.commitTransaction();
+      try {
+        await this.mailService.sendOrderProcessingNotification(
+          cart.user.email,
+          cart.user.name,
+          savedOrder.id,
+        );
+      } catch (emailError) {
+        console.error('Error sending order processing email:', emailError);
+      }
       return this.getOrderById(savedOrder.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
