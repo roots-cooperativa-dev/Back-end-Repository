@@ -54,18 +54,19 @@ export class MercadoPagoService {
         {
           id: `donation-${user.id}`,
           title: 'Donacion a ROOTS',
+          description: dto.message || 'Voluntary donation',
           quantity: 1,
           currency_id: 'ARS',
           unit_price: dto.amount,
         },
       ],
       back_urls: {
-        success: 'https://tusitio.com/success',
-        failure: 'https://tusitio.com/failure',
-        pending: 'https://tusitio.com/pending',
+        success: `${this.configService.get<string>('FRONTEND_MP_URL')}/success`,
+        failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/failure`,
+        pending: `${this.configService.get<string>('FRONTEND_MP_URL')}/pending`,
       },
       auto_return: 'approved',
-      notification_url: `https://478894fecc70.ngrok-free.app/payments/webhook`,
+      notification_url: `${this.configService.get<string>('BACKEND_MP_URL')}/payments/webhook`,
       external_reference: user.id,
     };
 
