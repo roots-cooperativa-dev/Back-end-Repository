@@ -103,6 +103,7 @@ export class AuthsService {
       username,
       password: randomPassword,
       phone: 0,
+      address: 'calle falsa 123',
       isAdmin: false,
       isDonator: false,
     });
