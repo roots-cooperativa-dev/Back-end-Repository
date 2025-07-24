@@ -10,24 +10,10 @@ import {
   PreferenceResponseDto,
 } from './dto/create-payment.dto';
 import {
+  isMercadoPagoError,
   MercadoPagoPaymentInfo,
   WebhookNotificationDto,
 } from './interface/patment.interface';
-
-// Interface para tipar mejor los errores de MercadoPago
-interface MercadoPagoError extends Error {
-  message: string;
-  response?: {
-    data: unknown;
-    status?: number;
-  };
-  status?: number;
-}
-
-// Type guard para verificar si es un error de MercadoPago
-function isMercadoPagoError(error: unknown): error is MercadoPagoError {
-  return error instanceof Error && ('response' in error || 'status' in error);
-}
 
 @Injectable()
 export class MercadoPagoService {
@@ -133,9 +119,23 @@ export class MercadoPagoService {
         const paymentId = notif.data.id;
         this.logger.log(`Processing payment webhook for ID: ${paymentId}`);
 
+        // Primer delay inicial
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        return await this.getPaymentInfo(paymentId);
+        const paymentInfo = await this.getPaymentInfoWithRetry(
+          paymentId,
+          6,
+          3000,
+        );
+
+        if (!paymentInfo) {
+          this.logger.warn(
+            `❌ Payment info for ID ${paymentId} could not be retrieved after retries.`,
+          );
+          return null;
+        }
+
+        return paymentInfo;
       }
 
       this.logger.log(`Ignoring webhook of type: ${notif.type}`);
@@ -183,9 +183,23 @@ export class MercadoPagoService {
       if (error instanceof Error) {
         errorMessage = error.message;
         this.logger.error(`MercadoPago API Error: ${error.message}`);
+      } else {
+        // Para objetos de error, usar JSON.stringify para obtener el contenido
+        errorMessage = JSON.stringify(error);
+        this.logger.error(
+          `MercadoPago API Error (Object): ${JSON.stringify(error)}`,
+        );
       }
 
       if (isMercadoPagoError(error)) {
+        const responseData = error.response?.data as { message?: string };
+
+        if (responseData?.message === 'payment not found') {
+          this.logger.warn(
+            `Payment not found for ID: ${paymentId} (may be a delay in MP processing)`,
+          );
+        }
+
         if (error.response?.data) {
           this.logger.error(
             `MercadoPago API Response: ${JSON.stringify(error.response.data)}`,
@@ -203,5 +217,43 @@ export class MercadoPagoService {
         `Failed to fetch payment information: ${errorMessage}`,
       );
     }
+  }
+
+  private async getPaymentInfoWithRetry(
+    paymentId: string,
+    maxRetries: number = 3,
+    delayMs: number = 2000,
+  ): Promise<MercadoPagoPaymentInfo | null> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        this.logger.log(
+          `Fetching payment info for ID: ${paymentId} (attempt ${attempt}/${maxRetries})`,
+        );
+        return await this.getPaymentInfo(paymentId);
+      } catch (error) {
+        const isPaymentNotFound =
+          error instanceof BadRequestException &&
+          error.message.includes('Failed to fetch payment information');
+
+        if (isPaymentNotFound && attempt < maxRetries) {
+          this.logger.warn(
+            `Payment info not found on attempt ${attempt}/${maxRetries}, retrying in ${delayMs}ms...`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+          continue;
+        }
+
+        if (isPaymentNotFound) {
+          this.logger.warn(
+            `Payment info not available after ${maxRetries} retries. Skipping.`,
+          );
+          return null;
+        }
+
+        throw error;
+      }
+    }
+
+    return null;
   }
 }

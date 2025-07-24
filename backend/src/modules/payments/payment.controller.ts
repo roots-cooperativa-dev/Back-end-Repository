@@ -218,7 +218,6 @@ export class PaymentsController {
       this.logger.error(`❌ Webhook handler error: ${errorMessage}`);
       this.logger.log('=== WEBHOOK DEBUG END - ERROR ===');
 
-      // Siempre devolver 200 para que MercadoPago no reintente
       return { status: 'error', message: errorMessage };
     }
   }
