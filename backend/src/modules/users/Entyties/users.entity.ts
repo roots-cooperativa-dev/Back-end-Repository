@@ -35,11 +35,11 @@ export class Users {
   @Column({ type: 'varchar', length: 255, nullable: false })
   password: string;
 
-  @Column({ type: 'bigint', length: 255, nullable: false })
+  @Column({ type: 'bigint', nullable: false })
   phone: number;
 
   @Column({ type: 'varchar', nullable: false })
-  adress: string;
+  address: string;
 
   @Column({ type: 'boolean', default: false })
   isAdmin: boolean;

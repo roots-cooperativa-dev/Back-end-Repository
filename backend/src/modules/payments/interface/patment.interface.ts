@@ -43,6 +43,19 @@ export interface PaymentCompletedEvent {
   dateApproved: string;
 }
 
+export interface MercadoPagoError extends Error {
+  message: string;
+  response?: {
+    data: unknown;
+    status?: number;
+  };
+  status?: number;
+}
+
+export function isMercadoPagoError(error: unknown): error is MercadoPagoError {
+  return error instanceof Error && ('response' in error || 'status' in error);
+}
+
 export interface IPaymentService {
   createPreference(
     userId: string,

@@ -6,7 +6,7 @@ export interface IUserResponseDto {
   email: string;
   birthdate: Date;
   phone: number;
-  adress: string;
+  address: string;
   username: string;
   isAdmin?: boolean;
   isDonator?: boolean;
@@ -34,7 +34,7 @@ export class ResponseUserDto {
       email: user.email,
       birthdate: user.birthdate,
       phone: user.phone,
-      adress: user.adress,
+      address: user.address,
       username: user.username,
       isAdmin: user.isAdmin,
       isDonator: user.isDonator,
