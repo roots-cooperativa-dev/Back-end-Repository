@@ -15,6 +15,8 @@ import { MercadoPagoService } from './mercadopago.service';
 @Injectable()
 export class PaymentsService implements IPaymentService {
   private readonly logger = new Logger(PaymentsService.name);
+  private processedWebhooks = new Set<string>();
+  private readonly WEBHOOK_TTL = 60000;
 
   constructor(
     private readonly mercadoPagoService: MercadoPagoService,
@@ -29,9 +31,9 @@ export class PaymentsService implements IPaymentService {
       this.logger.log(`Creating payment preference for user: ${userId}`);
       return await this.mercadoPagoService.createPreference(userId, dto);
     } catch (error) {
-      this.logger.error(
-        `Error creating preference: ${(error as Error).message || error}`,
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error creating preference: ${errorMessage}`);
       throw error;
     }
   }
@@ -41,9 +43,9 @@ export class PaymentsService implements IPaymentService {
       this.logger.log(`Getting payment status for: ${paymentId}`);
       return await this.mercadoPagoService.getPaymentStatus(paymentId);
     } catch (error) {
-      this.logger.error(
-        `Error getting payment status: ${(error as Error).message || error}`,
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      this.logger.error(`Error getting payment status: ${errorMessage}`);
       throw error;
     }
   }
@@ -51,6 +53,20 @@ export class PaymentsService implements IPaymentService {
   async handleWebhook(notification: WebhookNotificationDto): Promise<void> {
     try {
       this.logger.log(`Processing webhook notification`);
+
+      const webhookKey = `${notification.type}_${notification.data?.id}_${notification.id}`;
+
+      if (this.processedWebhooks.has(webhookKey)) {
+        this.logger.log(`Webhook ${webhookKey} already processed, skipping`);
+        return;
+      }
+
+      this.processedWebhooks.add(webhookKey);
+
+      setTimeout(() => {
+        this.processedWebhooks.delete(webhookKey);
+      }, this.WEBHOOK_TTL);
+
       this.logger.debug(
         `Webhook type: ${notification.type}, ID: ${notification.data?.id}`,
       );
@@ -86,8 +102,13 @@ export class PaymentsService implements IPaymentService {
         );
       }
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+
       this.logger.error(
-        `❌ Error processing webhook: ${(error as Error).message || error}`,
+        `❌ Error processing webhook: ${errorMessage}`,
+        errorStack,
       );
     }
   }

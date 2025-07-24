@@ -1,10 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsString,
   Min,
+  ValidateNested,
 } from 'class-validator';
 
 export class CreatePreferenceDto {
@@ -73,4 +75,44 @@ export class PreferenceResponseDto {
 
   @ApiProperty({ description: 'Sandbox init point URL' })
   sandboxInitPoint: string;
+}
+
+class WebhookDataDto {
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+}
+
+export class WebhookNotificationDto {
+  @IsNumber()
+  id: number;
+
+  @IsString()
+  @IsNotEmpty()
+  type: string;
+
+  @ValidateNested()
+  @Type(() => WebhookDataDto)
+  data: WebhookDataDto;
+
+  @IsOptional()
+  live_mode?: boolean;
+
+  @IsOptional()
+  date_created?: string;
+
+  @IsOptional()
+  application_id?: number;
+
+  @IsOptional()
+  user_id?: string;
+
+  @IsOptional()
+  version?: number;
+
+  @IsOptional()
+  api_version?: string;
+
+  @IsOptional()
+  action?: string;
 }

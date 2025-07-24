@@ -36,6 +36,7 @@ export class Users {
   password: string;
 
   @Column({ type: 'bigint', nullable: false })
+  @Column({ type: 'bigint', nullable: false })
   phone: number;
 
   @Column({ type: 'varchar', nullable: true })
