@@ -146,7 +146,7 @@ export class AuthsService {
   private validateGoogleUser(googleUser: GoogleUser): void {
     if (!googleUser.email) {
       throw new BadRequestException(
-        'Email requerido para autenticación con Google',
+        'Email required for authentication with Google',
       );
     }
   }
@@ -159,7 +159,7 @@ export class AuthsService {
       })
       .catch((error) => {
         this.logger.error(
-          `Error al enviar correo de bienvenida a ${email}:`,
+          `Error sending welcome email to ${email}:`,
           error instanceof Error ? error.message : String(error),
         );
       });
@@ -173,7 +173,7 @@ export class AuthsService {
       })
       .catch((error) => {
         this.logger.error(
-          `Error al enviar correo de notificación de login a ${email}:`,
+          `Login notification email sent to ${email}:`,
           error instanceof Error ? error.message : String(error),
         );
       });
@@ -188,12 +188,12 @@ export class AuthsService {
     if (isNewUser) {
       this.sendWelcomeEmailAsync(user.email, displayName);
       this.logger.log(
-        `Procesando correo de bienvenida (Google) para ${user.email} (nuevo usuario)`,
+        `Processing welcome email (Google) for ${user.email} (new user)`,
       );
     } else {
       this.sendLoginNotificationAsync(user.email, displayName);
       this.logger.log(
-        `Procesando correo de notificación de login (Google) para ${user.email} (usuario existente)`,
+        `Processing login notification email (Google) for ${user.email} (existing user)`,
       );
     }
   }

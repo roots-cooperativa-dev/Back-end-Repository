@@ -11,7 +11,7 @@ export class AuthValidations {
 
   static validateCredentials(email: string, password: string): void {
     if (!email || !password) {
-      throw new BadRequestException('Email y contraseña son requeridos');
+      throw new BadRequestException('Email and password are required');
     }
   }
 
@@ -20,11 +20,11 @@ export class AuthValidations {
     confirmPassword: string,
   ): void {
     if (!password || !confirmPassword) {
-      throw new BadRequestException('Debe proporcionar ambas contraseñas');
+      throw new BadRequestException('You must provide both passwords');
     }
 
     if (password !== confirmPassword) {
-      throw new BadRequestException('Las contraseñas no coinciden');
+      throw new BadRequestException('Passwords do not match');
     }
   }
 
@@ -46,15 +46,15 @@ export class AuthValidations {
       'code' in error &&
       (error as { code?: unknown }).code === '23505'
     ) {
-      throw new BadRequestException('El email o username ya existe');
+      throw new BadRequestException('The email or username already exists');
     }
 
-    throw new InternalServerErrorException('Error al registrar usuario');
+    throw new InternalServerErrorException('Error registering user');
   }
 
   static validateUserExists(user: any): asserts user is IUserAuthResponse {
     if (!user) {
-      throw new UnauthorizedException('Credenciales inválidas');
+      throw new UnauthorizedException('Invalid credencials');
     }
   }
 
@@ -62,7 +62,7 @@ export class AuthValidations {
     user: IUserAuthResponse & { password?: string },
   ): asserts user is IUserAuthResponse & { password: string } {
     if (!user.password) {
-      throw new UnauthorizedException('Credenciales inválidas');
+      throw new UnauthorizedException('Invalids credentials');
     }
   }
 
@@ -72,7 +72,7 @@ export class AuthValidations {
   ): Promise<void> {
     const isValidPassword = await bcrypt.compare(inputPassword, hashedPassword);
     if (!isValidPassword) {
-      throw new UnauthorizedException('Credenciales inválidas');
+      throw new UnauthorizedException('Invalids credentials');
     }
   }
 
@@ -83,12 +83,12 @@ export class AuthValidations {
   static validateGoogleUser(googleUser: GoogleUser): void {
     if (!googleUser.email) {
       throw new BadRequestException(
-        'Email requerido para autenticación con Google',
+        'Email required for authentication with Google',
       );
     }
   }
 
   static getUserDisplayName(user: IUserAuthResponse): string {
-    return user.name || user.username || 'Usuario';
+    return user.name || user.username || 'User';
   }
 }

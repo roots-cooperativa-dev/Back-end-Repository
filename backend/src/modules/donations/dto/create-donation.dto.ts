@@ -45,55 +45,55 @@ export enum PaymentStatusDetail {
 
 export class CreateDonateDto {
   @ApiProperty({
-    description: 'ID del pago en MercadoPago',
+    description: 'Payment ID in MercadoPago',
     example: '123456789',
   })
   @IsString()
   @IsNotEmpty()
   @Length(1, 50)
-  @Matches(/^[0-9]+$/, { message: 'pagoId debe contener solo números' })
+  @Matches(/^[0-9]+$/, { message: 'paymentId must contain only numbers' })
   pagoId: string;
 
   @ApiProperty({
     enum: PaymentStatus,
-    description: 'Estado del pago',
+    description: 'payment state',
   })
   @IsEnum(PaymentStatus)
   status: PaymentStatus;
 
   @ApiProperty({
     enum: PaymentStatusDetail,
-    description: 'Detalle del estado del pago',
+    description: 'payment detail state',
   })
   @IsEnum(PaymentStatusDetail)
   statusDetail: PaymentStatusDetail;
 
   @ApiProperty({
-    description: 'Monto de la donación',
+    description: 'donation amount',
     example: 1000,
     minimum: 0.01,
     maximum: 1000000,
   })
   @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0.01, { message: 'El monto debe ser mayor a 0.01' })
-  @Max(1000000, { message: 'El monto no puede exceder 1,000,000' })
+  @Min(0.01, { message: 'The amount must be greater than 0.01' })
+  @Max(1000000, { message: 'The amount cannot exceed 1,000,000' })
   amount: number;
 
   @ApiProperty({
-    description: 'ID de la moneda',
+    description: 'Currency ID',
     example: 'ARS',
   })
   @IsString()
   @IsNotEmpty()
-  @Length(3, 3, { message: 'currencyId debe tener exactamente 3 caracteres' })
+  @Length(3, 3, { message: 'currencyId must be exactly 3 characters long' })
   @Matches(/^[A-Z]{3}$/, {
-    message: 'currencyId debe ser un código ISO válido (ej: ARS, USD)',
+    message: 'currencyId must be a valid ISO code (e.g. ARS, USD)',
   })
   currencyId: string;
 
   @ApiProperty({
     required: false,
-    description: 'Tipo de pago (credit_card, debit_card, etc.)',
+    description: 'Payment type (credit_card, debit_card, etc.)',
   })
   @IsOptional()
   @IsString()
@@ -102,7 +102,7 @@ export class CreateDonateDto {
 
   @ApiProperty({
     required: false,
-    description: 'Método de pago específico',
+    description: 'Specific payment method',
   })
   @IsOptional()
   @IsString()
@@ -113,7 +113,7 @@ export class CreateDonateDto {
     required: false,
     type: String,
     format: 'date-time',
-    description: 'Fecha de aprobación del pago',
+    description: 'Payment approval date',
   })
   @IsOptional()
   @IsDateString()

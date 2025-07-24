@@ -36,8 +36,8 @@ export class DonationsService {
       });
 
       if (!user) {
-        this.logger.warn(`Usuario no encontrado: ${userId}`);
-        throw new NotFoundException('Usuario no encontrado');
+        this.logger.warn(`User not Found: ${userId}`);
+        throw new NotFoundException('User not Found');
       }
 
       const existing = await this.donateRepository.findOne({
@@ -45,12 +45,12 @@ export class DonationsService {
       });
 
       if (existing) {
-        this.logger.warn(`Pago duplicado detectado: ${dto.pagoId}`);
-        throw new ConflictException('Este pago ya fue procesado');
+        this.logger.warn(`Duplicate payment detected: ${dto.pagoId}`);
+        throw new ConflictException('This payment has already been processed');
       }
 
       if (dto.amount <= 0) {
-        throw new BadRequestException('El monto debe ser mayor a 0');
+        throw new BadRequestException('The amount must be greater than 0');
       }
 
       const donate = this.donateRepository.create({
@@ -70,10 +70,10 @@ export class DonationsService {
       if (dto.status === PaymentStatus.APPROVED && !user.isDonator) {
         user.isDonator = true;
         await this.userRepository.save(user);
-        this.logger.log(`Usuario ${userId} marcado como donador`);
+        this.logger.log(`User ${userId} marked as donor`);
       }
 
-      this.logger.log(`Donación creada exitosamente: ${saved.id}`);
+      this.logger.log(`Donation created successfully: ${saved.id}`);
       return ResponseDonateDto.toDTO(saved);
     } catch (error) {
       if (
@@ -86,14 +86,14 @@ export class DonationsService {
 
       if (error instanceof QueryFailedError) {
         this.logger.error(
-          'Error de base de datos al crear donación:',
+          'Database error when creating donation:',
           error.message,
         );
-        throw new InternalServerErrorException('Error al guardar la donación');
+        throw new InternalServerErrorException('Error saving donation');
       }
 
-      this.logger.error('Error inesperado al crear donación:', error);
-      throw new InternalServerErrorException('Error interno del servidor');
+      this.logger.error('Unexpected error creating donation:', error);
+      throw new InternalServerErrorException('Internal Server Error');
     }
   }
 
@@ -101,7 +101,7 @@ export class DonationsService {
     try {
       if (page !== undefined && (!Number.isInteger(page) || page < 1)) {
         throw new BadRequestException(
-          'Page debe ser un entero positivo desde 1',
+          'Page must be a positive integer starting from 1',
         );
       }
 
@@ -109,7 +109,9 @@ export class DonationsService {
         limit !== undefined &&
         (!Number.isInteger(limit) || limit < 1 || limit > 100)
       ) {
-        throw new BadRequestException('Limit debe ser un entero entre 1 y 100');
+        throw new BadRequestException(
+          'Limit must be an integer between 1 and 100',
+        );
       }
 
       const options: FindManyOptions<Donate> = {
@@ -124,7 +126,7 @@ export class DonationsService {
 
       const donations = await this.donateRepository.find(options);
 
-      this.logger.log(`Recuperadas ${donations.length} donaciones`);
+      this.logger.log(`Recovered ${donations.length} donations`);
       return ResponseDonateDto.toDTOList(donations);
     } catch (error) {
       if (error instanceof BadRequestException) {
@@ -133,14 +135,14 @@ export class DonationsService {
 
       if (error instanceof QueryFailedError) {
         this.logger.error(
-          'Error de base de datos al recuperar donaciones:',
+          'Database error retrieving donations:',
           error.message,
         );
-        throw new InternalServerErrorException('Error al recuperar donaciones');
+        throw new InternalServerErrorException('Error retrieving donations');
       }
 
-      this.logger.error('Error inesperado al recuperar donaciones:', error);
-      throw new InternalServerErrorException('Error interno del servidor');
+      this.logger.error('Unexpected error retrieving donations:', error);
+      throw new InternalServerErrorException('Internal Server Error');
     }
   }
 
@@ -151,7 +153,7 @@ export class DonationsService {
 
       if (!uuidRegex.test(id)) {
         throw new BadRequestException(
-          'Formato de ID inválido. Debe ser un UUID válido',
+          'Invalid ID format. Must be a valid UUID',
         );
       }
 
@@ -161,7 +163,7 @@ export class DonationsService {
       });
 
       if (!donation) {
-        throw new NotFoundException(`Donación con ID ${id} no encontrada`);
+        throw new NotFoundException(`Donation with ID ${id} not found`);
       }
 
       return ResponseDonateDto.toDTO(donation);
@@ -174,17 +176,12 @@ export class DonationsService {
       }
 
       if (error instanceof QueryFailedError) {
-        this.logger.error(
-          'Error de base de datos al recuperar donación:',
-          error.message,
-        );
-        throw new InternalServerErrorException(
-          'Error al recuperar la donación',
-        );
+        this.logger.error('Database error retrieving donation:', error.message);
+        throw new InternalServerErrorException('Error retrieving donation');
       }
 
-      this.logger.error('Error inesperado al recuperar donación:', error);
-      throw new InternalServerErrorException('Error interno del servidor');
+      this.logger.error('Unexpected error retrieving donation:', error);
+      throw new InternalServerErrorException('Internal Server Error');
     }
   }
 }
