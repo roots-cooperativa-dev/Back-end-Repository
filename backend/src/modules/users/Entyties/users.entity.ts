@@ -54,7 +54,7 @@ export class Users {
   @UpdateDateColumn()
   updatedAt?: Date;
 
-  @DeleteDateColumn({ name: 'deleted_at', select: false })
+  @DeleteDateColumn({ name: 'deleted_at', select: false, nullable: true })
   deletedAt: Date | null;
 
   @OneToMany(() => Donate, (donate) => donate.user)
