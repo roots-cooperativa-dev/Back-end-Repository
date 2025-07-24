@@ -5,6 +5,7 @@ import { Appointment } from 'src/modules/visits/entities/appointment.entity';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   OneToMany,
   OneToOne,
@@ -34,8 +35,11 @@ export class Users {
   @Column({ type: 'varchar', length: 255, nullable: false })
   password: string;
 
-  @Column({ type: 'bigint' })
+  @Column({ type: 'bigint', length: 255, nullable: false })
   phone: number;
+
+  @Column({ type: 'varchar', nullable: false })
+  adress: string;
 
   @Column({ type: 'boolean', default: false })
   isAdmin: boolean;
@@ -48,6 +52,9 @@ export class Users {
 
   @UpdateDateColumn()
   updatedAt?: Date;
+
+  @DeleteDateColumn({ name: 'deleted_at', select: false })
+  deletedAt: Date | null;
 
   @OneToMany(() => Donate, (donate) => donate.user)
   donates: Donate[];
