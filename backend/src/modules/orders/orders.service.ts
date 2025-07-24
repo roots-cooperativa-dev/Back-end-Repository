@@ -427,7 +427,7 @@ export class OrdersService {
           );
         }
 
-        orderTotal += cartItem.subtotal;
+        orderTotal += Number(cartItem.subtotal);
 
         const product = await queryRunner.manager.findOne(Product, {
           where: { id: cartItem.product.id },
@@ -446,6 +446,16 @@ export class OrdersService {
 
         productSize.stock -= cartItem.quantity;
         await queryRunner.manager.save(productSize);
+
+        const sizes = await queryRunner.manager.find(Product_size, {
+          where: { product: { id: cartItem.product.id } },
+        });
+
+        const totalStock = sizes.reduce((sum, size) => sum + size.stock, 0);
+
+        await queryRunner.manager.update(Product, cartItem.product.id, {
+          isActive: totalStock > 0,
+        });
       }
 
       const newOrder = queryRunner.manager.create(Order, {

@@ -1,13 +1,14 @@
 import {
   IsArray,
   IsNotEmpty,
+  IsOptional,
   IsString,
   IsUUID,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateProductSizeDTO } from './CreateProductSize.dto';
-import { ApiProperty, PartialType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateProductDTO {
   @ApiProperty({ example: 'Remera Edición Limitada' })
@@ -36,4 +37,26 @@ export class CreateProductDTO {
   file_Ids: string[];
 }
 
-export class UpdateProductDTO extends PartialType(CreateProductDTO) {}
+export class UpdateProductDTO {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  details?: string;
+
+  @IsOptional()
+  @IsUUID()
+  category_Id?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID()
+  file_Ids: string[];
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateProductSizeDTO)
+  sizes?: CreateProductSizeDTO[];
+}
