@@ -40,6 +40,7 @@ export class CategoryService {
       const pages = Math.ceil(total / limit);
 
       return { categories, total, pages };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new InternalServerErrorException('Failed to fetch categories');
     }
