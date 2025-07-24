@@ -90,6 +90,7 @@ export class ProductsService {
       await this.productSizeRepository.save(sizesToSave);
 
       return this.getProductById(savedProduct.id);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new InternalServerErrorException('Error creating product');
     }
@@ -102,7 +103,7 @@ export class ProductsService {
     maxPrice?: number,
     categoryId?: string,
     name?: string,
-  ): Promise<Product[]> {
+  ): Promise<{ products: Product[]; total: number; pages: number }> {
     try {
       const skip = (page - 1) * limit;
 
@@ -138,9 +139,14 @@ export class ProductsService {
       queryBuilder.skip(skip);
       queryBuilder.take(limit);
 
-      queryBuilder.orderBy('product.name', 'ASC');
+      queryBuilder.skip(skip).take(limit).orderBy('product.name', 'ASC');
 
-      return await queryBuilder.getMany();
+      const [products, total] = await queryBuilder.getManyAndCount();
+
+      const pages = Math.ceil(total / limit);
+
+      return { products, total, pages };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new InternalServerErrorException(
         'Error retrieving products with filters',
@@ -193,13 +199,30 @@ export class ProductsService {
       await this.productRepository.save(product);
 
       if (data.sizes) {
-        await this.productSizeRepository.delete({ product: { id } });
-        const newSizes = data.sizes.map((size) =>
-          this.productSizeRepository.create({ ...size, product }),
-        );
-        await this.productSizeRepository.save(newSizes);
+        for (const sizeData of data.sizes) {
+          const existingSize = sizeData.id
+            ? await this.productSizeRepository.findOne({
+                where: { id: sizeData.id, product: { id } },
+              })
+            : await this.productSizeRepository.findOne({
+                where: { size: sizeData.size, product: { id } },
+              });
+
+          if (existingSize) {
+            existingSize.price = sizeData.price;
+            existingSize.stock = sizeData.stock;
+            await this.productSizeRepository.save(existingSize);
+          } else {
+            const newSize = this.productSizeRepository.create({
+              ...sizeData,
+              product,
+            });
+            await this.productSizeRepository.save(newSize);
+          }
+        }
       }
       return this.getProductById(id);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new InternalServerErrorException(`Error updating product ${id}`);
     }
@@ -214,6 +237,7 @@ export class ProductsService {
       }
 
       return { message: `Product ${id} successfully removed.` };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new InternalServerErrorException(`Error deleting product ${id}`);
     }
@@ -227,6 +251,7 @@ export class ProductsService {
       }
 
       return { message: `Product ${id} restored.` };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new InternalServerErrorException(`Failed to restore product ${id}`);
     }

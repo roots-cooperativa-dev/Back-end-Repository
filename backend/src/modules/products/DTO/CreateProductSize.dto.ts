@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNumber, IsPositive } from 'class-validator';
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsPositive,
+  IsUUID,
+} from 'class-validator';
 
 export enum SizeEnum {
   S = 'S',
@@ -9,6 +15,11 @@ export enum SizeEnum {
 }
 
 export class CreateProductSizeDTO {
+  @ApiProperty({ example: 'uuid-optional-id', required: false })
+  @IsOptional()
+  @IsUUID()
+  id?: string;
+
   @ApiProperty({ enum: SizeEnum })
   @IsEnum(SizeEnum)
   size: SizeEnum;
