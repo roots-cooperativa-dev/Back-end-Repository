@@ -128,6 +128,7 @@ export class AuthsService {
         name: user.name,
         email: user.email,
         birthdate: user.birthdate,
+        address: user.address,
         username: user.username,
         phone: user.phone,
       },
