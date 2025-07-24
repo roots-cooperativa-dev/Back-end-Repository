@@ -1,3 +1,4 @@
+// payments.service.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -15,6 +16,8 @@ import { MercadoPagoService } from './mercadopago.service';
 @Injectable()
 export class PaymentsService implements IPaymentService {
   private readonly logger = new Logger(PaymentsService.name);
+  private processedWebhooks = new Set<string>();
+  private readonly WEBHOOK_TTL = 60000;
 
   constructor(
     private readonly mercadoPagoService: MercadoPagoService,
@@ -25,37 +28,35 @@ export class PaymentsService implements IPaymentService {
     userId: string,
     dto: CreatePreferenceDto,
   ): Promise<PreferenceResponseDto> {
-    try {
-      this.logger.log(`Creating payment preference for user: ${userId}`);
-      return await this.mercadoPagoService.createPreference(userId, dto);
-    } catch (error) {
-      this.logger.error(
-        `Error creating preference: ${(error as Error).message || error}`,
-      );
-      throw error;
-    }
+    return this.mercadoPagoService.createPreference(userId, dto);
   }
 
   async getPaymentStatus(paymentId: string): Promise<PaymentStatusDto> {
-    try {
-      this.logger.log(`Getting payment status for: ${paymentId}`);
-      return await this.mercadoPagoService.getPaymentStatus(paymentId);
-    } catch (error) {
-      this.logger.error(
-        `Error getting payment status: ${(error as Error).message || error}`,
-      );
-      throw error;
-    }
+    return this.mercadoPagoService.getPaymentStatus(paymentId);
   }
 
   async handleWebhook(notification: WebhookNotificationDto): Promise<void> {
-    try {
-      this.logger.log(`Processing webhook: ${JSON.stringify(notification)}`);
+    const webhookKey = `${notification.type}_${notification.data?.id}_${notification.id}`;
+    if (this.processedWebhooks.has(webhookKey)) {
+      // Duplicado, ignorar
+      return;
+    }
+    this.processedWebhooks.add(webhookKey);
+    setTimeout(
+      () => this.processedWebhooks.delete(webhookKey),
+      this.WEBHOOK_TTL,
+    );
 
+    try {
       const paymentInfo =
         await this.mercadoPagoService.processWebhook(notification);
 
-      if (paymentInfo && paymentInfo.status === 'approved') {
+      if (paymentInfo?.status === 'approved') {
+        if (!paymentInfo.external_reference) {
+          this.logger.error('Payment approved but no external_reference found');
+          return;
+        }
+
         const event: PaymentCompletedEvent = {
           paymentId: paymentInfo.id.toString(),
           userId: paymentInfo.external_reference,
@@ -73,11 +74,14 @@ export class PaymentsService implements IPaymentService {
           `Payment completed event emitted for payment: ${paymentInfo.id}`,
         );
       }
+      // En caso de otros estados no hacemos nada
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(
-        `Error processing webhook: ${(error as Error).message || error}`,
+        `Error processing webhook: ${message}`,
+        error instanceof Error ? error.stack : undefined,
       );
-      throw error;
+      // No propagamos para evitar que el webhook falle HTTP 500
     }
   }
 }

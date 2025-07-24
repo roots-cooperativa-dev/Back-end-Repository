@@ -31,7 +31,7 @@ export class AuthExceptionFilter implements ExceptionFilter {
     const errorMessage =
       exception instanceof HttpException
         ? exception.message
-        : 'Error de autenticación';
+        : 'Authentication Error';
 
     response.redirect(
       `${frontendUrl}/auth/error?message=${encodeURIComponent(errorMessage)}`,

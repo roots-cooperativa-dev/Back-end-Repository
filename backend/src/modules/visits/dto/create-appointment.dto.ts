@@ -32,6 +32,14 @@ export class CreateAppointmentDto {
   numberOfPeople?: number;
 
   @ApiProperty({
+    description: 'Optional description of the reason for the visit.',
+    example: 'I want to learn more about the donation program.',
+    required: true,
+  })
+  @IsString()
+  description?: string;
+
+  @ApiProperty({
     description:
       'Unique ID of the user scheduling the appointment. (Automatically obtained from the JWT token and optional in the request body.)',
     example: 'f9e8d7c6-b5a4-3210-fedc-ba9876543210',

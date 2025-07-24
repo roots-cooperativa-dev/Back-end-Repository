@@ -30,7 +30,7 @@ export class RoleGuard extends AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthRequest>();
 
     if (roles.includes('admin') && !request.user.isAdmin) {
-      throw new ForbiddenException('Acceso restringido a administradores');
+      throw new ForbiddenException('Access restricted to administrators');
     }
 
     return true;

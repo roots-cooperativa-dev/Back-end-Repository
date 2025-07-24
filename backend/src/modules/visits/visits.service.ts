@@ -33,13 +33,17 @@ export class VisitsService {
     const newVisit = this.visitsRepository.create(createVisitDto);
     return this.visitsRepository.save(newVisit);
   }
+  async findAllVisitsPaginated(page = 1, limit = 5): Promise<Visit[]> {
+    const skip = (page - 1) * limit;
 
-  async findAllVisits(): Promise<Visit[]> {
     const visits = await this.visitsRepository.find({
+      skip,
+      take: limit,
       relations: ['availableSlots'],
     });
+
     if (visits.length === 0) {
-      throw new NotFoundException(`No visits yet.`);
+      throw new NotFoundException('No visits found for this page.');
     }
 
     return visits;
@@ -211,6 +215,7 @@ export class VisitsService {
       numberOfPeople: numberOfPeople,
       status: AppointmentStatus.PENDING,
       bookedAt: new Date(),
+      description: createAppointmentDto.description,
     });
 
     const savedAppointment =
@@ -218,6 +223,16 @@ export class VisitsService {
     visitSlot.currentAppointmentsCount += numberOfPeople;
     await this.visitSlotsRepository.save(visitSlot);
     const user = await this.usersRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException(`Usuario con ID ${userId} no encontrado.`);
+    }
+
+    if (!user.phone || (!user.name && !user.username)) {
+      throw new BadRequestException(
+        'Tu perfil está incompleto. Por favor completa tu dirección, número de teléfono y nombre para agendar una cita.',
+      );
+    }
 
     const visitDate =
       typeof visitSlot.date === 'string'
@@ -240,79 +255,6 @@ export class VisitsService {
 
     return savedAppointment;
   }
-
-  // async createAppointment(
-  //   createAppointmentDto: CreateAppointmentDto,
-  // ): Promise<Appointment> {
-  //   const { visitSlotId, userId, numberOfPeople } = createAppointmentDto;
-
-  //   if (!userId) {
-  //     throw new BadRequestException(
-  //       'User ID is not available to create the appointment.',
-  //     );
-  //   }
-  //   if (!numberOfPeople || numberOfPeople <= 0) {
-  //     throw new BadRequestException('The number of people must be at least 1.');
-  //   }
-
-  //   const visitSlot = await this.visitSlotsRepository.findOne({
-  //     where: { id: visitSlotId },
-  //     relations: ['visit'],
-  //   });
-
-  //   if (!visitSlot) {
-  //     throw new NotFoundException(
-  //       `Visit slot with ID ${visitSlotId} not found.`,
-  //     );
-  //   }
-
-  //   const pendingAndApprovedAppointments =
-  //     await this.appointmentsRepository.find({
-  //       where: {
-  //         visitSlotId: visitSlot.id,
-  //         status: In([AppointmentStatus.PENDING, AppointmentStatus.APPROVED]),
-  //       },
-  //       select: ['numberOfPeople'],
-  //     });
-
-  //   const currentBookedPeople = pendingAndApprovedAppointments.reduce(
-  //     (sum, appt) => sum + appt.numberOfPeople,
-  //     0,
-  //   );
-  //   if (currentBookedPeople + numberOfPeople > visitSlot.maxAppointments) {
-  //     const remainingCapacity = visitSlot.maxAppointments - currentBookedPeople;
-  //     throw new BadRequestException(
-  //       `Only ${remainingCapacity} spaces are available at this time.`,
-  //     );
-  //   }
-  //   const newAppointment = this.appointmentsRepository.create({
-  //     ...createAppointmentDto,
-  //     userId: userId,
-  //     visitSlot: visitSlot,
-  //     status: AppointmentStatus.PENDING,
-  //     bookedAt: new Date(),
-  //   });
-
-  //   const savedAppointment =
-  //     await this.appointmentsRepository.save(newAppointment);
-
-  //   visitSlot.currentAppointmentsCount += numberOfPeople;
-  //   await this.visitSlotsRepository.save(visitSlot);
-  //   const user = await this.usersRepository.findOne({ where: { id: userId } });
-  //   if (user) {
-  //     await this.mailService.sendAppointmentPendingNotification(
-  //       user.email,
-  //       user.name || user.email,
-  //       visitSlot.visit.title,
-  //       visitSlot.date.toDateString(),
-  //       visitSlot.startTime,
-  //       numberOfPeople,
-  //     );
-  //   }
-
-  //   return savedAppointment;
-  // }
-
   async findAppointmentsByUser(userId: string): Promise<Appointment[]> {
     const appointments = await this.appointmentsRepository.find({
       where: { userId },
@@ -327,6 +269,36 @@ export class VisitsService {
     }
 
     return appointments;
+  }
+  async findAppointmentsByUserWithPagination(
+    userId: string,
+    page: number,
+    limit: number,
+  ): Promise<{ appointments: Appointment[]; totalCount: number }> {
+    const [appointments, totalCount] =
+      await this.appointmentsRepository.findAndCount({
+        where: { userId },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+
+    return { appointments, totalCount };
+  }
+
+  async findAppointmentsByUserAndStatusWithPagination(
+    userId: string,
+    status: AppointmentStatus,
+    page: number,
+    limit: number,
+  ): Promise<{ appointments: Appointment[]; totalCount: number }> {
+    const [appointments, totalCount] =
+      await this.appointmentsRepository.findAndCount({
+        where: { userId, status },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+
+    return { appointments, totalCount };
   }
   async updateAppointmentStatus(
     appointmentId: string,
@@ -384,6 +356,41 @@ export class VisitsService {
       order: { bookedAt: 'ASC' },
     });
   }
+  async findAppointmentsPaginated(
+    status?: AppointmentStatus,
+    page = 1,
+    limit = 10,
+  ) {
+    const skip = (page - 1) * limit;
+
+    const whereClause = status ? { status } : {};
+
+    const [data, total] = await this.appointmentsRepository.findAndCount({
+      where: whereClause,
+      relations: ['visitSlot', 'visitSlot.visit', 'user'],
+      skip,
+      take: limit,
+      order: { bookedAt: 'DESC' },
+    });
+
+    return {
+      data,
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    };
+  }
+
+  async findAppointmentsByStatus(
+    status: AppointmentStatus,
+  ): Promise<Appointment[]> {
+    return this.appointmentsRepository.find({
+      where: { status: status },
+      relations: ['visitSlot', 'visitSlot.visit', 'user'],
+      order: { bookedAt: 'ASC' },
+    });
+  }
   async cancelAppointment(
     appointmentId: string,
     userId: string,
@@ -396,7 +403,7 @@ export class VisitsService {
 
     if (!appointment) {
       throw new NotFoundException(
-        `Cita con ID ${appointmentId} no encontrada, no existe o no tienes permiso para cancelarla.`,
+        `Appointment with ID ${appointmentId} not found, it does not exist, or you do not have permission to cancel it.`,
       );
     }
 
@@ -406,7 +413,7 @@ export class VisitsService {
       appointment.status === AppointmentStatus.REJECTED
     ) {
       throw new BadRequestException(
-        `La cita ya ha sido ${appointment.status.toLowerCase()}. No se puede cancelar.`,
+        `The appointment has already been ${appointment.status.toLowerCase()}. It cannot be canceled.`,
       );
     }
 
@@ -445,61 +452,8 @@ export class VisitsService {
       );
     } else {
       console.warn(
-        `No se pudo enviar la notificación de cancelación: Datos de usuario o visita incompletos para la cita ${appointmentId}.`,
+        `Failed to send the cancellation notification: User or visit data is incomplete for appointment ${appointmentId}.`,
       );
     }
   }
-
-  // async cancelAppointment(
-  //   appointmentId: string,
-  //   userId: string,
-  // ): Promise<void> {
-  //   const appointment = await this.appointmentsRepository.findOne({
-  //     where: { id: appointmentId, userId },
-  //     relations: ['visitSlot'],
-  //   });
-
-  //   if (!appointment) {
-  //     throw new NotFoundException(
-  //       `Appointment with ID ${appointmentId} not found or no longer exists, or you do not have permission to cancel it.`,
-  //     );
-  //   }
-  //   if (
-  //     appointment.status === AppointmentStatus.CANCELLED ||
-  //     appointment.status === AppointmentStatus.COMPLETED ||
-  //     appointment.status === AppointmentStatus.REJECTED
-  //   ) {
-  //     throw new BadRequestException(
-  //       'The appointment has already been ${appointment.status}.',
-  //     );
-  //   }
-
-  //   appointment.status = AppointmentStatus.CANCELLED;
-  //   await this.appointmentsRepository.save(appointment);
-
-  //   if (appointment.visitSlot) {
-  //     appointment.visitSlot.currentAppointmentsCount -=
-  //       appointment.numberOfPeople;
-  //     if (
-  //       appointment.visitSlot.currentAppointmentsCount <
-  //       appointment.visitSlot.maxAppointments
-  //     ) {
-  //       appointment.visitSlot.isBooked = false;
-  //     }
-  //     await this.visitSlotsRepository.save(appointment.visitSlot);
-  //   }
-  //   if (
-  //     appointment.user &&
-  //     appointment.visitSlot &&
-  //     appointment.visitSlot.visit
-  //   ) {
-  //     await this.mailService.sendAppointmentCancelledNotification(
-  //       appointment.user.email,
-  //       appointment.user.name || appointment.user.email,
-  //       appointment.visitSlot.visit.title,
-  //       appointment.visitSlot.date.toDateString(),
-  //       appointment.visitSlot.startTime,
-  //     );
-  //   }
-  // }
 }

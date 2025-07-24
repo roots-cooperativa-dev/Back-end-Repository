@@ -1,3 +1,9 @@
+import {
+  CreatePreferenceDto,
+  PaymentStatusDto,
+  PreferenceResponseDto,
+} from '../dto/create-payment.dto';
+
 export interface MercadoPagoPaymentInfo {
   id: number | string;
   status: string;
@@ -37,8 +43,37 @@ export interface PaymentCompletedEvent {
   dateApproved: string;
 }
 
+export interface MercadoPagoError extends Error {
+  message: string;
+  response?: {
+    data: unknown;
+    status?: number;
+  };
+  status?: number;
+}
+
+export function isMercadoPagoError(error: unknown): error is MercadoPagoError {
+  return error instanceof Error && ('response' in error || 'status' in error);
+}
+
 export interface IPaymentService {
-  createPreference(userId: string, dto: any): Promise<any>;
-  getPaymentStatus(paymentId: string): Promise<any>;
-  handleWebhook(notification: any): Promise<void>;
+  createPreference(
+    userId: string,
+    dto: CreatePreferenceDto,
+  ): Promise<PreferenceResponseDto>;
+  getPaymentStatus(paymentId: string): Promise<PaymentStatusDto>;
+  handleWebhook(notification: WebhookNotificationDto): Promise<void>;
+}
+
+export function isWebhookNotification(
+  obj: unknown,
+): obj is WebhookNotificationDto {
+  if (typeof obj !== 'object' || obj === null) return false;
+
+  // Usamos tipo "safe" para evitar acceder unsafe
+  const o = obj as Record<string, unknown>;
+
+  return (
+    typeof o.type === 'string' && typeof o.data === 'object' && o.data !== null
+  );
 }

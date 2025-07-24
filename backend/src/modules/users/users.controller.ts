@@ -3,11 +3,11 @@ import {
   Get,
   Put,
   Delete,
-  UseGuards,
-  UsePipes,
   Query,
   Param,
   Body,
+  UseGuards,
+  UsePipes,
   ParseUUIDPipe,
   ValidationPipe,
   HttpStatus,
@@ -27,12 +27,14 @@ import { UsersService } from './users.service';
 import { Roles, UserRole } from 'src/decorator/role.decorator';
 import { AuthGuard } from 'src/guards/auth.guards';
 import { RoleGuard } from 'src/guards/auth.guards.admin';
-import { UpdateUserDbDto } from './Dtos/CreateUserDto';
 import {
-  IUserResponseDto,
   ResponseUserDto,
   ResponseUserWithAdminDto,
+  IUserResponseDto,
 } from './interface/IUserResponseDto';
+import { UpdateUserDbDto } from './Dtos/CreateUserDto';
+import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
+import { PaginatedUsersDto } from './Dtos/paginated-users.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -40,60 +42,23 @@ import {
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Retrieve all users with pagintion' })
-  @ApiQuery({
-    name: 'page',
-    description: 'Page number',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'limit',
-    description: 'Items per page',
-    required: false,
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Successfully retrieved paginated list of users',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or missing token',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - Admin role required',
-  })
+  @ApiOperation({ summary: 'Retrieve all users (paginated)' })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({ status: 200, description: 'OK', type: PaginatedUsersDto })
   @Get()
   async getUsers(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ): Promise<ResponseUserWithAdminDto[]> {
-    const pageNumber = page ? Number(page) : undefined;
-    const limitNumber = limit ? Number(limit) : undefined;
-    const users = await this.usersService.getUsers(pageNumber, limitNumber);
-    return ResponseUserWithAdminDto.toDTOList(users);
+    @Query() pagination: PaginationQueryDto,
+  ): Promise<PaginatedUsersDto> {
+    const { items, ...meta } = await this.usersService.getUsers(pagination);
+    return { ...meta, items: ResponseUserWithAdminDto.toDTOList(items) };
   }
 
   @ApiOperation({ summary: 'Retrieve user by ID' })
-  @ApiParam({
-    name: 'id',
-    type: String,
-    description: 'User unique identifier',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Successfully retrieved user information',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or missing token',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'User not found',
-  })
+  @ApiParam({ name: 'id', type: String })
+  @ApiResponse({ status: 200, description: 'OK', type: ResponseUserDto })
   @UseGuards(AuthGuard)
   @Get(':id')
   async getUserById(
@@ -103,28 +68,8 @@ export class UsersController {
   }
 
   @ApiOperation({ summary: 'Update user information' })
-  @ApiParam({
-    name: 'id',
-    type: String,
-    description: 'User unique identifier',
-  })
+  @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: UpdateUserDbDto })
-  @ApiResponse({
-    status: 200,
-    description: 'User updated successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid user data provided',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or missing token',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'User not found',
-  })
   @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @Put(':id')
@@ -132,33 +77,18 @@ export class UsersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateData: Partial<UpdateUserDbDto>,
   ): Promise<IUserResponseDto> {
-    return ResponseUserDto.toDTO(
-      await this.usersService.updateUserService(id, updateData),
-    );
+    const user = await this.usersService.updateUserService(id, updateData);
+    return ResponseUserDto.toDTO(user);
   }
 
   @ApiOperation({ summary: 'Delete user by ID' })
-  @ApiParam({
-    name: 'id',
-    type: String,
-    description: 'User unique identifier',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or missing token',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'User not found',
-  })
+  @ApiParam({ name: 'id', type: String })
   @UseGuards(AuthGuard)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @HttpCode(HttpStatus.NO_CONTENT)
   @Delete(':id')
   async deleteUser(@Param('id', ParseUUIDPipe) id: string) {
     await this.usersService.deleteUserService(id);
-    return {
-      message: `User with id ${id} deleted successfully`,
-    };
+    return { message: `User with id ${id} deleted successfully` };
   }
 }

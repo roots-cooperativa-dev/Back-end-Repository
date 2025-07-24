@@ -7,8 +7,9 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "postbuild": "npx copyfiles -u 4 src/modules/mail/templates/* dist/modules/mail/templates",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
+    "start": "npm run build && node dist/main.js",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
@@ -24,7 +25,9 @@
     "migration:create": "npm run typeorm -- migration:create",
     "migration:revert": "npm run typeorm -- migration:revert -d ./src/config/SupabaseDB.ts",
     "migration:show": "npm run typeorm -- migration:show -d ./src/config/SupabaseDB.ts",
-    "migration:build-run": "npm run build && npm run migration:run"
+    "migration:build-run": "npm run build && npm run migration:run",
+    "copy:templates": "cpx \"./src/mail/templates/**/*\" ./dist/mail/templates",
+    "copy:templates:watch": "cpx \"./src/mail/templates/**/*\" ./dist/mail/templates --watch"
   },
   "dependencies": {
     "@nestjs/common": "^11.1.3",
@@ -46,8 +49,10 @@
     "crypto-js": "^4.2.0",
     "dotenv": "^17.2.0",
     "eventemitter2": "^6.4.9",
-    "mercadopago": "^2.8.0",
     "express-openid-connect": "^2.18.1",
+    "handlebars": "^4.7.8",
+    "juice": "^11.0.1",
+    "mercadopago": "^2.8.0",
     "nodemailer": "^7.0.5",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
@@ -77,6 +82,8 @@
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/supertest": "^6.0.3",
     "@types/uuid": "^10.0.0",
+    "copyfiles": "^2.4.1",
+    "cpx": "^1.5.0",
     "cross-env": "^7.0.3",
     "eslint": "^9.30.1",
     "eslint-config-prettier": "^10.1.5",

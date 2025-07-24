@@ -34,13 +34,14 @@ export class CategoryService {
       const [categories, total] = await this.categoryRepository.findAndCount({
         take: limit,
         skip: skip,
+        withDeleted: true,
       });
 
       const pages = Math.ceil(total / limit);
 
       return { categories, total, pages };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException('Failed to fetch categories');
     }
   }
@@ -60,13 +61,28 @@ export class CategoryService {
 
   async deleteCategory(id: string): Promise<{ message: string }> {
     try {
-      const result = await this.categoryRepository.delete(id);
+      const result = await this.categoryRepository.softDelete(id);
       if (!result.affected)
         throw new NotFoundException(`Category ${id} not found`);
       return { message: `Category ${id} deleted.` };
     } catch (error) {
       if (error instanceof NotFoundException) throw error;
       throw new InternalServerErrorException(`Failed to delete category ${id}`);
+    }
+  }
+
+  async restoreCategory(id: string): Promise<{ message: string }> {
+    try {
+      const result = await this.categoryRepository.restore(id);
+      if (!result.affected) {
+        throw new NotFoundException(`Category ${id} not found or not deleted`);
+      }
+      return { message: `Category ${id} restored.` };
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(
+        `Failed to restore category ${id}`,
+      );
     }
   }
 }

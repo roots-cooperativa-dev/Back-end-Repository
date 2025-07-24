@@ -2,6 +2,11 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as Handlebars from 'handlebars';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+import juice = require('juice');
 
 @Injectable()
 export class MailService {
@@ -22,21 +27,60 @@ export class MailService {
     });
   }
 
+  private async getStripoTemplateHtml(
+    templateName: string,
+    context: Record<string, any>,
+  ): Promise<string> {
+    const templatePath = path.resolve(
+      process.cwd(),
+      'dist',
+      'modules',
+      'mail',
+      'templates',
+      templateName,
+    );
+
+    let templateSource: string;
+    try {
+      templateSource = await fs.promises.readFile(templatePath, 'utf8');
+    } catch (error) {
+      console.error(`Error reading template file ${templatePath}:`, error);
+      throw new InternalServerErrorException(
+        `Failed to load email template: ${templateName}`,
+      );
+    }
+
+    const template = Handlebars.compile(templateSource);
+    const renderedHtml = template(context);
+    return renderedHtml;
+  }
+
   async sendMail(
     to: string,
     subject: string,
-    text: string,
-    html?: string,
+    textAlt: string,
+    templateFileName: string,
+    context: Record<string, any>,
   ): Promise<void> {
     try {
+      const emailFrom = `"ROOTS COOPERATIVA" <${this.configService.get<string>('EMAIL_FROM')}>`;
+      const rawHtml = await this.getStripoTemplateHtml(
+        templateFileName,
+        context,
+      );
+      const inlinedHtml = juice(rawHtml);
+      console.log(inlinedHtml);
       await this.transporter.sendMail({
-        from: `"ROOTS COOPERATIVA" <${this.configService.get<string>('EMAIL_FROM')}>`,
+        from: emailFrom,
         to,
         subject,
-        text,
-        html,
+        html: inlinedHtml,
+        text: textAlt,
       });
-      console.log(`Correo enviado a ${to}: ${subject}`);
+
+      console.log(
+        `Correo enviado a ${to}: "${subject}" usando plantilla "${templateFileName}"`,
+      );
     } catch (error) {
       console.error('Error al enviar correo:', error);
       throw new InternalServerErrorException(
@@ -44,6 +88,7 @@ export class MailService {
       );
     }
   }
+
   async sendAppointmentPendingNotification(
     userEmail: string,
     userName: string,
@@ -53,16 +98,24 @@ export class MailService {
     slotTime: string,
   ): Promise<void> {
     const subject = 'Tu Cita está Pendiente de Aprobación';
-    const text = `Hola ${userName},\n\nTu cita para "${visitTitle}" en la fecha ${slotDate} a las ${slotTime} (ID: ${appointmentId}) está pendiente de aprobación.\n\nTe notificaremos tan pronto como sea aprobada o cancelada.\n\nSaludos,\nEl equipo de Tu Aplicación.`;
-    const html = `
-      <p>Hola <strong>${userName}</strong>,</p>
-      <p>Tu cita para <strong>"${visitTitle}"</strong> programada para el <strong>${slotDate}</strong> a las <strong>${slotTime}</strong> (ID: ${appointmentId}) está actualmente <strong>pendiente de aprobación</strong>.</p>
-      <p>Te enviaremos otra notificación tan pronto como sea aprobada o cancelada por la administración.</p>
-      <p>Gracias por tu paciencia.</p>
-      <p>Saludos,</p>
-      <p>El equipo de Tu Aplicación.</p>
-    `;
-    await this.sendMail(userEmail, subject, text, html);
+    const textAlt = `Hola ${userName},\n\nTu cita para "${visitTitle}" el ${slotDate} a las ${slotTime} (ID: ${appointmentId}) está pendiente de aprobación.\n\nSaludos,\nROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      visitTitle,
+      slotDate,
+      slotTime,
+      appointmentId,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      userEmail,
+      subject,
+      textAlt,
+      'appointment-pending.html',
+      context,
+    );
   }
 
   async sendAppointmentCancelledNotification(
@@ -75,48 +128,110 @@ export class MailService {
     reason?: string,
   ): Promise<void> {
     const subject = 'Tu Cita ha Sido Cancelada';
-    const baseText = `Hola ${userName},\n\nTu cita para "${visitTitle}" en la fecha ${slotDate} a las ${slotTime} (ID: ${appointmentId}) ha sido cancelada.`;
-    const baseHtml = `
-      <p>Hola <strong>${userName}</strong>,</p>
-      <p>Lamentamos informarte que tu cita para <strong>"${visitTitle}"</strong> programada para el <strong>${slotDate}</strong> a las <strong>${slotTime}</strong> (ID: ${appointmentId}) ha sido <strong>cancelada</strong>.</p>
-    `;
-
+    const baseText = `Hola ${userName},\n\nTu cita para "${visitTitle}" el ${slotDate} a las ${slotTime} (ID: ${appointmentId}) ha sido cancelada.`;
     const reasonText = reason ? `\nRazón: ${reason}` : '';
-    const reasonHtml = reason
-      ? `<p><strong>Razón de la cancelación:</strong> ${reason}</p>`
-      : '';
+    const finalTextAlt = `${baseText}${reasonText}\n\nSaludos,\nROOTS COOPERATIVA.`;
 
-    const text = `${baseText}${reasonText}\n\nPor favor, contacta con nosotros para más información o para reprogramar.\n\nSaludos,\nEl equipo de Tu Aplicación.`;
-    const html = `${baseHtml}${reasonHtml}<p>Por favor, contacta con nosotros para más información o para reprogramar.</p><p>Saludos,</p><p>El equipo de Tu Aplicación.</p>`;
+    const context = {
+      userName,
+      visitTitle,
+      slotDate,
+      slotTime,
+      appointmentId,
+      reason: reason || '',
+      appName: 'ROOTS COOPERATIVA',
+    };
 
-    await this.sendMail(userEmail, subject, text, html);
+    await this.sendMail(
+      userEmail,
+      subject,
+      finalTextAlt,
+      'appointment-cancelled.html',
+      context,
+    );
   }
 
   async sendWelcomeEmail(userEmail: string, userName: string): Promise<void> {
-    const subject = '¡Bienvenido a Tu Aplicación!';
-    const text = `Hola ${userName},\n\nGracias por registrarte en nuestra aplicación. ¡Esperamos que disfrutes de tu experiencia!\n\nSaludos,\nEl equipo de Tu Aplicación.`;
-    const html = `
-      <p>Hola <strong>${userName}</strong>,</p>
-      <p>¡Bienvenido/a a Tu Aplicación! Estamos encantados de tenerte con nosotros.</p>
-      <p>Esperamos que disfrutes de todas nuestras funcionalidades.</p>
-      <p>Saludos cordiales,</p>
-      <p>El equipo de Tu Aplicación.</p>
-    `;
-    await this.sendMail(userEmail, subject, text, html);
+    const subject = '¡Bienvenido a ROOTS COOPERATIVA!';
+    const textAlt = `Hola ${userName},\n\nGracias por registrarte. ¡Esperamos que disfrutes!\n\nROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      appName: 'ROOTS COOPERATIVA',
+      appLink: 'https://frontend-rootscoop.vercel.app',
+    };
+
+    await this.sendMail(
+      userEmail,
+      subject,
+      textAlt,
+      'welcome-email.html',
+      context,
+    );
   }
+
   async sendLoginNotification(
     userEmail: string,
     userName: string,
   ): Promise<void> {
     const subject = 'Inicio de Sesión en tu Cuenta';
-    const text = `Hola ${userName},\n\nSe ha iniciado sesión en tu cuenta de ROOTS COOPERATIVA.\n\nSi no fuiste tú, por favor, contacta a soporte inmediatamente.\n\nSaludos,\nEl equipo de ROOTS COOPERATIVA.`;
-    const html = `
-      <p>Hola <strong>${userName}</strong>,</p>
-      <p>Se ha iniciado sesión en tu cuenta de <strong>ROOTS COOPERATIVA</strong>.</p>
-      <p>Si no fuiste tú, por favor, <a href="#">contacta a soporte inmediatamente</a>.</p>
-      <p>Saludos cordiales,</p>
-      <p>El equipo de ROOTS COOPERATIVA.</p>
-    `;
-    await this.sendMail(userEmail, subject, text, html);
+    const textAlt = `Hola ${userName},\n\nSe ha iniciado sesión en tu cuenta.\n\nSi no fuiste tú, contactá a soporte.\n\nROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      appName: 'ROOTS COOPERATIVA',
+      supportLink: 'https://frontend-rootscoop.vercel.app/contact',
+    };
+
+    await this.sendMail(
+      userEmail,
+      subject,
+      textAlt,
+      'login-notification.html',
+      context,
+    );
+  }
+  async sendOrderProcessingNotification(
+    userEmail: string,
+    userName: string,
+    orderId: string,
+  ): Promise<void> {
+    const subject = 'Tu Orden Está en Proceso';
+    const textAlt = `Hola ${userName},\n\nTu orden #${orderId} está siendo procesada. Te avisaremos cuando esté lista para retiro o envío.\n\nSaludos,\nROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      orderId,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      userEmail,
+      subject,
+      textAlt,
+      'order-processing.html',
+      context,
+    );
+  }
+  async sendUserDataChangedNotification(
+    userEmail: string,
+    userName: string,
+  ): Promise<void> {
+    const subject = 'Tus Datos Personales Han Sido Modificados';
+    const textAlt = `Hola ${userName},\n\nSe han modificado los datos de tu cuenta.\n\nSi no fuiste vos, contactá al equipo de soporte inmediatamente.\n\nROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      appName: 'ROOTS COOPERATIVA',
+      supportLink: 'https://frontend-rootscoop.vercel.app/contact',
+    };
+
+    await this.sendMail(
+      userEmail,
+      subject,
+      textAlt,
+      'data-changed.html',
+      context,
+    );
   }
 }

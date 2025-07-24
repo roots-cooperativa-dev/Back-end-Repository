@@ -17,6 +17,7 @@ import { Cart } from './entities/cart.entity';
 import { CartItem } from './entities/cartItem.entity';
 import { UpdateCartItemDTO } from './DTO/updateCartItem.dto';
 import { AddToCartDTO } from './DTO/addToCart.dto';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class OrdersService {
@@ -43,7 +44,39 @@ export class OrdersService {
     private readonly cartItemRepository: Repository<CartItem>,
 
     private dataSource: DataSource,
+    private readonly mailService: MailService,
   ) {}
+  async getUserOrders(
+    userId: string,
+    page: number,
+    limit: number,
+    status?: string,
+  ): Promise<Order[]> {
+    try {
+      const query = this.orderRepository
+        .createQueryBuilder('order')
+        .leftJoinAndSelect('order.user', 'user')
+        .leftJoinAndSelect('order.orderDetail', 'orderDetail')
+        .leftJoinAndSelect('orderDetail.products', 'products')
+        .leftJoinAndSelect('products.sizes', 'sizes')
+        .where('user.id = :userId', { userId });
+
+      if (status) {
+        query.andWhere('order.status = :status', { status });
+      }
+
+      query.orderBy('order.date', 'DESC');
+      query.skip((page - 1) * limit).take(limit);
+
+      const orders = await query.getMany();
+      return orders;
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Could not fetch orders for this user',
+      );
+    }
+  }
 
   async getOrCreateCart(userId: string): Promise<Cart> {
     let cart = await this.cartRepository.findOne({
@@ -423,7 +456,7 @@ export class OrdersService {
 
       const orderDetail = queryRunner.manager.create(OrderDetail, {
         order: savedOrder,
-        products: productEntitiesForOrderDetail, // La relación ManyToMany con Product
+        products: productEntitiesForOrderDetail,
         total: parseFloat(orderTotal.toFixed(2)),
       });
       const savedDetail = await queryRunner.manager.save(orderDetail);
@@ -438,6 +471,15 @@ export class OrdersService {
       await queryRunner.manager.save(cart);
 
       await queryRunner.commitTransaction();
+      try {
+        await this.mailService.sendOrderProcessingNotification(
+          cart.user.email,
+          cart.user.name,
+          savedOrder.id,
+        );
+      } catch (emailError) {
+        console.error('Error sending order processing email:', emailError);
+      }
       return this.getOrderById(savedOrder.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();

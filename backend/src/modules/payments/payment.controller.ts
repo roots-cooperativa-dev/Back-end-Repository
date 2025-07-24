@@ -5,6 +5,8 @@ import {
   Param,
   ParseUUIDPipe,
   Get,
+  Logger,
+  HttpCode,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -13,17 +15,23 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Request } from 'express';
 import { PaymentsService } from './payment.service';
 import {
   CreatePreferenceDto,
   PaymentStatusDto,
   PreferenceResponseDto,
 } from './dto/create-payment.dto';
-import { WebhookNotificationDto } from './interface/patment.interface';
+import { WebhookNotificationDto } from './dto/create-payment.dto';
+import {
+  isWebhookNotification,
+  WebhookNotificationDto as WebhookNotificationInterface,
+} from './interface/patment.interface';
 
 @ApiTags('Payments')
 @Controller('payments')
 export class PaymentsController {
+  private readonly logger = new Logger(PaymentsController.name);
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post('create-preference/:userId')
@@ -54,16 +62,26 @@ export class PaymentsController {
   }
 
   @Post('webhook')
+  @HttpCode(200)
   @ApiOperation({ summary: 'Receive payment webhook notifications' })
-  @ApiResponse({
-    status: 200,
-    description: 'Webhook processed successfully',
-  })
+  @ApiBody({ type: WebhookNotificationDto })
   async handleWebhook(
-    @Body() notification: WebhookNotificationDto,
+    @Body() notification: WebhookNotificationInterface,
   ): Promise<{ status: string }> {
-    await this.paymentsService.handleWebhook(notification);
-    return { status: 'success' };
+    if (!isWebhookNotification(notification)) {
+      this.logger.warn('Invalid webhook notification structure received');
+      return { status: 'invalid_structure' };
+    }
+
+    try {
+      await this.paymentsService.handleWebhook(notification);
+      return { status: 'success' };
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Unknown error occurred';
+      this.logger.error(`Webhook processing error: ${message}`);
+      return { status: 'error' };
+    }
   }
 
   @Get('status/:paymentId')

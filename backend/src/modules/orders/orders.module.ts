@@ -10,6 +10,7 @@ import { Product_size } from '../products/entities/products_size.entity';
 import { AuthsModule } from '../auths/auths.module';
 import { Cart } from './entities/cart.entity';
 import { CartItem } from './entities/cartItem.entity';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CartItem } from './entities/cartItem.entity';
       CartItem,
     ]),
     forwardRef(() => AuthsModule),
+    MailModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

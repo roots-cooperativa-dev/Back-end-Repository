@@ -8,6 +8,8 @@ import { Users } from './Entyties/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDbDto, UpdateUserDbDto } from './Dtos/CreateUserDto';
+import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
+import { paginate } from 'src/common/pagination/paginate';
 
 @Injectable()
 export class UsersService {
@@ -16,15 +18,10 @@ export class UsersService {
     private readonly usersRepository: Repository<Users>,
   ) {}
 
-  async getUsers(page?: number, limit?: number): Promise<Users[]> {
-    if (page && limit) {
-      return await this.usersRepository.find({
-        skip: (page - 1) * limit,
-        take: limit,
-      });
-    } else {
-      return await this.usersRepository.find();
-    }
+  async getUsers(pagination: PaginationQueryDto) {
+    return paginate(this.usersRepository, pagination, {
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async getUserById(id: string): Promise<Users> {
