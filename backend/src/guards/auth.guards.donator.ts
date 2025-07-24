@@ -26,7 +26,7 @@ export class DonatorGuard extends AuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<AuthRequest>();
 
     if (roles.includes('donorUser') && !request.user.isDonator) {
-      throw new ForbiddenException('Acceso restringido a donadores');
+      throw new ForbiddenException('Access restricted to donators');
     }
 
     return true;

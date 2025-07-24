@@ -52,6 +52,19 @@ export class CreateUserDto {
   phone: number;
 
   @ApiProperty({
+    description: 'User address',
+    example: 'Calle 61 Nº 841, La Plata, Buenos Aires',
+  })
+  @IsNotEmpty()
+  @IsString()
+  @Length(3, 120)
+  @Matches(/^[\p{L}\p{N}\s.,'#-]+$/u, {
+    message:
+      "La dirección solo puede contener letras, números, espacios y . , ' # -",
+  })
+  address: string;
+
+  @ApiProperty({
     description: 'This field must contain the username',
     example: 'Carli87',
   })

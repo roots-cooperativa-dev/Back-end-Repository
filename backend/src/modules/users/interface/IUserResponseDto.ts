@@ -6,6 +6,7 @@ export interface IUserResponseDto {
   email: string;
   birthdate: Date;
   phone: number;
+  adress: string;
   username: string;
   isAdmin?: boolean;
   isDonator?: boolean;
@@ -33,6 +34,7 @@ export class ResponseUserDto {
       email: user.email,
       birthdate: user.birthdate,
       phone: user.phone,
+      adress: user.adress,
       username: user.username,
       isAdmin: user.isAdmin,
       isDonator: user.isDonator,
@@ -60,6 +62,7 @@ export class ResponseUserDto {
 export interface IUserResponseWithAdmin extends IUserResponseDto {
   isAdmin: boolean;
   isDonator: boolean;
+  password: string;
 }
 
 export class ResponseUserWithAdminDto {
@@ -68,6 +71,7 @@ export class ResponseUserWithAdminDto {
       ...ResponseUserDto.toDTO(user),
       isAdmin: user.isAdmin,
       isDonator: user.isDonator,
+      password: user.password,
     };
   }
 
