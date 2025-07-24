@@ -25,29 +25,18 @@ import {
 import { WebhookNotificationDto } from './dto/create-payment.dto';
 import { WebhookNotificationDto as WebhookNotificationInterface } from './interface/patment.interface';
 
-// Type guard corregido para evitar unsafe member access
-function isValidWebhookData(data: unknown): data is { id: string } {
-  if (typeof data !== 'object' || data === null) {
-    return false;
-  }
-
-  // Safe access usando 'in' operator y type assertion solo después de verificación
-  if (!('id' in data)) {
-    return false;
-  }
-
-  // Verificar que el id sea string después de confirmar que existe
-  const dataWithId = data as Record<string, unknown>;
-  return typeof dataWithId.id === 'string';
-}
-
-// Type guard para verificar estructura básica del webhook
+// Type guard mejorado para verificar estructura básica del webhook
 function hasWebhookStructure(
   obj: unknown,
 ): obj is { type: string; data: unknown } {
   return (
     typeof obj === 'object' && obj !== null && 'type' in obj && 'data' in obj
   );
+}
+
+// Type guard flexible para diferentes tipos de data en webhook
+function hasValidWebhookData(data: unknown): data is Record<string, unknown> {
+  return typeof data === 'object' && data !== null;
 }
 
 // Interface para el objeto de respuesta con error
@@ -151,8 +140,8 @@ export class PaymentsController {
           : 'unknown';
       this.logger.log(`ID: ${notificationId}`);
 
-      // Verificar si tiene datos válidos con type guards
-      if (notification.type && isValidWebhookData(notification.data)) {
+      // Verificar si tiene datos válidos con type guards mejorados
+      if (notification.type && hasValidWebhookData(notification.data)) {
         this.logger.log('✅ Valid webhook structure, processing...');
 
         // Helper function para safe access
@@ -162,55 +151,76 @@ export class PaymentsController {
             : undefined;
         };
 
+        // Helper function para convertir valores a string de forma segura
+        const safeStringify = (value: unknown): string => {
+          if (value === null || value === undefined) {
+            return '';
+          }
+          if (typeof value === 'string' || typeof value === 'number') {
+            return String(value);
+          }
+          return '';
+        };
+
+        // Determinar el ID a usar según el tipo de webhook
+        let dataId: string;
+
+        if (notification.type === 'payment' && 'id' in notification.data) {
+          // Para webhooks de payment, usar data.id
+          dataId = safeStringify(notification.data.id);
+        } else if (notification.type === 'topic_merchant_order_wh') {
+          // Para webhooks de merchant order, usar el ID principal del webhook
+          dataId = safeStringify(safeGet(notification, 'id'));
+        } else {
+          // Para otros tipos, intentar usar data.id o el ID principal
+          const dataIdValue = safeGet(notification.data, 'id');
+          const notificationIdValue = safeGet(notification, 'id');
+          dataId =
+            safeStringify(dataIdValue) || safeStringify(notificationIdValue);
+        }
+
+        if (!dataId) {
+          this.logger.warn('❌ No valid ID found in webhook data');
+          return { status: 'no_valid_id' };
+        }
+
         // Crear objeto usando la interfaz correcta que espera el servicio
         const validatedNotification: WebhookNotificationInterface = {
           id: Number(safeGet(notification, 'id')) || 0,
           type: notification.type,
-          data: { id: notification.data.id },
-          // Asegurar que live_mode sea siempre boolean (never undefined)
+          data: { id: dataId },
+          // Asegurar que live_mode sea siempre boolean
           live_mode:
             safeGet(notification, 'live_mode') !== undefined
               ? Boolean(safeGet(notification, 'live_mode'))
               : false,
           // La interfaz requiere string, no string | undefined
-          date_created:
-            safeGet(notification, 'date_created') !== undefined
-              ? String(safeGet(notification, 'date_created'))
-              : '',
+          date_created: safeStringify(safeGet(notification, 'date_created')),
           // La interfaz requiere number, no number | undefined
           application_id:
             safeGet(notification, 'application_id') !== undefined
               ? Number(safeGet(notification, 'application_id')) || 0
               : 0,
           // La interfaz requiere string, no string | undefined
-          user_id:
-            safeGet(notification, 'user_id') !== undefined
-              ? String(safeGet(notification, 'user_id'))
-              : '',
+          user_id: safeStringify(safeGet(notification, 'user_id')),
           // La interfaz requiere number, no number | undefined
           version:
             safeGet(notification, 'version') !== undefined
               ? Number(safeGet(notification, 'version')) || 0
               : 0,
           // La interfaz requiere string, no string | undefined
-          api_version:
-            safeGet(notification, 'api_version') !== undefined
-              ? String(safeGet(notification, 'api_version'))
-              : '',
+          api_version: safeStringify(safeGet(notification, 'api_version')),
           // La interfaz requiere string, no string | undefined
-          action:
-            safeGet(notification, 'action') !== undefined
-              ? String(safeGet(notification, 'action'))
-              : '',
+          action: safeStringify(safeGet(notification, 'action')),
         };
 
         await this.paymentsService.handleWebhook(validatedNotification);
         this.logger.log('=== WEBHOOK DEBUG END - SUCCESS ===');
         return { status: 'success' };
       } else {
-        this.logger.warn('❌ Invalid webhook structure');
-        this.logger.log('=== WEBHOOK DEBUG END - INVALID ===');
-        return { status: 'invalid_structure' };
+        this.logger.warn('❌ Invalid webhook data structure');
+        this.logger.log('=== WEBHOOK DEBUG END - INVALID DATA ===');
+        return { status: 'invalid_data' };
       }
     } catch (error) {
       const errorMessage =
