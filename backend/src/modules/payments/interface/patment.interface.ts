@@ -64,3 +64,16 @@ export interface IPaymentService {
   getPaymentStatus(paymentId: string): Promise<PaymentStatusDto>;
   handleWebhook(notification: WebhookNotificationDto): Promise<void>;
 }
+
+export function isWebhookNotification(
+  obj: unknown,
+): obj is WebhookNotificationDto {
+  if (typeof obj !== 'object' || obj === null) return false;
+
+  // Usamos tipo "safe" para evitar acceder unsafe
+  const o = obj as Record<string, unknown>;
+
+  return (
+    typeof o.type === 'string' && typeof o.data === 'object' && o.data !== null
+  );
+}
