@@ -8,6 +8,7 @@ import { Users } from '../users/Entyties/users.entity';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PaymentsModule } from '../payments/payment.module';
 import { PaymentCompletedListener } from '../payments/listener/payment.listener';
+import { AuthsModule } from '../auths/auths.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Donate, Users]),
@@ -22,6 +23,7 @@ import { PaymentCompletedListener } from '../payments/listener/payment.listener'
     }),
     forwardRef(() => UsersModule),
     forwardRef(() => PaymentsModule),
+    forwardRef(() => AuthsModule),
   ],
   controllers: [DonationsController],
   providers: [DonationsService, PaymentCompletedListener],

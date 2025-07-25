@@ -8,6 +8,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MercadoPagoService } from './mercadopago.service';
 import { Donate } from '../donations/entities/donation.entity';
 import { DonationsModule } from '../donations/donations.module';
+import { AuthsModule } from '../auths/auths.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { DonationsModule } from '../donations/donations.module';
     TypeOrmModule.forFeature([Users, Donate]),
     forwardRef(() => DonationsModule),
     EventEmitterModule.forRoot(),
+    forwardRef(() => AuthsModule),
   ],
   controllers: [PaymentsController],
   providers: [PaymentsService, MercadoPagoService],

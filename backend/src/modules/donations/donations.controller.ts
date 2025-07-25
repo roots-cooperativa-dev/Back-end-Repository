@@ -1,5 +1,13 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query } from '@nestjs/common';
 import {
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
   ApiOperation,
   ApiParam,
   ApiQuery,
@@ -8,8 +16,12 @@ import {
 } from '@nestjs/swagger';
 import { DonationsService } from './donations.service';
 import { ResponseDonateDto } from './interface/IDonateResponse';
+import { RoleGuard } from 'src/guards/auth.guards.admin';
+import { Roles, UserRole } from 'src/decorator/role.decorator';
+import { AuthGuard } from 'src/guards/auth.guards';
 
 @ApiTags('Donations')
+@ApiBearerAuth()
 @Controller('donations')
 export class DonationsController {
   constructor(private readonly donationsService: DonationsService) {}
@@ -30,6 +42,8 @@ export class DonationsController {
     status: 200,
     description: 'List of donations successfully retrieved',
   })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
   async findAll(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
@@ -54,6 +68,8 @@ export class DonationsController {
     status: 404,
     description: 'Donation not found',
   })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN || UserRole.DONOR_USER)
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<ResponseDonateDto> {
