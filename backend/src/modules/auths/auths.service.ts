@@ -56,6 +56,7 @@ export class AuthsService {
         password: hashedPassword,
         isAdmin: false,
         isDonator: false,
+        isSuperAdmin: false,
       });
 
       this.sendWelcomeEmailAsync(
@@ -105,6 +106,7 @@ export class AuthsService {
       phone: 0,
       address: 'calle falsa 123',
       isAdmin: false,
+      isSuperAdmin: false,
       isDonator: false,
     });
   }
@@ -115,6 +117,7 @@ export class AuthsService {
       email: user.email,
       name: user.name,
       isAdmin: user.isAdmin,
+      isSuperAdmin: user.isSuperAdmin,
       isDonator: user.isDonator,
     };
 

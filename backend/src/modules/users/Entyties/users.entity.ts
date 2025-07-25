@@ -36,7 +36,6 @@ export class Users {
   password: string;
 
   @Column({ type: 'bigint', nullable: false })
-  @Column({ type: 'bigint', nullable: false })
   phone: number;
 
   @Column({ type: 'varchar', nullable: true })
@@ -44,6 +43,9 @@ export class Users {
 
   @Column({ type: 'boolean', default: false })
   isAdmin: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  isSuperAdmin: boolean;
 
   @Column({ type: 'boolean', default: false })
   isDonator: boolean;
@@ -54,7 +56,7 @@ export class Users {
   @UpdateDateColumn()
   updatedAt?: Date;
 
-  @DeleteDateColumn({ name: 'deleted_at', select: false, nullable: true })
+  @DeleteDateColumn({ name: 'deleted_at', select: false })
   deletedAt: Date | null;
 
   @OneToMany(() => Donate, (donate) => donate.user)
