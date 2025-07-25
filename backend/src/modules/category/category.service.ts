@@ -31,11 +31,13 @@ export class CategoryService {
   ): Promise<{ categories: Category[]; total: number; pages: number }> {
     try {
       const skip = (page - 1) * limit;
-      const [categories, total] = await this.categoryRepository.findAndCount({
-        take: limit,
-        skip: skip,
-        withDeleted: true,
-      });
+      const [categories, total] = await this.categoryRepository
+        .createQueryBuilder('category')
+        .withDeleted()
+        .addSelect('category.deleted_at')
+        .take(limit)
+        .skip(skip)
+        .getManyAndCount();
 
       const pages = Math.ceil(total / limit);
 
