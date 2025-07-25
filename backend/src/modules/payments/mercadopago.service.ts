@@ -61,7 +61,7 @@ export class MercadoPagoService {
         },
       ],
       payer: {
-        email: 'test_user_123456@testuser.com',
+        email: 'test_user_461283922@testuser.com',
       },
       back_urls: {
         success: `${this.configService.get<string>('FRONTEND_MP_URL')}/success`,
