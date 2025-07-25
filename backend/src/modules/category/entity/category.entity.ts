@@ -18,6 +18,6 @@ export class Category {
   @OneToMany(() => Product, (product) => product.category)
   products: Product[];
 
-  @DeleteDateColumn({ name: 'deleted_at', select: false })
-  daletedAt: Date | null;
+  @DeleteDateColumn({ name: 'deleted_at' })
+  deletedAt: Date | null;
 }
