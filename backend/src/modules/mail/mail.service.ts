@@ -234,4 +234,75 @@ export class MailService {
       context,
     );
   }
+  async sendContactConfirmation(
+    email: string,
+    name: string,
+    reason: string,
+  ): Promise<void> {
+    const subject = 'Consulta recibida - ROOTS COOPERATIVA';
+    const textAlt =
+      `Hola ${name},\n\n` +
+      `Recibimos tu consulta correctamente.\n` +
+      `En breve el equipo se pondrá en contacto con vos.\n\n` +
+      `¡Gracias por comunicarte con ROOTS COOPERATIVA!`;
+
+    const context = {
+      name,
+      email,
+      reason,
+      appName: 'ROOTS COOPERATIVA',
+      supportLink: 'https://frontend-rootscoop.vercel.app/contact',
+    };
+
+    await this.sendMail(email, subject, textAlt, 'contact-info.html', context);
+  }
+  async sendContactNotificationToAdmin(
+    name: string,
+    email: string,
+    phone: string,
+    reason: string,
+  ): Promise<void> {
+    const subject = 'Nueva consulta desde el sitio web';
+    const textAlt =
+      `Nombre: ${name}\n` +
+      `Email: ${email}\n` +
+      `Teléfono: ${phone}\n` +
+      `Motivo: ${reason}`;
+
+    const context = {
+      name,
+      email,
+      phone,
+      reason,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      'rootscooperativadev@gmail.com',
+      subject,
+      textAlt,
+      'contact-admin.html',
+      context,
+    );
+  }
+  async sendPurchaseConfirmation(email: string, name: string): Promise<void> {
+    const subject = '¡Gracias por tu compra en ROOTS COOPERATIVA!';
+    const textAlt =
+      `Hola ${name},\n\n` +
+      `Gracias por tu compra. Pronto recibirás los detalles del envío.\n\n` +
+      `Saludos,\nEl equipo de ROOTS COOPERATIVA.`;
+
+    const context = {
+      name,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      email,
+      subject,
+      textAlt,
+      'purchase-confirmation.html',
+      context,
+    );
+  }
 }
