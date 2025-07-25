@@ -7,8 +7,10 @@ import {
   Get,
   Logger,
   HttpCode,
+  UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
@@ -27,6 +29,9 @@ import {
   isWebhookNotification,
   WebhookNotificationDto as WebhookNotificationInterface,
 } from './interface/patment.interface';
+import { AuthGuard } from 'src/guards/auth.guards';
+import { RoleGuard } from 'src/guards/auth.guards.admin';
+import { Roles, UserRole } from 'src/decorator/role.decorator';
 
 @ApiTags('Payments')
 @Controller('payments')
@@ -35,6 +40,7 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post('create-preference/:userId')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create payment preference for donation' })
   @ApiParam({
     name: 'userId',
@@ -51,6 +57,7 @@ export class PaymentsController {
     status: 400,
     description: 'Invalid data or user not found',
   })
+  @UseGuards(AuthGuard)
   async createPreference(
     @Param('userId', ParseUUIDPipe) userId: string,
     @Body() createPreferenceDto: CreatePreferenceDto,
@@ -85,6 +92,7 @@ export class PaymentsController {
   }
 
   @Get('status/:paymentId')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Check payment status by payment ID' })
   @ApiParam({
     name: 'paymentId',
@@ -96,6 +104,8 @@ export class PaymentsController {
     description: 'Payment status retrieved successfully',
     type: PaymentStatusDto,
   })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN || UserRole.DONOR_USER)
   async getPaymentStatus(
     @Param('paymentId') paymentId: string,
   ): Promise<PaymentStatusDto> {
