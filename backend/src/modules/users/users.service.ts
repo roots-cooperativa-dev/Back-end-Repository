@@ -87,7 +87,7 @@ export class UsersService {
 
     dto: Partial<UpdateUserDbDto>,
   ): Promise<Users> {
-    const camposRestringidos = ['isAdmin', 'isDonator'];
+    const camposRestringidos = ['isAdmin', 'isDonator', 'isSuperAdmin'];
 
     for (const campo of camposRestringidos) {
       if (Object.prototype.hasOwnProperty.call(dto, campo)) {
