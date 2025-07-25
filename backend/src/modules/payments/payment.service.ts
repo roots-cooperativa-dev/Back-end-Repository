@@ -1,4 +1,3 @@
-// payments.service.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -38,7 +37,6 @@ export class PaymentsService implements IPaymentService {
   async handleWebhook(notification: WebhookNotificationDto): Promise<void> {
     const webhookKey = `${notification.type}_${notification.data?.id}_${notification.id}`;
     if (this.processedWebhooks.has(webhookKey)) {
-      // Duplicado, ignorar
       return;
     }
     this.processedWebhooks.add(webhookKey);
@@ -74,14 +72,12 @@ export class PaymentsService implements IPaymentService {
           `Payment completed event emitted for payment: ${paymentInfo.id}`,
         );
       }
-      // En caso de otros estados no hacemos nada
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(
         `Error processing webhook: ${message}`,
         error instanceof Error ? error.stack : undefined,
       );
-      // No propagamos para evitar que el webhook falle HTTP 500
     }
   }
 }

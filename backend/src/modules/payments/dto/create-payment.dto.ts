@@ -27,7 +27,7 @@ export class CreatePreferenceDto {
   })
   @IsOptional()
   @IsString()
-  message?: string;
+  message: string;
 
   @ApiProperty({
     description: 'Currency code',
