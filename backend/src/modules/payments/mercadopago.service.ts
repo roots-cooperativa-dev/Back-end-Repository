@@ -60,6 +60,9 @@ export class MercadoPagoService {
           unit_price: dto.amount,
         },
       ],
+      payer: {
+        email: 'test_user_123456@testuser.com',
+      },
       back_urls: {
         success: `${this.configService.get<string>('FRONTEND_MP_URL')}/success`,
         failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/failure`,
