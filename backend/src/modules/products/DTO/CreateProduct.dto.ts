@@ -32,10 +32,7 @@ export class CreateProductDTO {
   @Type(() => CreateProductSizeDTO)
   sizes: CreateProductSizeDTO[];
 
-  @ApiProperty({
-    example: '3496gi237082hd09dhfos02r',
-    description: 'Array of file IDs',
-  })
+  @ApiProperty({ type: [String], description: 'Array of file IDs' })
   @IsArray()
   @IsUUID('all', { each: true })
   file_Ids: string[];
@@ -57,10 +54,7 @@ export class UpdateProductDTO {
   @IsUUID()
   category_Id?: string;
 
-  @ApiProperty({
-    example: '3496gi237082hd09dhfos02r',
-    description: 'Array of file IDs',
-  })
+  @ApiProperty({ type: [String], description: 'Array of file IDs' })
   @IsOptional()
   @IsUUID('4', { each: true })
   file_Ids?: File[];
