@@ -3,20 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Modificación de Datos</title>
+  <title>¡Gracias por tu compra!</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Bebas+Neue&display=swap" rel="stylesheet">
-
   <style>
     body {
       margin: 0;
       padding: 0;
       background-color: #ffffff;
       font-family: 'Montserrat', sans-serif;
-      color: #642d91;
+      color: #392f5a;
       line-height: 1.6;
     }
-
     .container {
       max-width: 1200px;
       margin: 20px auto;
@@ -25,36 +23,24 @@
       overflow: hidden;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     .header, .footer {
-      background-color: #922f4e;
+      background-color: #017d74;
+      padding: 1px;
       text-align: center;
-      padding: 20px;
     }
-
     .header img {
       max-width: 240px;
       height: auto;
       display: block;
       margin: 0 auto;
     }
-
     .content {
       padding: 30px;
     }
-
-    .title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 24px;
-      color: #392f5a;
-      margin-bottom: 20px;
-    }
-
     .content p {
-      font-weight: 600;
       margin-bottom: 15px;
+      font-weight: 600;
     }
-
     .btn {
       display: inline-block;
       padding: 12px 25px;
@@ -65,54 +51,42 @@
       border-radius: 5px;
       font-weight: bold;
     }
-
     .footer {
+      border-top: 1px solid #01564c;
       color: #ffdd00;
       font-size: 0.9em;
-      border-top: 1px solid #4d206c;
     }
-
     .footer a {
       color: #ffdd00;
       text-decoration: none;
     }
-
     .social-container {
       margin: 30px auto;
       text-align: center;
     }
-
     .social-icons {
       display: inline-flex;
       gap: 25px;
       justify-content: center;
       align-items: center;
     }
-
     .social-icon {
       background-color: #ffffff;
       padding: 10px;
       border-radius: 50%;
       display: inline-block;
     }
-
     @media screen and (max-width: 480px) {
       body {
         padding: 10px;
       }
-
       .container {
         width: 100% !important;
         margin: 10px auto !important;
         box-shadow: none !important;
       }
-
       .content {
         padding: 15px !important;
-      }
-
-      .title {
-        font-size: 20px !important;
       }
     }
   </style>
@@ -121,21 +95,19 @@
   <div class="container">
     <!-- Encabezado -->
     <div class="header">
-      <img
-        src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png"
-        alt="Logo ROOTS COOPERATIVA"
-      />
+      <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png" alt="Logo ROOTS COOPERATIVA" />
     </div>
 
     <!-- Contenido -->
     <div class="content">
-      <h1 class="title">Modificación de Datos</h1>
-      <p>Hola <strong>{{userName}}</strong>,</p>
-      <p>Te informamos que se han <strong style="color: #017d74;">modificado los datos</strong> de tu cuenta en <strong>{{appName}}</strong>.</p>
-      <p>Si no realizaste esta acción, por favor 
-        <a href="https://frontend-rootscoop.vercel.app/contacto" style="color: #017d74; text-decoration: none; font-weight: bold;">contactá al equipo de soporte</a> inmediatamente para proteger tu información.</p>
-      <p>Saludos cordiales,</p>
-      <p>El equipo de <strong>{{appName}}</strong>.</p>
+      <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: #392f5a; margin-bottom: 15px;">
+        ¡Gracias por tu compra, {{name}}!
+      </h1>
+      <p>Tu pedido ha sido procesado correctamente.</p>
+      <p>En breve recibirás la confirmación con los detalles de envío.</p>
+      <p>Podés ver más información o contactarnos si necesitás asistencia.</p>
+      <p>¡Gracias por apoyar a <strong>{{appName}}</strong>!</p>
+      <a href="https://frontend-rootscoop.vercel.app" class="btn">Volver al sitio</a>
     </div>
 
     <!-- Pie de página -->
@@ -146,19 +118,16 @@
 
     <!-- Redes sociales -->
     <div class="social-container">
-      <p style="font-weight: 600; color: #642d91;">
+      <p style="font-weight: 600; color: #017d74;">
         Seguinos en nuestras redes:
       </p>
       <div class="social-icons">
-        <!-- WhatsApp -->
         <a href="https://wa.link/b4wyji" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="20" height="20" />
         </a>
-        <!-- Instagram -->
-        <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" class="social-icon">
+        <a href="https://www.instagram.com/roots_cooperativa" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="20" height="20" />
         </a>
-        <!-- YouTube -->
         <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="20" height="20" />
         </a>
