@@ -38,7 +38,7 @@ export class Users {
   @Column({ type: 'bigint', nullable: false })
   phone: number;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   address: string;
 
   @Column({ type: 'boolean', default: false })

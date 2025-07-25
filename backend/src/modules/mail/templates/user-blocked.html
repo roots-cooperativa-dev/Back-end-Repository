@@ -3,92 +3,57 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Modificación de Datos</title>
+  <title>Cuenta Suspendida</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <!-- Fuentes -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
 
   <style>
     body {
       margin: 0;
       padding: 0;
-      background-color: #ffffff;
       font-family: 'Montserrat', sans-serif;
-      color: #642d91;
       line-height: 1.6;
-    }
-
-    .container {
-      max-width: 1200px;
-      margin: 20px auto;
+      color: #642d91;
       background-color: #ffffff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
     .header, .footer {
       background-color: #642d91;
+      padding: 1px;
       text-align: center;
-      padding: 20px;
+      border-bottom: 1px solid #4d206c;
     }
-
-    .header img {
-      max-width: 240px;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-    }
-
-    .content {
-      padding: 30px;
-    }
-
-    .title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 24px;
-      color: #392f5a;
-      margin-bottom: 20px;
-    }
-
-    .content p {
-      font-weight: 600;
-      margin-bottom: 15px;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 12px 25px;
-      margin-top: 20px;
-      background-color: #ffdd00;
-      color: #642d91 !important;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
-    }
-
     .footer {
+      border-top: 1px solid #4d206c;
       color: #ffdd00;
       font-size: 0.9em;
-      border-top: 1px solid #4d206c;
     }
-
     .footer a {
       color: #ffdd00;
       text-decoration: none;
     }
-
+    .title {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 24px;
+      color: #dc3545;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .content p {
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
     .social-container {
       margin: 30px auto;
       text-align: center;
     }
-
     .social-icons {
       display: inline-flex;
       gap: 25px;
       justify-content: center;
       align-items: center;
     }
-
     .social-icon {
       background-color: #ffffff;
       padding: 10px;
@@ -100,17 +65,14 @@
       body {
         padding: 10px;
       }
-
-      .container {
+      div[style*="max-width:600px"] {
         width: 100% !important;
         margin: 10px auto !important;
         box-shadow: none !important;
       }
-
       .content {
         padding: 15px !important;
       }
-
       .title {
         font-size: 20px !important;
       }
@@ -118,27 +80,30 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Encabezado -->
+
+  <div style="max-width: 1200px; margin: 20px auto; background: #fff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow: hidden;">
+
+    <!-- Header -->
     <div class="header">
       <img
         src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png"
         alt="Logo ROOTS COOPERATIVA"
+        style="max-width: 240px; height: auto; display: block; margin: 0 auto;"
       />
     </div>
 
     <!-- Contenido -->
-    <div class="content">
-      <h1 class="title">Modificación de Datos</h1>
+    <div class="content" style="padding: 30px;">
+      <h1 class="title">Cuenta Suspendida</h1>
       <p>Hola <strong>{{userName}}</strong>,</p>
-      <p>Te informamos que se han <strong style="color: #017d74;">modificado los datos</strong> de tu cuenta en <strong>{{appName}}</strong>.</p>
-      <p>Si no realizaste esta acción, por favor 
-        <a href="{{supportLink}}" style="color: #017d74; text-decoration: none; font-weight: bold;">contactá al equipo de soporte</a> inmediatamente para proteger tu información.</p>
+      <p>Queremos informarte que tu cuenta en <strong>{{appName}}</strong> ha sido suspendida debido a incumplimientos de nuestras políticas de uso.</p>
+      <p>Si creés que esta suspensión es un error o deseas obtener más información, por favor contactá a nuestro equipo de soporte para revisar tu caso.</p>
+      <p>Gracias por tu comprensión.</p>
       <p>Saludos cordiales,</p>
       <p>El equipo de <strong>{{appName}}</strong>.</p>
     </div>
 
-    <!-- Pie de página -->
+    <!-- Footer -->
     <div class="footer">
       <p>Este correo ha sido enviado por <strong style="color: #ffffff;">{{appName}}</strong>.</p>
       <p><a href="https://frontend-rootscoop.vercel.app">Visita nuestro sitio web</a></p>
@@ -146,7 +111,7 @@
 
     <!-- Redes sociales -->
     <div class="social-container">
-      <p style="font-weight: 600; color: #642d91;">
+      <p style="font-family: 'Montserrat', sans-serif; font-weight: 600; margin-bottom: 10px; color: #642d91;">
         Seguinos en nuestras redes:
       </p>
       <div class="social-icons">
@@ -164,6 +129,8 @@
         </a>
       </div>
     </div>
+
   </div>
+
 </body>
 </html>

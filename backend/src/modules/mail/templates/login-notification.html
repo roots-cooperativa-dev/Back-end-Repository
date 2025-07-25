@@ -1,43 +1,159 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Notificación de Inicio de Sesión</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notificación de Inicio de Sesión</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Bebas+Neue&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      color: #392f5a;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .header, .footer {
+      background-color: #642d91;
+      padding: 1px;
+      text-align: center;
+    }
+    .header img {
+      max-width: 240px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .content {
+      padding: 30px;
+    }
+    .content p {
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    .content a {
+      color: #017d74;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .btn {
+      display: inline-block;
+      padding: 12px 25px;
+      margin-top: 20px;
+      background-color: #ffdd00;
+      color: #642d91 !important;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .footer {
+      border-top: 1px solid #4d206c;
+      color: #ffdd00;
+      font-size: 0.9em;
+    }
+    .footer a {
+      color: #ffdd00;
+      text-decoration: none;
+    }
+    .social-container {
+      margin: 30px auto;
+      text-align: center;
+    }
+    .social-icons {
+      display: inline-flex;
+      gap: 25px;
+      justify-content: center;
+      align-items: center;
+    }
+    .social-icon {
+      background-color: #ffffff;
+      padding: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    @media screen and (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      .container {
+        width: 100% !important;
+        margin: 10px auto !important;
+        box-shadow: none !important;
+      }
+      .content {
+        padding: 15px !important;
+      }
+    }
+  </style>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #ffffff;">
-  <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-    <div style="background-color: #7b6ca8; padding: 20px; text-align: center; border-bottom: 1px solid #a39ad9;">
+<body>
+  <div class="container">
+    <!-- Encabezado -->
+    <div class="header">
       <img
-        src="https://via.placeholder.com/180x60/9b8de3/ffffff?text=ROOTS+LOGO"
+        src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png"
         alt="Logo ROOTS COOPERATIVA"
-        style="max-width: 180px; height: auto; display: block; margin: 0 auto;"
       />
     </div>
-    <div style="padding: 30px;">
-      <p style="margin-bottom: 15px; color: #392f5a; font-weight: bold;">Hola <strong style="color: #392f5a;">{{userName}}</strong>,</p>
-      <p style="margin-bottom: 15px; color: #392f5a;">
-        Se ha iniciado sesión en tu cuenta de <strong style="color: #392f5a;">{{appName}}</strong>.
+
+    <!-- Contenido -->
+    <div class="content">
+      <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: #392f5a; margin-bottom: 15px;">
+        Hola <strong style="color: #392f5a;">{{userName}}</strong>,
+      </h1>
+      <p>
+        Se ha iniciado sesión en tu cuenta de <strong>{{appName}}</strong>.
       </p>
-      <p style="margin-bottom: 15px; color: #392f5a;">
-        Si no fuiste tú quien inició sesión, por favor, 
-        <a href="{{supportLink}}" style="color: #4caf50; text-decoration: none; font-weight: bold;">contacta a soporte inmediatamente</a> para asegurar tu cuenta.
+      <p>
+        Si no fuiste vos quien inició sesión, por favor,
+        <a href="{{supportLink}}">contactá a soporte inmediatamente</a> para proteger tu cuenta.
       </p>
-      <p style="margin-bottom: 15px; color: #392f5a;">Saludos cordiales,</p>
-      <p style="margin-bottom: 15px; color: #392f5a;">El equipo de {{appName}}.</p>
-      <a
-        href="{{supportLink}}"
-        style="display: inline-block; padding: 12px 25px; margin-top: 20px; background-color: #ffdd00; color: #7b6ca8 !important; text-decoration: none; border-radius: 5px; font-weight: bold;"
-      >
-        Contactar Soporte
-      </a>
+      <p>
+        Saludos cordiales,<br />
+        El equipo de <strong>{{appName}}</strong>.
+      </p>
+      <a href="{{supportLink}}" class="btn">Contactar Soporte</a>
     </div>
-    <div style="background-color: #7b6ca8; padding: 20px; text-align: center; font-size: 0.9em; color: #ffdd00; border-top: 1px solid #a39ad9;">
-      <p style="margin-bottom: 5px;">Este correo ha sido enviado por <strong style="color: #392f5a;">{{appName}}</strong>.</p>
-      <p style="margin-bottom: 0;">
-        <a href="https://tu-sitio-web.com" style="color: #ffdd00; text-decoration: none;">Visita nuestro sitio web</a>
+
+    <!-- Pie de página -->
+    <div class="footer">
+      <p>Este correo ha sido enviado por <strong style="color: #ffffff;">{{appName}}</strong>.</p>
+      <p><a href="https://frontend-rootscoop.vercel.app">Visita nuestro sitio web</a></p>
+    </div>
+
+    <!-- Redes sociales -->
+    <div class="social-container">
+      <p style="font-weight: 600; color: #642d91;">
+        Seguinos en nuestras redes:
       </p>
+      <div class="social-icons">
+        <!-- WhatsApp -->
+        <a href="https://wa.link/b4wyji" target="_blank" class="social-icon">
+          <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="20" height="20" />
+        </a>
+        <!-- Instagram -->
+        <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" class="social-icon">
+          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="20" height="20" />
+        </a>
+        <!-- YouTube -->
+        <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon">
+          <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="20" height="20" />
+        </a>
+      </div>
     </div>
   </div>
 </body>
 </html>
+
