@@ -4,25 +4,119 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tu Cita Está Pendiente</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@600&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif;
+      line-height: 1.6;
+      color: #642d91;
+      background-color: #ffffff;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .header, .footer {
+      background-color: #922f4e;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .header img {
+      max-width: 180px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .content {
+      padding: 30px;
+      font-weight: 600;
+    }
+
+    .title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      color: #642d91;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .footer {
+      font-size: 0.9em;
+      color: #ffdd00;
+      border-top: 1px solid #a39ad9;
+    }
+
+    .footer a {
+      color: #ffdd00;
+      text-decoration: none;
+    }
+
+    .social-container {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .social-icons {
+      display: inline-flex;
+      gap: 25px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .social-icon {
+      background-color: #ffffff;
+      padding: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    @media screen and (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      .container {
+        width: 100% !important;
+        margin: 10px auto !important;
+        box-shadow: none !important;
+      }
+      .content {
+        padding: 15px !important;
+      }
+      .title {
+        font-size: 20px !important;
+      }
+    }
+  </style>
 </head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #392f5a; margin: 0; padding: 0; background-color: #ffffff;">
-  <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+<body>
 
+  <div class="container">
 
-    <div style="background-color: #7b6ca8; padding: 20px; text-align: center; border-bottom: 1px solid #a39ad9;">
-      <img
-        src="https://via.placeholder.com/180x60/9b8de3/ffffff?text=ROOTS+LOGO"
-        alt="Logo ROOTS COOPERATIVA"
-        style="max-width: 180px; height: auto; display: block; margin: 0 auto;"
-      />
+    <!-- Encabezado -->
+    <div class="header">
+      <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png" alt="Logo ROOTS COOPERATIVA" />
     </div>
 
-    <div style="padding: 30px;">
-      <p>Hola <strong style="color: #392f5a;">{{userName}}</strong>,</p>
+    <!-- Contenido -->
+    <div class="content">
+      <h1 class="title">Cita Pendiente</h1>
+      <p>Hola <strong>{{userName}}</strong>,</p>
       <p>
         Tu cita para <strong>"{{visitTitle}}"</strong> programada para el
         <strong>{{slotDate}}</strong> a las <strong>{{slotTime}}</strong> (ID: {{appointmentId}})
-        está actualmente <strong style="color: #4caf50;">pendiente de aprobación</strong>.
+        está actualmente <strong style="color: #017d74;">pendiente de aprobación</strong>.
       </p>
       <p>Te enviaremos otra notificación tan pronto como sea aprobada o cancelada por la administración.</p>
       <p>Gracias por tu paciencia.</p>
@@ -30,13 +124,34 @@
       <p>El equipo de <strong>{{appName}}</strong>.</p>
     </div>
 
-    <div style="background-color: #7b6ca8; padding: 20px; text-align: center; font-size: 0.9em; color: #ffdd00; border-top: 1px solid #a39ad9;">
-      <p style="margin-bottom: 5px;">Este correo ha sido enviado por <strong style="color: #ffffff;">{{appName}}</strong>.</p>
-      <p style="margin-bottom: 0;">
-        <a href="https://frontend-rootscoop.vercel.app" style="color: #ffdd00; text-decoration: none;">Visita nuestro sitio web</a>
+    <!-- Footer -->
+    <div class="footer">
+      <p>Este correo ha sido enviado por <strong style="color: #ffffff;">{{appName}}</strong>.</p>
+      <p><a href="https://frontend-rootscoop.vercel.app">Visita nuestro sitio web</a></p>
+    </div>
+
+    <!-- Redes sociales -->
+    <div class="social-container">
+      <p style="font-family: 'Montserrat', sans-serif; font-weight: 600; margin-bottom: 10px; color: #642d91;">
+        Seguinos en nuestras redes:
       </p>
+      <div class="social-icons">
+        <!-- WhatsApp -->
+        <a href="https://wa.link/b4wyji" target="_blank" class="social-icon">
+          <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="20" height="20" />
+        </a>
+        <!-- Instagram -->
+        <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" class="social-icon">
+          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="20" height="20" />
+        </a>
+        <!-- YouTube -->
+        <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon">
+          <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="20" height="20" />
+        </a>
+      </div>
     </div>
 
   </div>
+
 </body>
 </html>

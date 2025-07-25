@@ -111,6 +111,7 @@ export class ProductsService {
 
       queryBuilder
         .withDeleted()
+        .addSelect('product.deletedAt')
         .leftJoinAndSelect('product.sizes', 'product_size')
         .leftJoinAndSelect('product.category', 'category')
         .leftJoinAndSelect('product.files', 'file');
@@ -158,6 +159,7 @@ export class ProductsService {
     const product = await this.productRepository.findOne({
       where: { id },
       relations: ['sizes', 'category', 'files'],
+      withDeleted: true,
     });
 
     if (!product) {
@@ -220,6 +222,8 @@ export class ProductsService {
             await this.productSizeRepository.save(newSize);
           }
         }
+
+        await this.updateProductStatusByStock(id);
       }
       return this.getProductById(id);
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

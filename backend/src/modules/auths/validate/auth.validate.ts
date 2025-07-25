@@ -91,4 +91,16 @@ export class AuthValidations {
   static getUserDisplayName(user: IUserAuthResponse): string {
     return user.name || user.username || 'User';
   }
+
+  static async validateNewPasswordIsDifferent(
+    newPassword: string,
+    currentHashedPassword: string,
+  ): Promise<void> {
+    const isSame = await bcrypt.compare(newPassword, currentHashedPassword);
+    if (isSame) {
+      throw new BadRequestException(
+        'La nueva contraseña no puede ser igual a la actual',
+      );
+    }
+  }
 }

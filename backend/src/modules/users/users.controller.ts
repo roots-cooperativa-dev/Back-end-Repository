@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Put,
-  Delete,
   Query,
   Param,
   Body,
@@ -10,8 +9,7 @@ import {
   UsePipes,
   ParseUUIDPipe,
   ValidationPipe,
-  HttpStatus,
-  HttpCode,
+  Req,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -35,6 +33,13 @@ import {
 import { UpdateUserDbDto } from './Dtos/CreateUserDto';
 import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
 import { PaginatedUsersDto } from './Dtos/paginated-users.dto';
+import { UpdatePasswordDto } from './Dtos/UpdatePasswordDto';
+
+interface AuthenticatedRequest extends Request {
+  user: {
+    sub: string;
+  };
+}
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -80,15 +85,13 @@ export class UsersController {
     const user = await this.usersService.updateUserService(id, updateData);
     return ResponseUserDto.toDTO(user);
   }
-
-  @ApiOperation({ summary: 'Delete user by ID' })
-  @ApiParam({ name: 'id', type: String })
+  @Put('password')
   @UseGuards(AuthGuard)
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @Delete(':id')
-  async deleteUser(@Param('id', ParseUUIDPipe) id: string) {
-    await this.usersService.deleteUserService(id);
-    return { message: `User with id ${id} deleted successfully` };
+  async changeOwnPassword(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: UpdatePasswordDto,
+  ) {
+    await this.usersService.changePassword(req.user.sub, dto);
+    return { message: 'Contraseña actualizada correctamente' };
   }
 }
