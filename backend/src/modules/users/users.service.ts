@@ -10,12 +10,14 @@ import { Repository } from 'typeorm';
 import { CreateUserDbDto, UpdateUserDbDto } from './Dtos/CreateUserDto';
 import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
 import { paginate } from 'src/common/pagination/paginate';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
+    private readonly mailService: MailService,
   ) {}
 
   async getUsers(pagination: PaginationQueryDto) {
@@ -73,6 +75,17 @@ export class UsersService {
     if (!updatedUser) {
       throw new InternalServerErrorException(
         `Error inesperado: Usuario con id ${id} no encontrado tras la actualización`,
+      );
+    }
+    try {
+      await this.mailService.sendUserDataChangedNotification(
+        updatedUser.email,
+        updatedUser.name,
+      );
+    } catch (error) {
+      console.error(
+        'Error al enviar el correo de modificación de datos:',
+        error,
       );
     }
 
