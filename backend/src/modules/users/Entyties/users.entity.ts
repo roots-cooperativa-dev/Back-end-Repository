@@ -45,6 +45,9 @@ export class Users {
   isAdmin: boolean;
 
   @Column({ type: 'boolean', default: false })
+  isSuperAdmin: boolean;
+
+  @Column({ type: 'boolean', default: false })
   isDonator: boolean;
 
   @CreateDateColumn()
@@ -53,7 +56,7 @@ export class Users {
   @UpdateDateColumn()
   updatedAt?: Date;
 
-  @DeleteDateColumn({ name: 'deleted_at', select: false, nullable: true })
+  @DeleteDateColumn({ name: 'deleted_at', select: false })
   deletedAt: Date | null;
 
   @OneToMany(() => Donate, (donate) => donate.user)

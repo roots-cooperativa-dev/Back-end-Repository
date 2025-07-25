@@ -111,6 +111,11 @@ export class CreateUserDto {
   @ApiHideProperty()
   @IsOptional()
   @IsBoolean()
+  isSuperAdmin?: boolean;
+
+  @ApiHideProperty()
+  @IsOptional()
+  @IsBoolean()
   isDonator?: boolean;
 }
 

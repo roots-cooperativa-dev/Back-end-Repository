@@ -4,20 +4,30 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
+
 import { Users } from './Entyties/users.entity';
+
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { Repository } from 'typeorm';
+
 import { CreateUserDbDto, UpdateUserDbDto } from './Dtos/CreateUserDto';
+
 import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
+
 import { paginate } from 'src/common/pagination/paginate';
-import { MailService } from '../mail/mail.service';
+
+import { UpdatePasswordDto } from './Dtos/UpdatePasswordDto';
+
+import { AuthValidations } from '../auths/validate/auth.validate';
+
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
-    private readonly mailService: MailService,
   ) {}
 
   async getUsers(pagination: PaginationQueryDto) {
@@ -29,20 +39,33 @@ export class UsersService {
   async getUserById(id: string): Promise<Users> {
     const user = await this.usersRepository.findOne({
       where: { id },
-      relations: ['donates', 'orders'],
-    });
 
-    console.log('👤 Usuario con donaciones:', user?.donates);
+      relations: [
+        'donates',
+
+        'orders',
+
+        'appointments',
+
+        'cart',
+
+        'cart.items',
+
+        'cart.items.product',
+      ],
+    });
 
     if (!user) {
       throw new NotFoundException(`Usuario con id ${id} no encontrado`);
     }
+
     return user;
   }
 
   async findByEmail(email: string): Promise<Users | null> {
     return this.usersRepository.findOne({
       where: { email },
+
       select: ['id', 'name', 'email', 'password', 'isAdmin', 'isDonator'],
     });
   }
@@ -50,20 +73,30 @@ export class UsersService {
   async createUserService(dto: CreateUserDbDto): Promise<Users> {
     try {
       const user = this.usersRepository.create(dto);
+
       return this.usersRepository.save(user);
     } catch (error) {
       console.error('Error al crear el usuario:', error);
+
       throw new BadRequestException('Error al crear el usuario');
     }
   }
 
   async updateUserService(
     id: string,
+
     dto: Partial<UpdateUserDbDto>,
   ): Promise<Users> {
-    if ('isAdmin' in dto) delete dto.isAdmin;
+    const camposRestringidos = ['isAdmin', 'isDonator'];
+
+    for (const campo of camposRestringidos) {
+      if (Object.prototype.hasOwnProperty.call(dto, campo)) {
+        delete dto[campo];
+      }
+    }
 
     const result = await this.usersRepository.update({ id }, dto);
+
     if (result.affected === 0) {
       throw new NotFoundException(`Usuario con id ${id} no encontrado`);
     }
@@ -77,26 +110,36 @@ export class UsersService {
         `Error inesperado: Usuario con id ${id} no encontrado tras la actualización`,
       );
     }
-    try {
-      await this.mailService.sendUserDataChangedNotification(
-        updatedUser.email,
-        updatedUser.name,
-      );
-    } catch (error) {
-      console.error(
-        'Error al enviar el correo de modificación de datos:',
-        error,
-      );
-    }
 
     return updatedUser;
   }
 
-  async deleteUserService(id: string): Promise<{ id: string }> {
-    const result = await this.usersRepository.delete({ id: String(id) });
-    if (!result.affected) {
-      throw new NotFoundException(`Usuario con id ${id} no encontrado`);
+  async changePassword(userId: string, dto: UpdatePasswordDto): Promise<void> {
+    const user = await this.usersRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException(`Usuario con id ${userId} no encontrado`);
     }
-    return { id: String(id) };
+
+    const isSamePassword = await bcrypt.compare(dto.newPassword, user.password);
+
+    if (isSamePassword) {
+      throw new BadRequestException(
+        'La nueva contraseña no puede ser igual a la actual',
+      );
+    }
+
+    await AuthValidations.validateNewPasswordIsDifferent(
+      dto.newPassword,
+
+      user.password,
+    );
+
+    await AuthValidations.validatePassword(dto.currentPassword, user.password);
+
+    const hashedPassword = await AuthValidations.hashPassword(dto.newPassword);
+
+    user.password = hashedPassword;
+    await this.usersRepository.save(user);
   }
 }

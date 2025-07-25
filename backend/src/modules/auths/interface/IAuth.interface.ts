@@ -21,6 +21,7 @@ export interface IUserAuthResponse {
   phone: number;
   username: string;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   isDonator: boolean;
 }
 

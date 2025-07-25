@@ -1,4 +1,8 @@
+import { OrderDetail } from 'src/modules/orders/entities/orderDetails.entity';
 import { Users } from '../Entyties/users.entity';
+import { AppointmentStatus } from 'src/modules/visits/entities/appointment.entity';
+import { VisitSlot } from 'src/modules/visits/entities/visit-slot.entity';
+import { CartItem } from 'src/modules/orders/entities/cartItem.entity';
 
 export interface IUserResponseDto {
   id: string;
@@ -11,6 +15,9 @@ export interface IUserResponseDto {
   isAdmin?: boolean;
   isDonator?: boolean;
   donates?: IDonateResponseDtoUser[];
+  orders?: IOrderResponseDto[];
+  appointments?: IAppointmentResponseDto[];
+  cart?: ICartResponseDto;
 }
 
 export interface IDonateResponseDtoUser {
@@ -24,6 +31,38 @@ export interface IDonateResponseDtoUser {
   paymentMethodId: string;
   dateApproved: Date;
   createdAt: Date;
+}
+
+export enum OrderStatus {
+  ACTIVE = 'active',
+  CANCELLED = 'cancelled',
+  PROCESSED = 'processed',
+  FINALIZED = 'finalized',
+}
+
+export interface IOrderResponseDto {
+  id: string;
+  date: Date;
+  status: OrderStatus;
+  orderDetail: OrderDetail;
+}
+
+export interface IAppointmentResponseDto {
+  id: string;
+  status: AppointmentStatus;
+  bookedAt: Date;
+  numberOfPeople: number;
+  visitSlotId: string;
+  description?: string;
+  visitSlot: VisitSlot;
+}
+
+export interface ICartResponseDto {
+  id: string;
+  total: number;
+  createdAt: Date;
+  updatedAt: Date;
+  items: CartItem[];
 }
 
 export class ResponseUserDto {
@@ -51,6 +90,38 @@ export class ResponseUserDto {
           dateApproved: donate.dateApproved,
           createdAt: donate.createdAt,
         })) ?? [],
+      orders:
+        user.orders?.map((order) => ({
+          id: order.id,
+          date: order.date,
+          status: order.status as OrderStatus,
+          orderDetail: order.orderDetail,
+        })) ?? [],
+      appointments:
+        user.appointments?.map((appointment) => ({
+          id: appointment.id,
+          status: appointment.status,
+          bookedAt: appointment.bookedAt,
+          numberOfPeople: appointment.numberOfPeople,
+          visitSlotId: appointment.visitSlotId,
+          description: appointment.description,
+          visitSlot: appointment.visitSlot,
+        })) ?? [],
+      cart: user.cart
+        ? {
+            id: user.cart.id,
+            total: user.cart.total,
+            createdAt: user.cart.createdAt,
+            updatedAt: user.cart.updatedAt,
+            items: user.cart.items ?? [],
+          }
+        : {
+            id: '',
+            total: 0,
+            createdAt: new Date(0),
+            updatedAt: new Date(0),
+            items: [],
+          },
     };
   }
 
