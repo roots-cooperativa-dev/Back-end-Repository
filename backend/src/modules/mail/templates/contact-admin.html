@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nueva Consulta desde el Formulario</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      color: #392f5a;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .header, .footer {
+      background-color: #922f4e;
+      padding: 1px;
+      text-align: center;
+    }
+    .header img {
+      max-width: 240px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+    }
+    .content {
+      padding: 30px;
+    }
+    .content p {
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    .footer {
+      border-top: 1px solid #4d206c;
+      color: #ffdd00;
+      font-size: 0.9em;
+    }
+    .footer a {
+      color: #ffdd00;
+      text-decoration: none;
+    }
+    @media screen and (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      .container {
+        width: 100% !important;
+        margin: 10px auto !important;
+        box-shadow: none !important;
+      }
+      .content {
+        padding: 15px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Encabezado -->
+    <div class="header">
+      <img
+        src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png"
+        alt="Logo ROOTS COOPERATIVA"
+      />
+    </div>
+
+    <!-- Contenido -->
+    <div class="content">
+      <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: #392f5a;">
+        Nueva consulta desde el formulario de contacto
+      </h1>
+
+      <p><strong>Nombre:</strong> {{name}}</p>
+      <p><strong>Email:</strong> {{email}}</p>
+      <p><strong>Teléfono:</strong> {{phone}}</p>
+      <p><strong>Motivo de contacto:</strong></p>
+      <p style="font-weight: normal;">{{reason}}</p>
+
+      <p style="margin-top: 20px;">
+        Revisá esta consulta desde el sistema o contactá al usuario directamente.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Este correo fue generado automáticamente por <strong style="color: #ffffff;">ROOTS COOPERATIVA</strong>.</p>
+      <p><a href="https://frontend-rootscoop.vercel.app">Acceder al sistema</a></p>
+    </div>
+  </div>
+</body>
+</html>
