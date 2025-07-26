@@ -38,6 +38,7 @@ import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
 import { PaginatedUsersDto } from './Dtos/paginated-users.dto';
 import { UpdatePasswordDto } from './Dtos/UpdatePasswordDto';
 import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
+import { Users } from './Entyties/users.entity';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -45,6 +46,16 @@ import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
+  @ApiOperation({ summary: 'Get all users' })
+  @ApiResponse({
+    status: 200,
+    description: 'Find all users',
+    type: [Users],
+  })
+  @Get('all')
+  async findAll(): Promise<Users[]> {
+    return this.usersService.findAll();
+  }
   @ApiOperation({ summary: 'Retrieve all users (paginated)' })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)

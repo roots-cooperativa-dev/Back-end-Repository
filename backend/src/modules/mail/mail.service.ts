@@ -405,4 +405,25 @@ export class MailService {
       context,
     );
   }
+  async sendAccountDeletedNotification(
+    userEmail: string,
+    userName: string,
+  ): Promise<void> {
+    const subject = 'Tu cuenta ha sido desactivada';
+    const textAlt = `Hola ${userName},\n\nTu cuenta en ROOTS COOPERATIVA ha sido desactivada.\n\nSi esto fue un error, contactá al soporte.`;
+
+    const context = {
+      userName,
+      appName: 'ROOTS COOPERATIVA',
+      supportLink: 'https://frontend-rootscoop.vercel.app/contact',
+    };
+
+    await this.sendMail(
+      userEmail,
+      subject,
+      textAlt,
+      'user-blocked.html',
+      context,
+    );
+  }
 }
