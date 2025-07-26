@@ -64,9 +64,9 @@ export class MercadoPagoService {
         email: 'test_user_461283922@testuser.com',
       },
       back_urls: {
-        success: `${this.configService.get<string>('FRONTEND_MP_URL')}/success`,
-        failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/failure`,
-        pending: `${this.configService.get<string>('FRONTEND_MP_URL')}/pending`,
+        success: `${this.configService.get<string>('FRONTEND_MP_URL')}/donaciones/success`,
+        failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/donaciones/failure`,
+        pending: `${this.configService.get<string>('FRONTEND_MP_URL')}/donaciones/pending`,
       },
       auto_return: 'approved',
       notification_url: `${this.configService.get<string>('BACKEND_MP_URL')}/payments/webhook`,
