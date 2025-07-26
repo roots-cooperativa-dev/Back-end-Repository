@@ -5,6 +5,7 @@ import {
   PartialType,
   OmitType,
 } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsDateString,
@@ -15,7 +16,9 @@ import {
   IsString,
   Length,
   Matches,
+  ValidateNested,
 } from 'class-validator';
+import { CreateAddressDto } from 'src/modules/addresses/entities/dto/create-address.dto';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -62,7 +65,10 @@ export class CreateUserDto {
     message:
       "La dirección solo puede contener letras, números, espacios y . , ' # -",
   })
-  address: string;
+  @ValidateNested()
+  @IsOptional()
+  @Type(() => CreateAddressDto)
+  address?: CreateAddressDto;
 
   @ApiProperty({
     description: 'This field must contain the username',
@@ -107,6 +113,11 @@ export class CreateUserDto {
   @IsOptional()
   @IsBoolean()
   isAdmin?: boolean;
+
+  @ApiHideProperty()
+  @IsOptional()
+  @IsBoolean()
+  isSuperAdmin?: boolean;
 
   @ApiHideProperty()
   @IsOptional()
