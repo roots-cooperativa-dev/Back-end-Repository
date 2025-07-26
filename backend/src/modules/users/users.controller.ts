@@ -10,6 +10,8 @@ import {
   ParseUUIDPipe,
   ValidationPipe,
   Req,
+  Delete,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -29,17 +31,13 @@ import {
   ResponseUserDto,
   ResponseUserWithAdminDto,
   IUserResponseDto,
+  AuthenticatedRequest,
 } from './interface/IUserResponseDto';
 import { UpdateUserDbDto } from './Dtos/CreateUserDto';
 import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
 import { PaginatedUsersDto } from './Dtos/paginated-users.dto';
 import { UpdatePasswordDto } from './Dtos/UpdatePasswordDto';
-
-interface AuthenticatedRequest extends Request {
-  user: {
-    sub: string;
-  };
-}
+import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -61,31 +59,7 @@ export class UsersController {
     return { ...meta, items: ResponseUserWithAdminDto.toDTOList(items) };
   }
 
-  @ApiOperation({ summary: 'Retrieve user by ID' })
-  @ApiParam({ name: 'id', type: String })
-  @ApiResponse({ status: 200, description: 'OK', type: ResponseUserDto })
-  @UseGuards(AuthGuard)
-  @Get(':id')
-  async getUserById(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<ResponseUserDto> {
-    return ResponseUserDto.toDTO(await this.usersService.getUserById(id));
-  }
-
-  @ApiOperation({ summary: 'Update user information' })
-  @ApiParam({ name: 'id', type: String })
-  @ApiBody({ type: UpdateUserDbDto })
-  @UseGuards(AuthGuard)
-  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
-  @Put(':id')
-  async updateUser(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body() updateData: Partial<UpdateUserDbDto>,
-  ): Promise<IUserResponseDto> {
-    const user = await this.usersService.updateUserService(id, updateData);
-    return ResponseUserDto.toDTO(user);
-  }
-  @Put('password')
+  @Patch('password')
   @UseGuards(AuthGuard)
   async changeOwnPassword(
     @Req() req: AuthenticatedRequest,
@@ -93,5 +67,64 @@ export class UsersController {
   ) {
     await this.usersService.changePassword(req.user.sub, dto);
     return { message: 'Contraseña actualizada correctamente' };
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Retrieve user by ID' })
+  @ApiParam({ name: 'id', type: String })
+  @ApiResponse({ status: 200, description: 'OK', type: ResponseUserDto })
+  @UseGuards(AuthGuard)
+  async getUserById(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ResponseUserDto> {
+    return ResponseUserDto.toDTO(await this.usersService.getUserById(id));
+  }
+
+  @Patch('Roles/:id')
+  @UseGuards(AuthGuard)
+  async rollChange(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: UpdateRoleDto,
+  ) {
+    const userRole = await this.usersService.rollChange(req.user.sub, dto);
+    return { message: 'Los roles se actualizaron correctamente', userRole };
+  }
+
+  @Put('upadte/user')
+  @ApiOperation({ summary: 'Update user information' })
+  @ApiParam({ name: 'id', type: String })
+  @ApiBody({ type: UpdateUserDbDto })
+  @UseGuards(AuthGuard)
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async updateUser(
+    @Req() req: AuthenticatedRequest,
+    @Body() updateData: Partial<UpdateUserDbDto>,
+  ): Promise<IUserResponseDto> {
+    const user = await this.usersService.updateUserService(
+      req.user.sub,
+      updateData,
+    );
+    return ResponseUserDto.toDTO(user);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete user by ID (soft delete)' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'User unique identifier',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User deleted successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User not found',
+  })
+  @UseGuards(AuthGuard)
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return await this.usersService.deleteUser(id);
   }
 }

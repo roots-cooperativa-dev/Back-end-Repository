@@ -1,4 +1,4 @@
-import { Address } from 'src/modules/addresses/entities/address.entity';
+import { Address } from 'src/modules/users/Entyties/address.entity';
 
 export interface AuthResponse {
   accessToken: string;

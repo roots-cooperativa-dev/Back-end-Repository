@@ -5,7 +5,7 @@ import {
   PartialType,
   OmitType,
 } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsDateString,
@@ -18,7 +18,7 @@ import {
   Matches,
   ValidateNested,
 } from 'class-validator';
-import { CreateAddressDto } from 'src/modules/addresses/entities/dto/create-address.dto';
+import { CreateAddressDto } from 'src/modules/users/Dtos/create-address.dto';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -55,18 +55,24 @@ export class CreateUserDto {
   phone: number;
 
   @ApiProperty({
-    description: 'User address',
+    description: 'User address - can be string or object',
     example: 'Calle 61 Nº 841, La Plata, Buenos Aires',
+    oneOf: [
+      { type: 'string' },
+      { $ref: '#/components/schemas/CreateAddressDto' },
+    ],
   })
-  @IsNotEmpty()
-  @IsString()
-  @Length(3, 120)
-  @Matches(/^[\p{L}\p{N}\s.,'#-]+$/u, {
-    message:
-      "La dirección solo puede contener letras, números, espacios y . , ' # -",
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return { street: value };
+    }
+    if (typeof value === 'object' && value !== null) {
+      return value as CreateAddressDto;
+    }
+    return undefined;
   })
   @ValidateNested()
-  @IsOptional()
   @Type(() => CreateAddressDto)
   address?: CreateAddressDto;
 

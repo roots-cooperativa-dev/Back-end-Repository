@@ -110,7 +110,6 @@ export class MercadoPagoService {
       if (notif.type === 'payment') {
         const paymentId = notif.data.id;
 
-        // Detectar IDs de prueba de MercadoPago
         if (
           paymentId === '123456' ||
           paymentId === 'test' ||
@@ -134,7 +133,6 @@ export class MercadoPagoService {
           return mockPaymentInfo;
         }
 
-        // Delay inicial para evitar race condition
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const paymentInfo = await this.getPaymentInfoWithRetry(
