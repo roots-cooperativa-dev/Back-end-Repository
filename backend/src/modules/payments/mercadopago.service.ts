@@ -64,9 +64,9 @@ export class MercadoPagoService {
         email: 'test_user_461283922@testuser.com',
       },
       back_urls: {
-        success: `${this.configService.get<string>('FRONTEND_MP_URL')}/success`,
-        failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/failure`,
-        pending: `${this.configService.get<string>('FRONTEND_MP_URL')}/pending`,
+        success: `${this.configService.get<string>('FRONTEND_MP_URL')}/donaciones/success`,
+        failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/donaciones/failure`,
+        pending: `${this.configService.get<string>('FRONTEND_MP_URL')}/donaciones/pending`,
       },
       auto_return: 'approved',
       notification_url: `${this.configService.get<string>('BACKEND_MP_URL')}/payments/webhook`,
@@ -110,7 +110,6 @@ export class MercadoPagoService {
       if (notif.type === 'payment') {
         const paymentId = notif.data.id;
 
-        // Detectar IDs de prueba de MercadoPago
         if (
           paymentId === '123456' ||
           paymentId === 'test' ||
@@ -134,7 +133,6 @@ export class MercadoPagoService {
           return mockPaymentInfo;
         }
 
-        // Delay inicial para evitar race condition
         await new Promise((resolve) => setTimeout(resolve, 1000));
 
         const paymentInfo = await this.getPaymentInfoWithRetry(

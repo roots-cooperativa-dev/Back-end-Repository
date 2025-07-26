@@ -3,31 +3,33 @@ import {
   NotFoundException,
   BadRequestException,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
-
 import { Users } from './Entyties/users.entity';
-
 import { InjectRepository } from '@nestjs/typeorm';
-
 import { Repository } from 'typeorm';
-
 import { CreateUserDbDto, UpdateUserDbDto } from './Dtos/CreateUserDto';
-
 import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
-
 import { paginate } from 'src/common/pagination/paginate';
-
 import { UpdatePasswordDto } from './Dtos/UpdatePasswordDto';
-
 import { AuthValidations } from '../auths/validate/auth.validate';
-
 import * as bcrypt from 'bcrypt';
-
+import { Address } from './Entyties/address.entity';
+import { ConfigService } from '@nestjs/config';
+import { MapboxGeocodingResponse } from './interface/IUserResponseDto';
+import { CreateAddressDto } from './Dtos/create-address.dto';
+import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
+import { MailService } from '../mail/mail.service';
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   constructor(
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
+    @InjectRepository(Address)
+    private readonly addressRepository: Repository<Address>,
+    private readonly configService: ConfigService,
+    private readonly mailService: MailService,
   ) {}
 
   async getUsers(pagination: PaginationQueryDto) {
@@ -39,24 +41,19 @@ export class UsersService {
   async getUserById(id: string): Promise<Users> {
     const user = await this.usersRepository.findOne({
       where: { id },
-
       relations: [
         'donates',
-
         'orders',
-
         'appointments',
-
+        'address',
         'cart',
-
         'cart.items',
-
         'cart.items.product',
       ],
     });
 
     if (!user) {
-      throw new NotFoundException(`Usuario con id ${id} no encontrado`);
+      throw new NotFoundException(`Usuario con id ${id} no encontrado.`);
     }
 
     return user;
@@ -65,26 +62,31 @@ export class UsersService {
   async findByEmail(email: string): Promise<Users | null> {
     return this.usersRepository.findOne({
       where: { email },
-
       select: ['id', 'name', 'email', 'password', 'isAdmin', 'isDonator'],
     });
   }
 
   async createUserService(dto: CreateUserDbDto): Promise<Users> {
     try {
-      const user = this.usersRepository.create(dto);
-
-      return this.usersRepository.save(user);
+      if (dto.address) {
+        const address = await this.createAddressWithCoordinates(dto.address);
+        const user = this.usersRepository.create({ ...dto, address });
+        return await this.usersRepository.save(user);
+      } else {
+        const user = this.usersRepository.create(dto);
+        return await this.usersRepository.save(user);
+      }
     } catch (error) {
-      console.error('Error al crear el usuario:', error);
-
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error('Error creating user:', error);
       throw new BadRequestException('Error al crear el usuario');
     }
   }
 
   async updateUserService(
     id: string,
-
     dto: Partial<UpdateUserDbDto>,
   ): Promise<Users> {
     const camposRestringidos = ['isAdmin', 'isDonator', 'isSuperAdmin'];
@@ -110,6 +112,16 @@ export class UsersService {
         `Error inesperado: Usuario con id ${id} no encontrado tras la actualización`,
       );
     }
+    this.mailService
+      .sendUserDataChangedNotification(updatedUser.email, updatedUser.name)
+      .catch((err: unknown) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Error desconocido al enviar email de modificación de datos';
+        const stack = err instanceof Error ? err.stack : undefined;
+        this.logger.error(message, stack);
+      });
 
     return updatedUser;
   }
@@ -131,7 +143,6 @@ export class UsersService {
 
     await AuthValidations.validateNewPasswordIsDifferent(
       dto.newPassword,
-
       user.password,
     );
 
@@ -141,5 +152,98 @@ export class UsersService {
 
     user.password = hashedPassword;
     await this.usersRepository.save(user);
+
+    this.mailService
+      .sendPasswordResetEmail(user.name, user.email)
+      .catch((err: unknown) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Error desconocido al enviar email';
+        const stack = err instanceof Error ? err.stack : undefined;
+
+        this.logger.error(message, stack);
+      });
+  }
+
+  async rollChange(userId: string, dto: UpdateRoleDto) {
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { id: userId },
+      });
+
+      if (!user) {
+        throw new NotFoundException(`Usuario con id ${userId} no encontrado`);
+      }
+
+      const result = await this.usersRepository.update(user.id, dto);
+      return result;
+    } catch (error) {
+      this.logger.error('Error changing user role:', error);
+      throw new InternalServerErrorException('Error changing user role');
+    }
+  }
+
+  async deleteUser(id: string): Promise<{ message: string }> {
+    try {
+      const result = await this.usersRepository.softDelete(id);
+
+      if (!result.affected) {
+        throw new NotFoundException(`User: ${id} not found`);
+      }
+
+      return { message: `User ${id} successfully removed.` };
+    } catch (error) {
+      this.logger.error(
+        'Error: Al eliminar la cuenta intente mas tarde',
+        error,
+      );
+      throw new InternalServerErrorException(`Error deleting User ${id}`);
+    }
+  }
+
+  private async createAddressWithCoordinates(
+    addressDto: CreateAddressDto,
+  ): Promise<Address> {
+    const token = this.configService.get<string>('MAPBOX_TOKEN');
+
+    if (!token) {
+      throw new BadRequestException('Mapbox token no configurado');
+    }
+
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+          addressDto.street,
+        )}.json?access_token=${token}`,
+      );
+
+      if (!response.ok) {
+        throw new BadRequestException(
+          'Error consultando servicio de geocodificación',
+        );
+      }
+
+      const data = (await response.json()) as MapboxGeocodingResponse;
+
+      if (!Array.isArray(data.features) || !data.features[0]?.center) {
+        throw new BadRequestException('Dirección no encontrada o inválida');
+      }
+
+      const [longitude, latitude] = data.features[0].center;
+      const address = this.addressRepository.create({
+        ...addressDto,
+        latitude,
+        longitude,
+      });
+
+      return await this.addressRepository.save(address);
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      this.logger.error('Error geocoding address:', error);
+      throw new BadRequestException('Error procesando la dirección');
+    }
   }
 }

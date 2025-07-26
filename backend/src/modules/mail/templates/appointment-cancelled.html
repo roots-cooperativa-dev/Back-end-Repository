@@ -3,87 +3,84 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tu Cita ha Sido Cancelada</title>
+  <title>Notificación de Cita Cancelada</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@600&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
       padding: 0;
       background-color: #ffffff;
       font-family: 'Montserrat', sans-serif;
-      color: #642d91;
+      color: #392f5a;
       line-height: 1.6;
     }
-
     .container {
-      max-width: 600px;
+      max-width: 1200px;
       margin: 20px auto;
       background-color: #ffffff;
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
-    .header {
-      background-color: #dc3545;
-      padding: 20px;
+    .header, .footer {
+      background-color: #922f4e;
+      padding: 1px;
       text-align: center;
-      border-bottom: 1px solid #c82333;
     }
-
     .header img {
-      max-width: 180px;
+      max-width: 240px;
       height: auto;
       display: block;
       margin: 0 auto;
     }
-
     .content {
       padding: 30px;
-      font-weight: 600;
     }
-
-    .title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 24px;
+    .subtitle {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 20px;
       color: #642d91;
       margin-bottom: 20px;
-      text-align: center;
     }
-
-    .highlight-red {
-      color: #dc3545;
+    .content p {
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+    .content a {
+      color: #a10909;
+      text-decoration: none;
       font-weight: bold;
     }
-
-    .footer {
-      background-color: #922f4e;
-      padding: 20px;
-      text-align: center;
-      font-size: 0.9em;
-      color: #ffdd00;
-      border-top: 1px solid #a39ad9;
+    .btn {
+      display: inline-block;
+      padding: 12px 25px;
+      margin-top: 20px;
+      background-color: #a10909;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
     }
-
+    .footer {
+      border-top: 1px solid #4d206c;
+      color: #ffdd00;
+      font-size: 0.9em;
+    }
     .footer a {
       color: #ffdd00;
       text-decoration: none;
     }
-
     .social-container {
+      margin: 30px auto;
       text-align: center;
-      padding: 20px 0;
     }
-
     .social-icons {
       display: inline-flex;
       gap: 25px;
       justify-content: center;
       align-items: center;
     }
-
     .social-icon {
       background-color: #ffffff;
       padding: 10px;
@@ -95,76 +92,63 @@
       body {
         padding: 10px;
       }
-
       .container {
         width: 100% !important;
         margin: 10px auto !important;
         box-shadow: none !important;
       }
-
       .content {
         padding: 15px !important;
-      }
-
-      .title {
-        font-size: 20px !important;
       }
     }
   </style>
 </head>
 <body>
-
   <div class="container">
-
-    <!-- Encabezado -->
+    <!-- Header -->
     <div class="header">
-      <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png" alt="Logo ROOTS COOPERATIVA" />
+      <img
+        src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png"
+        alt="Logo ROOTS COOPERATIVA"
+      />
     </div>
 
-    <!-- Contenido -->
+    <!-- Content -->
     <div class="content">
-      <h1 class="title">Tu Cita ha Sido Cancelada</h1>
-
+      <h1 class="subtitle">Cita Cancelada</h1>
       <p>Hola <strong>{{userName}}</strong>,</p>
       <p>
-        Lamentamos informarte que tu cita para <strong>"{{visitTitle}}"</strong> programada para el
-        <strong>{{slotDate}}</strong> a las <strong>{{slotTime}}</strong> (ID: {{appointmentId}})
-        ha sido <span class="highlight-red">cancelada</span>.
+        Lamentamos informarte que tu cita para <strong>"{{visitTitle}}"</strong>, programada para el <strong>{{slotDate}}</strong> a las <strong>{{slotTime}}</strong>, ha sido <strong style="color: #a10909;">cancelada</strong>.
       </p>
-
-      <p>Por favor, contactá con nosotros para más información o para reprogramar tu cita.</p>
-      <p>Saludos cordiales,</p>
-      <p>El equipo de <strong>{{appName}}</strong>.</p>
+      <p>
+        Si necesitas reprogramar o tienes alguna consulta, por favor <a href="{{supportLink}}">contacta a soporte</a>.
+      </p>
+      <p>Gracias por tu comprensión.</p>
     </div>
 
     <!-- Footer -->
     <div class="footer">
-      <p style="margin-bottom: 5px;">Este correo ha sido enviado por <strong style="color: #ffffff;">{{appName}}</strong>.</p>
+      <p>Este correo ha sido enviado por <strong style="color: #ffffff;">{{appName}}</strong>.</p>
       <p><a href="https://frontend-rootscoop.vercel.app">Visita nuestro sitio web</a></p>
     </div>
 
-    <!-- Redes sociales -->
+    <!-- Social Media -->
     <div class="social-container">
-      <p style="font-family: 'Montserrat', sans-serif; font-weight: 600; margin-bottom: 10px; color: #642d91;">
+      <p style="font-weight: 600; color: #642d91;">
         Seguinos en nuestras redes:
       </p>
       <div class="social-icons">
-        <!-- WhatsApp -->
         <a href="https://wa.link/b4wyji" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="20" height="20" />
         </a>
-        <!-- Instagram -->
         <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="20" height="20" />
         </a>
-        <!-- YouTube -->
         <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="20" height="20" />
         </a>
       </div>
     </div>
-
   </div>
-
 </body>
 </html>

@@ -1,3 +1,5 @@
+import { Address } from 'src/modules/users/Entyties/address.entity';
+
 export interface AuthResponse {
   accessToken: string;
   expiresIn: number;
@@ -17,7 +19,7 @@ export interface IUserAuthResponse {
   name: string;
   email: string;
   birthdate: Date;
-  address: string;
+  address: Address;
   phone: number;
   username: string;
   isAdmin: boolean;

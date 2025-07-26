@@ -88,8 +88,10 @@ export class AuthValidations {
     }
   }
 
-  static getUserDisplayName(user: IUserAuthResponse): string {
-    return user.name || user.username || 'User';
+  static getUserDisplayName(
+    user: IUserAuthResponse | { name?: string; username?: string },
+  ): string {
+    return user?.name || user?.username || 'User';
   }
 
   static async validateNewPasswordIsDifferent(

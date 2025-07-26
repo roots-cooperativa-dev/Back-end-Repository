@@ -4,6 +4,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { Product } from '../products/entities/products.entity';
 import { UpdateOrderStatusDTO } from './DTO/updateOrderStatus.dto';
@@ -21,6 +22,7 @@ import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class OrdersService {
+  private readonly logger = new Logger(OrdersService.name);
   constructor(
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
@@ -488,7 +490,7 @@ export class OrdersService {
           savedOrder.id,
         );
       } catch (emailError) {
-        console.error('Error sending order processing email:', emailError);
+        this.logger.log('Error sending order processing email:', emailError);
       }
       return this.getOrderById(savedOrder.id);
     } catch (error) {

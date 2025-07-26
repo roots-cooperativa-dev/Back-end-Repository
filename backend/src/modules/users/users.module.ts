@@ -6,10 +6,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthsModule } from '../auths/auths.module';
 import { DonationsModule } from '../donations/donations.module';
 import { MailModule } from '../mail/mail.module';
+import { Address } from './Entyties/address.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Users]),
+    TypeOrmModule.forFeature([Users, Address]),
     forwardRef(() => AuthsModule),
     forwardRef(() => DonationsModule),
     MailModule,
