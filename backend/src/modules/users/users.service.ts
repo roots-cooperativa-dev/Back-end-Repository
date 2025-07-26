@@ -20,9 +20,6 @@ import { MapboxGeocodingResponse } from './interface/IUserResponseDto';
 import { CreateAddressDto } from './Dtos/create-address.dto';
 import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
 import { MailService } from '../mail/mail.service';
-import { Logger } from '@nestjs/common';
-
-
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
