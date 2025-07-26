@@ -54,7 +54,7 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException(`Usuario con id ${id} no encontrado`);
+      throw new NotFoundException(`Usuario con id ${id} no encontrado.`);
     }
 
     return user;
