@@ -9,14 +9,14 @@ export class ContactController {
   constructor(private readonly contactService: ContactService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Enviar formulario de contacto' })
-  @ApiResponse({ status: 201, description: 'Mensaje enviado correctamente.' })
+  @ApiOperation({ summary: 'Submit contact form' })
+  @ApiResponse({ status: 201, description: 'Message sent.' })
   @ApiResponse({
     status: 400,
-    description: 'Datos inválidos en el formulario.',
+    description: 'Invalid data in the form',
   })
   async submitContactForm(@Body() contactDto: ContactDto) {
     await this.contactService.handleContactForm(contactDto);
-    return { message: 'Mensaje enviado' };
+    return { message: 'Message sent' };
   }
 }
