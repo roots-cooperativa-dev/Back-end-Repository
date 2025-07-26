@@ -33,6 +33,18 @@ export interface IDonateResponseDtoUser {
   createdAt: Date;
 }
 
+export interface MapboxGeocodingResponse {
+  features: {
+    center: [number, number];
+  }[];
+}
+
+export interface AuthenticatedRequest extends Request {
+  user: {
+    sub: string;
+  };
+}
+
 export enum OrderStatus {
   ACTIVE = 'active',
   CANCELLED = 'cancelled',
