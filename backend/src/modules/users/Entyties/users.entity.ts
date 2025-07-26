@@ -1,3 +1,4 @@
+import { Address } from 'src/modules/addresses/entities/address.entity';
 import { Donate } from 'src/modules/donations/entities/donation.entity';
 import { Cart } from 'src/modules/orders/entities/cart.entity';
 import { Order } from 'src/modules/orders/entities/order.entity';
@@ -7,6 +8,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -38,9 +40,6 @@ export class Users {
   @Column({ type: 'bigint', nullable: false })
   phone: number;
 
-  @Column({ type: 'varchar', nullable: true })
-  address: string;
-
   @Column({ type: 'boolean', default: false })
   isAdmin: boolean;
 
@@ -70,4 +69,12 @@ export class Users {
 
   @OneToOne(() => Cart, (cart) => cart.user)
   cart: Cart;
+
+  @OneToOne(() => Address, (address) => address.user, {
+    cascade: true,
+    eager: true,
+    nullable: true,
+  })
+  @JoinColumn()
+  address: Address;
 }

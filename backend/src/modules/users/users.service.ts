@@ -4,30 +4,32 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
-
 import { Users } from './Entyties/users.entity';
-
 import { InjectRepository } from '@nestjs/typeorm';
-
 import { Repository } from 'typeorm';
-
 import { CreateUserDbDto, UpdateUserDbDto } from './Dtos/CreateUserDto';
-
 import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
-
 import { paginate } from 'src/common/pagination/paginate';
-
 import { UpdatePasswordDto } from './Dtos/UpdatePasswordDto';
-
 import { AuthValidations } from '../auths/validate/auth.validate';
-
 import * as bcrypt from 'bcrypt';
+import { Address } from '../addresses/entities/address.entity';
+import { ConfigService } from '@nestjs/config';
+
+interface MapboxGeocodingResponse {
+  features: {
+    center: [number, number];
+  }[];
+}
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
+    @InjectRepository(Address)
+    private readonly addressRepository: Repository<Address>,
+    private readonly configService: ConfigService,
   ) {}
 
   async getUsers(pagination: PaginationQueryDto) {
@@ -39,18 +41,13 @@ export class UsersService {
   async getUserById(id: string): Promise<Users> {
     const user = await this.usersRepository.findOne({
       where: { id },
-
       relations: [
         'donates',
-
         'orders',
-
         'appointments',
-
+        'address',
         'cart',
-
         'cart.items',
-
         'cart.items.product',
       ],
     });
@@ -65,26 +62,49 @@ export class UsersService {
   async findByEmail(email: string): Promise<Users | null> {
     return this.usersRepository.findOne({
       where: { email },
-
       select: ['id', 'name', 'email', 'password', 'isAdmin', 'isDonator'],
     });
   }
 
   async createUserService(dto: CreateUserDbDto): Promise<Users> {
     try {
-      const user = this.usersRepository.create(dto);
+      if (dto.address) {
+        const token = this.configService.get<string>('MAPBOX_TOKEN');
+        const direccion = dto.address.street;
 
-      return this.usersRepository.save(user);
+        const response = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
+            direccion,
+          )}.json?access_token=${token}`,
+        );
+
+        const data = (await response.json()) as MapboxGeocodingResponse;
+
+        if (!Array.isArray(data.features) || !data.features[0]?.center) {
+          throw new BadRequestException('Dirección inválida');
+        }
+
+        const [longitude, latitude] = data.features[0].center;
+        const address = this.addressRepository.create({
+          ...dto.address,
+          latitude,
+          longitude,
+        });
+        await this.addressRepository.save(address);
+        const user = this.usersRepository.create({ ...dto, address });
+        return await this.usersRepository.save(user);
+      } else {
+        const user = this.usersRepository.create(dto);
+        return await this.usersRepository.save(user);
+      }
     } catch (error) {
       console.error('Error al crear el usuario:', error);
-
       throw new BadRequestException('Error al crear el usuario');
     }
   }
 
   async updateUserService(
     id: string,
-
     dto: Partial<UpdateUserDbDto>,
   ): Promise<Users> {
     const camposRestringidos = ['isAdmin', 'isDonator', 'isSuperAdmin'];
@@ -131,7 +151,6 @@ export class UsersService {
 
     await AuthValidations.validateNewPasswordIsDifferent(
       dto.newPassword,
-
       user.password,
     );
 
