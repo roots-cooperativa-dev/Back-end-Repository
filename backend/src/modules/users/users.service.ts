@@ -15,6 +15,8 @@ import { AuthValidations } from '../auths/validate/auth.validate';
 import * as bcrypt from 'bcrypt';
 import { Address } from '../addresses/entities/address.entity';
 import { ConfigService } from '@nestjs/config';
+import { MailService } from '../mail/mail.service';
+import { Logger } from '@nestjs/common';
 
 interface MapboxGeocodingResponse {
   features: {
@@ -24,12 +26,14 @@ interface MapboxGeocodingResponse {
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   constructor(
     @InjectRepository(Users)
     private readonly usersRepository: Repository<Users>,
     @InjectRepository(Address)
     private readonly addressRepository: Repository<Address>,
     private readonly configService: ConfigService,
+    private readonly mailService: MailService,
   ) {}
 
   async getUsers(pagination: PaginationQueryDto) {
@@ -130,6 +134,16 @@ export class UsersService {
         `Error inesperado: Usuario con id ${id} no encontrado tras la actualización`,
       );
     }
+    this.mailService
+      .sendUserDataChangedNotification(updatedUser.email, updatedUser.name)
+      .catch((err: unknown) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Error desconocido al enviar email de modificación de datos';
+        const stack = err instanceof Error ? err.stack : undefined;
+        this.logger.error(message, stack);
+      });
 
     return updatedUser;
   }
@@ -160,5 +174,17 @@ export class UsersService {
 
     user.password = hashedPassword;
     await this.usersRepository.save(user);
+
+    this.mailService
+      .sendPasswordResetEmail(user.name, user.email)
+      .catch((err: unknown) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : 'Error desconocido al enviar email';
+        const stack = err instanceof Error ? err.stack : undefined;
+
+        this.logger.error(message, stack);
+      });
   }
 }

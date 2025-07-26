@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
@@ -11,6 +15,7 @@ import juice = require('juice');
 @Injectable()
 export class MailService {
   private transporter: Transporter;
+  private readonly logger = new Logger(MailService.name);
 
   constructor(private configService: ConfigService) {
     this.transporter = nodemailer.createTransport({
@@ -44,7 +49,7 @@ export class MailService {
     try {
       templateSource = await fs.promises.readFile(templatePath, 'utf8');
     } catch (error) {
-      console.error(`Error reading template file ${templatePath}:`, error);
+      this.logger.log(`Error reading template file ${templatePath}:`, error);
       throw new InternalServerErrorException(
         `Failed to load email template: ${templateName}`,
       );
@@ -69,7 +74,7 @@ export class MailService {
         context,
       );
       const inlinedHtml = juice(rawHtml);
-      console.log(inlinedHtml);
+      this.logger.log(inlinedHtml);
       await this.transporter.sendMail({
         from: emailFrom,
         to,
@@ -78,11 +83,11 @@ export class MailService {
         text: textAlt,
       });
 
-      console.log(
+      this.logger.log(
         `Correo enviado a ${to}: "${subject}" usando plantilla "${templateFileName}"`,
       );
     } catch (error) {
-      console.error('Error al enviar correo:', error);
+      this.logger.log('Error al enviar correo:', error);
       throw new InternalServerErrorException(
         'Error al enviar el correo electrónico.',
       );
@@ -147,6 +152,44 @@ export class MailService {
       subject,
       finalTextAlt,
       'appointment-cancelled.html',
+      context,
+    );
+  }
+  async sendAppointmentCancelledNotificationToAdmin(
+    userName: string,
+    userEmail: string,
+    appointmentId: string,
+    visitTitle: string,
+    slotDate: string,
+    slotTime: string,
+    reason?: string,
+  ): Promise<void> {
+    const subject = 'Cita Cancelada';
+    const textAlt =
+      `Usuario: ${userName}\n` +
+      `Email: ${userEmail}\n` +
+      `Visita: ${visitTitle}\n` +
+      `Fecha: ${slotDate}\n` +
+      `Hora: ${slotTime}\n` +
+      `ID de la cita: ${appointmentId}\n` +
+      `Razón: ${reason || 'No especificada'}`;
+
+    const context = {
+      userName,
+      userEmail,
+      appointmentId,
+      visitTitle,
+      slotDate,
+      slotTime,
+      reason: reason || 'No especificada',
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      'rootscooperativadev@gmail.com',
+      subject,
+      textAlt,
+      'appointment-cancelled-admin.html',
       context,
     );
   }
@@ -302,6 +345,63 @@ export class MailService {
       subject,
       textAlt,
       'purchase-confirmation.html',
+      context,
+    );
+  }
+  async sendPasswordResetEmail(name: string, email: string): Promise<void> {
+    const subject = 'Restablece tu contraseña - ROOTS COOPERATIVA';
+    const textAlt =
+      `Hola ${name},\n\n` +
+      `Recibimos una solicitud para restablecer tu contraseña.\n` +
+      `Podés hacerlo haciendo clic en el siguiente enlace:\n\n` +
+      `Si no realizaste esta solicitud, podés ignorar este mensaje.\n\n` +
+      `Saludos,\nEl equipo de ROOTS COOPERATIVA.`;
+
+    const context = {
+      name,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      email,
+      subject,
+      textAlt,
+      'changed-password.html',
+      context,
+    );
+  }
+  async sendPendingAppointmentToAdmin(
+    userName: string,
+    userEmail: string,
+    appointmentId: string,
+    visitTitle: string,
+    slotDate: string,
+    slotTime: string,
+  ): Promise<void> {
+    const subject = 'Nueva cita pendiente de aprobación';
+    const textAlt =
+      `Usuario: ${userName}\n` +
+      `Email: ${userEmail}\n` +
+      `Visita: ${visitTitle}\n` +
+      `Fecha: ${slotDate}\n` +
+      `Hora: ${slotTime}\n` +
+      `ID de la cita: ${appointmentId}`;
+
+    const context = {
+      userName,
+      userEmail,
+      appointmentId,
+      visitTitle,
+      slotDate,
+      slotTime,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      'rootscooperativadev@gmail.com',
+      subject,
+      textAlt,
+      'appointment-pending-admin.html',
       context,
     );
   }
