@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -17,6 +18,7 @@ import { Users } from '../users/Entyties/users.entity';
 
 @Injectable()
 export class VisitsService {
+  private readonly logger = new Logger(VisitsService.name);
   constructor(
     @InjectRepository(Visit)
     private visitsRepository: Repository<Visit>,
@@ -247,8 +249,16 @@ export class VisitsService {
         visitDate.toDateString(),
         visitSlot.startTime,
       );
+      await this.mailService.sendPendingAppointmentToAdmin(
+        user.name || user.username || 'Usuario',
+        user.email,
+        savedAppointment.id,
+        visitSlot.visit.title,
+        visitDate.toDateString(),
+        visitSlot.startTime,
+      );
     } else {
-      console.warn(
+      this.logger.warn(
         `No se pudo enviar la notificación: Usuario o datos de visita incompletos para userId: ${userId}`,
       );
     }
@@ -441,17 +451,27 @@ export class VisitsService {
       appointment.visitSlot &&
       appointment.visitSlot.visit
     ) {
+      const visitDate = new Date(appointment.visitSlot.date);
       await this.mailService.sendAppointmentCancelledNotification(
         appointment.user.email,
         appointment.user.name || appointment.user.username || 'Usuario',
         appointment.id,
         appointment.visitSlot.visit.title,
-        appointment.visitSlot.date.toDateString(),
+        visitDate.toDateString(),
+        appointment.visitSlot.startTime,
+        reason,
+      );
+      await this.mailService.sendAppointmentCancelledNotificationToAdmin(
+        appointment.user.name || appointment.user.username || 'Usuario',
+        appointment.user.email,
+        appointment.id,
+        appointment.visitSlot.visit.title,
+        visitDate.toDateString(),
         appointment.visitSlot.startTime,
         reason,
       );
     } else {
-      console.warn(
+      this.logger.warn(
         `Failed to send the cancellation notification: User or visit data is incomplete for appointment ${appointmentId}.`,
       );
     }

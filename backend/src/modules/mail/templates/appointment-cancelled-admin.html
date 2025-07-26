@@ -1,13 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notificación de Inicio de Sesión</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Bebas+Neue&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cita Cancelada - ROOTS COOPERATIVA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@600&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -38,44 +35,38 @@
     }
     .content {
       padding: 30px;
-    }
-     .subtitle {
-      font-family: 'Bebas Neue', cursive;
-      font-size: 20px;
-      color: #017d74;
-      margin-bottom: 20px;
-    }
-    .content p {
-      margin-bottom: 15px;
+      color: #642d91;
       font-weight: 600;
     }
-    .content a {
+    .title {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 24px;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #642d91;
+    }
+    .highlight-red {
       color: #a10909;
-      text-decoration: none;
       font-weight: bold;
     }
-    .btn {
-      display: inline-block;
-      padding: 12px 25px;
-      margin-top: 20px;
-      background-color: #017d74;
-      color: #ffffff !important;
-      text-decoration: none;
-      border-radius: 5px;
+    a {
+      color: #a10909;
       font-weight: bold;
+      text-decoration: none;
     }
     .footer {
       border-top: 1px solid #4d206c;
       color: #ffdd00;
       font-size: 0.9em;
+      padding: 20px;
     }
     .footer a {
       color: #ffdd00;
       text-decoration: none;
     }
     .social-container {
-      margin: 30px auto;
       text-align: center;
+      padding: 20px 0;
     }
     .social-icons {
       display: inline-flex;
@@ -89,7 +80,6 @@
       border-radius: 50%;
       display: inline-block;
     }
-
     @media screen and (max-width: 480px) {
       body {
         padding: 10px;
@@ -102,64 +92,59 @@
       .content {
         padding: 15px !important;
       }
+      .title {
+        font-size: 20px !important;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Encabezado -->
+
+    <!-- Header -->
     <div class="header">
-      <img
-        src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png"
-        alt="Logo ROOTS COOPERATIVA"
-      />
+      <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png" alt="Logo ROOTS COOPERATIVA" />
     </div>
 
     <!-- Contenido -->
     <div class="content">
-      <h1 class="subtitle">¡Hola <strong>{{userName}}</strong>!
-      </h1>
-      <p>
-        Se ha iniciado sesión en tu cuenta de <strong>{{appName}}</strong>.
-      </p>
-      <p>
-        Si no fuiste vos quien inició sesión, por favor,
-        <a href="https://frontend-rootscoop.vercel.app/contacto">contactá a soporte inmediatamente</a> para proteger tu cuenta.
-      </p>
-      <p>
-        Saludos cordiales,<br />
-        El equipo de <strong>{{appName}}</strong>.
-      </p>
-      <a href="{{supportLink}}" class="btn">Contactar Soporte</a>
+      <h1 class="title">Cita Cancelada</h1>
+
+      <p>El usuario <strong>{{userName}}</strong> (<a href="mailto:{{userEmail}}">{{userEmail}}</a>) ha <span class="highlight-red">cancelado</span> la cita para:</p>
+
+      <p><strong>"{{visitTitle}}"</strong></p>
+      <p><strong>Fecha y hora:</strong> {{slotDate}} a las {{slotTime}}</p>
+      <p><strong>ID de la cita:</strong> {{appointmentId}}</p>
+
+      <p><strong>Razón de la cancelación:</strong> {{reason}}</p>
+
+      <p>Por favor, actualicen el sistema en el panel de administración.</p>
     </div>
 
-    <!-- Pie de página -->
+    <!-- Footer -->
     <div class="footer">
-      <p>Este correo ha sido enviado por <strong style="color: #ffffff;">{{appName}}</strong>.</p>
+      <p>Este correo ha sido enviado por <strong style="color: #ffffff;">ROOTS COOPERATIVA</strong>.</p>
       <p><a href="https://frontend-rootscoop.vercel.app">Visita nuestro sitio web</a></p>
     </div>
 
     <!-- Redes sociales -->
     <div class="social-container">
-      <p style="font-weight: 600; color: #642d91;">
+      <p style="font-family: 'Montserrat', sans-serif; font-weight: 600; margin-bottom: 10px; color: #642d91;">
         Seguinos en nuestras redes:
       </p>
       <div class="social-icons">
-        <!-- WhatsApp -->
         <a href="https://wa.link/b4wyji" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="20" height="20" />
         </a>
-        <!-- Instagram -->
         <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="20" height="20" />
         </a>
-        <!-- YouTube -->
         <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="20" height="20" />
         </a>
       </div>
     </div>
+
   </div>
 </body>
 </html>
-
