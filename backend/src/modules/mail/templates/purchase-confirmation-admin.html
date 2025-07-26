@@ -3,11 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Notificación de Inicio de Sesión</title>
+  <title>Nueva Compra Realizada</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Bebas+Neue&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
       margin: 0;
@@ -26,7 +24,7 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     .header, .footer {
-      background-color: #922f4e;
+      background-color: #017d74;
       padding: 1px;
       text-align: center;
     }
@@ -39,33 +37,15 @@
     .content {
       padding: 30px;
     }
-     .subtitle {
-      font-family: 'Bebas Neue', cursive;
-      font-size: 20px;
-      color: #017d74;
-      margin-bottom: 20px;
-    }
     .content p {
       margin-bottom: 15px;
       font-weight: 600;
     }
-    .content a {
-      color: #a10909;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    .btn {
-      display: inline-block;
-      padding: 12px 25px;
-      margin-top: 20px;
-      background-color: #017d74;
-      color: #ffffff !important;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
+    .content .highlight {
+      color: #017d74;
     }
     .footer {
-      border-top: 1px solid #4d206c;
+      border-top: 1px solid #01564c;
       color: #ffdd00;
       font-size: 0.9em;
     }
@@ -89,7 +69,6 @@
       border-radius: 50%;
       display: inline-block;
     }
-
     @media screen and (max-width: 480px) {
       body {
         padding: 10px;
@@ -109,28 +88,26 @@
   <div class="container">
     <!-- Encabezado -->
     <div class="header">
-      <img
-        src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png"
-        alt="Logo ROOTS COOPERATIVA"
-      />
+      <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png" alt="Logo ROOTS COOPERATIVA" />
     </div>
 
     <!-- Contenido -->
     <div class="content">
-      <h1 class="subtitle">¡Hola <strong>{{userName}}</strong>!
+      <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: #392f5a; margin-bottom: 15px;">
+        Nueva compra realizada
       </h1>
-      <p>
-        Se ha iniciado sesión en tu cuenta de <strong>{{appName}}</strong>.
-      </p>
-      <p>
-        Si no fuiste vos quien inició sesión, por favor,
-        <a href="https://frontend-rootscoop.vercel.app/contacto">contactá a soporte inmediatamente</a> para proteger tu cuenta.
-      </p>
-      <p>
-        Saludos cordiales,<br />
-        El equipo de <strong>{{appName}}</strong>.
-      </p>
-      <a href="{{supportLink}}" class="btn">Contactar Soporte</a>
+      <p>Hola equipo,</p>
+      <p>Se ha realizado una nueva compra por parte de <strong>{{customerName}}</strong>.</p>
+      <p><strong>Detalles de la compra:</strong></p>
+      <ul style="font-weight: 600; margin-left: 20px; color: #642d91;">
+        <li>ID de la orden: <span class="highlight">{{orderId}}</span></li>
+        <li>Producto(s): <span class="highlight">{{productList}}</span></li>
+        <li>Total: <span class="highlight">{{totalAmount}}</span></li>
+        <li>Fecha: <span class="highlight">{{purchaseDate}}</span></li>
+      </ul>
+      <p>Por favor, revisen el sistema para procesar el pedido.</p>
+      <p>Gracias,</p>
+      <p>El equipo de <strong>{{appName}}</strong>.</p>
     </div>
 
     <!-- Pie de página -->
@@ -141,19 +118,16 @@
 
     <!-- Redes sociales -->
     <div class="social-container">
-      <p style="font-weight: 600; color: #642d91;">
+      <p style="font-weight: 600; color: #017d74;">
         Seguinos en nuestras redes:
       </p>
       <div class="social-icons">
-        <!-- WhatsApp -->
         <a href="https://wa.link/b4wyji" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="20" height="20" />
         </a>
-        <!-- Instagram -->
-        <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" class="social-icon">
+        <a href="https://www.instagram.com/roots_cooperativa" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="20" height="20" />
         </a>
-        <!-- YouTube -->
         <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="20" height="20" />
         </a>
@@ -162,4 +136,3 @@
   </div>
 </body>
 </html>
-

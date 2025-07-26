@@ -37,7 +37,6 @@ import { AppointmentStatus } from './entities/appointment.entity';
 import { Appointment } from './entities/appointment.entity';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { AuthRequest } from 'src/common/auth-request.interface';
-import { error } from 'console';
 
 @ApiTags('Visits & Appointments')
 @ApiBearerAuth()
@@ -70,7 +69,6 @@ export class VisitsController {
     if (pendingAppointments.length === 0) {
       throw new NotFoundException('No pending appointments found.');
     }
-    console.log(error);
     return pendingAppointments;
   }
   @ApiOperation({

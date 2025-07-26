@@ -1,24 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tu Cita Está Pendiente</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cita Pendiente - ROOTS COOPERATIVA</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@600&display=swap" rel="stylesheet" />
-
   <style>
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Montserrat', sans-serif;
-      line-height: 1.6;
-      color: #642d91;
       background-color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      color: #392f5a;
+      line-height: 1.6;
     }
 
     .container {
-      max-width: 600px;
+      max-width: 1200px;
       margin: 20px auto;
       background-color: #ffffff;
       border-radius: 8px;
@@ -28,12 +26,12 @@
 
     .header, .footer {
       background-color: #922f4e;
-      padding: 20px;
+      padding: 1px;
       text-align: center;
     }
 
     .header img {
-      max-width: 180px;
+      max-width: 240px;
       height: auto;
       display: block;
       margin: 0 auto;
@@ -42,20 +40,30 @@
     .content {
       padding: 30px;
       font-weight: 600;
+      color: #642d91;
     }
 
     .title {
-      font-family: 'Bebas Neue', sans-serif;
+      font-family: 'Bebas Neue', cursive;
       font-size: 24px;
-      color: #642d91;
       margin-bottom: 20px;
       text-align: left;
+      color: #642d91;
+    }
+
+    p {
+      margin-bottom: 15px;
+    }
+
+    strong.approval-status {
+      color: #017d74;
     }
 
     .footer {
       font-size: 0.9em;
       color: #ffdd00;
-      border-top: 1px solid #a39ad9;
+      border-top: 1px solid #4d206c;
+      padding: 20px;
     }
 
     .footer a {
@@ -86,14 +94,17 @@
       body {
         padding: 10px;
       }
+
       .container {
         width: 100% !important;
         margin: 10px auto !important;
         box-shadow: none !important;
       }
+
       .content {
         padding: 15px !important;
       }
+
       .title {
         font-size: 20px !important;
       }
@@ -116,7 +127,7 @@
       <p>
         Tu cita para <strong>"{{visitTitle}}"</strong> programada para el
         <strong>{{slotDate}}</strong> a las <strong>{{slotTime}}</strong> (ID: {{appointmentId}})
-        está actualmente <strong style="color: #017d74;">pendiente de aprobación</strong>.
+        está actualmente <strong class="approval-status">pendiente de aprobación</strong>.
       </p>
       <p>Te enviaremos otra notificación tan pronto como sea aprobada o cancelada por la administración.</p>
       <p>Gracias por tu paciencia.</p>
