@@ -10,7 +10,7 @@ export interface IUserResponseDto {
   email: string;
   birthdate: Date;
   phone: number;
-  address: string;
+  address: string | IAddress;
   username: string;
   isAdmin?: boolean;
   isDonator?: boolean;
@@ -56,7 +56,12 @@ export interface IAppointmentResponseDto {
   description?: string;
   visitSlot: VisitSlot;
 }
-
+export interface IAddress {
+  id: string;
+  street: string;
+  lat: number;
+  long: number;
+}
 export interface ICartResponseDto {
   id: string;
   total: number;
@@ -73,7 +78,16 @@ export class ResponseUserDto {
       email: user.email,
       birthdate: user.birthdate,
       phone: user.phone,
-      address: user.address,
+      address:
+        typeof user.address === 'string'
+          ? user.address
+          : {
+              id: user.address?.id,
+              street: user.address?.street,
+              lat: user.address?.latitude,
+              long: user.address?.longitude,
+            },
+
       username: user.username,
       isAdmin: user.isAdmin,
       isDonator: user.isDonator,

@@ -17,6 +17,7 @@ import {
   IUserAuthResponse,
 } from './interface/IAuth.interface';
 import { MailService } from '../mail/mail.service';
+import { Address } from '../addresses/entities/address.entity';
 
 @Injectable()
 export class AuthsService {
@@ -104,7 +105,10 @@ export class AuthsService {
       username,
       password: randomPassword,
       phone: 0,
-      address: 'calle falsa 123',
+      address: {
+        street: 'Sin dirección',
+      } as Address,
+
       isAdmin: false,
       isSuperAdmin: false,
       isDonator: false,
@@ -131,7 +135,10 @@ export class AuthsService {
         name: user.name,
         email: user.email,
         birthdate: user.birthdate,
-        address: user.address,
+        address:
+          typeof user.address === 'string'
+            ? user.address
+            : (user.address?.street ?? ''),
         username: user.username,
         phone: user.phone,
       },
