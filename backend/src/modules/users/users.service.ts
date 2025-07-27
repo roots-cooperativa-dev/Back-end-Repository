@@ -160,12 +160,10 @@ export class UsersService {
     await this.usersRepository.save(user);
 
     this.mailService
-      .sendPasswordResetEmail(user.name, user.email)
+      .sendPasswordChangedConfirmationEmail(user.email, user.name)
       .catch((err: unknown) => {
         const message =
-          err instanceof Error
-            ? err.message
-            : 'Error desconocido al enviar email';
+          err instanceof Error ? err.message : 'Error sending email';
         const stack = err instanceof Error ? err.stack : undefined;
 
         this.logger.error(message, stack);

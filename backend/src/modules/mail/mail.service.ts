@@ -370,6 +370,32 @@ export class MailService {
       context,
     );
   }
+  async sendPasswordChangedConfirmationEmail(
+    email: string,
+    name: string,
+  ): Promise<void> {
+    const subject =
+      'Confirmación: Tu Contraseña ha Cambiado - ROOTS COOPERATIVA';
+    const textAlt =
+      `Hola ${name},\n\n` +
+      `Te confirmamos que tu contraseña en ROOTS COOPERATIVA ha sido cambiada correctamente.\n\n` +
+      `Si no realizaste este cambio, te recomendamos contactar a nuestro equipo de soporte inmediatamente.\n\n` +
+      `Gracias por confiar en nosotros.\n\n` +
+      `Saludos cordiales,\nEl equipo de ROOTS COOPERATIVA.`;
+
+    const context = {
+      name,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      email,
+      subject,
+      textAlt,
+      'confirm-password-changed.html',
+      context,
+    );
+  }
   async sendPendingAppointmentToAdmin(
     userName: string,
     userEmail: string,
@@ -425,5 +451,17 @@ export class MailService {
       'user-blocked.html',
       context,
     );
+  }
+  async sendDonationThanks(userName: string, userEmail: string): Promise<void> {
+    const subject = '¡Gracias por tu generosa donación a ROOTS COOPERATIVA!';
+    const textAlt = `Hola ${userName},\n\nQueremos agradecerte de corazón por tu reciente donación a ROOTS COOPERATIVA. Tu generosidad es fundamental para nuestra misión y nos permite seguir trabajando.\n\nCon gratitud,\nEl equipo de ROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      userEmail,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(userEmail, subject, textAlt, 'donation.html', context);
   }
 }

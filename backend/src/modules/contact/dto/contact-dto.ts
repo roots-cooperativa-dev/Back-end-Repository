@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class ContactDto {
   @ApiProperty({
     example: 'Juan Pérez',
-    description: 'Nombre completo del contacto',
+    description: 'Full name of contact',
   })
   @IsNotEmpty()
   @IsString()
@@ -12,7 +12,7 @@ export class ContactDto {
 
   @ApiProperty({
     example: 'juan@example.com',
-    description: 'Email del contacto',
+    description: 'Contact email',
   })
   @IsNotEmpty()
   @IsEmail()
@@ -20,15 +20,15 @@ export class ContactDto {
 
   @ApiProperty({
     example: '+541112345678',
-    description: 'Teléfono de contacto',
+    description: 'Contact phone',
   })
   @IsNotEmpty()
   @IsString()
   phone: string;
 
   @ApiProperty({
-    example: 'Consulta sobre servicios',
-    description: 'Motivo de contacto',
+    example: 'Inquiry about services',
+    description: 'Reason for contact',
   })
   @IsNotEmpty()
   @IsString()
