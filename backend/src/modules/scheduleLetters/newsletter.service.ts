@@ -34,30 +34,59 @@ export class NewsletterService {
     });
   }
 
-  @Cron('0 9 1 * *', { timeZone: 'America/Argentina/Buenos_Aires' })
-  async sendMonthlyNewsletter() {
-    this.logger.log('📨 Sending monthly newsletter...');
-    const users: User[] = await this.usersService.findAll();
+  @Cron('0 9 1 * *', {
+    name: 'monthly-newsletter',
+    timeZone: 'America/Argentina/Buenos_Aires',
+  })
+  async handleMonthlyNewsletter() {
+    this.logger.log('🚀 Iniciando el envío de la newsletter mensual...');
+
+    let users: User[] = [];
+    try {
+      users = await this.usersService.findAll();
+      this.logger.log(
+        `📧 Encontrados ${users.length} usuarios para el newsletter.`,
+      );
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        this.logger.error(`Error al obtener usuarios: ${error.message}`);
+      } else {
+        this.logger.error('Error desconocido al obtener usuarios.');
+      }
+      return;
+    }
+
+    if (users.length === 0) {
+      this.logger.warn(
+        'No hay usuarios registrados para enviar la newsletter.',
+      );
+      return;
+    }
 
     for (const user of users) {
-      const html = buildMonthlyNewsletterHtml(user.name);
+      const htmlContent = buildMonthlyNewsletterHtml(user.name);
 
       try {
         await this.transporter.sendMail({
           to: user.email,
           from: `"ROOTS Cooperativa" <${this.configService.get('EMAIL_USER')}>`,
           subject: '🌱 Tu newsletter mensual - ROOTS',
-          html,
+          html: htmlContent,
         });
-        this.logger.log(`✅ Sent to: ${user.email}`);
+        this.logger.log(`✅ Newsletter mensual enviada a: ${user.email}`);
       } catch (error: unknown) {
         if (error instanceof Error) {
-          this.logger.error(`Error send to ${user.email}: ${error.message}`);
+          this.logger.error(
+            `❌ Error al enviar newsletter a ${user.email}: ${error.message}`,
+          );
         } else {
-          this.logger.error(`Unknown error sending to ${user.email}`);
+          this.logger.error(
+            `❌ Error desconocido al enviar newsletter a ${user.email}`,
+          );
         }
       }
     }
+    this.logger.log('🎉 Envío de newsletter mensual finalizado.');
   }
 
   async sendWelcomeNewsletter(user: User) {
@@ -70,14 +99,16 @@ export class NewsletterService {
         subject: '🌿 ¡Bienvenidx a ROOTS COOPERATIVA!',
         html,
       });
-      this.logger.log(`👋 Newsletter welcome sent to ${user.email}`);
+      this.logger.log(`👋 Newsletter bienvenida enviada a ${user.email}`);
     } catch (error: unknown) {
       if (error instanceof Error) {
         this.logger.error(
-          `Error sending welcome to ${user.email}: ${error.message}`,
+          `Error al enviar bienvenida a ${user.email}: ${error.message}`,
         );
       } else {
-        this.logger.error(`Error unknown sending welcome to ${user.email}`);
+        this.logger.error(
+          `Error desconocido al enviar bienvenida a ${user.email}`,
+        );
       }
     }
   }

@@ -1,12 +1,14 @@
-import { Module } from '@nestjs/common';
+// src/newsletter/newsletter.module.ts
+import { forwardRef, Module } from '@nestjs/common';
 import { NewsletterService } from './newsletter.service';
-import { UsersModule } from '../users/users.module';
 import { NewsletterController } from './newsletter.controller';
-import { ConfigModule } from '@nestjs/config';
+import { UsersModule } from '../users/users.module';
+import { AuthsModule } from '../auths/auths.module';
 
 @Module({
-  imports: [UsersModule, ConfigModule],
+  imports: [forwardRef(() => UsersModule), forwardRef(() => AuthsModule)],
   providers: [NewsletterService],
   controllers: [NewsletterController],
+  exports: [NewsletterService],
 })
 export class NewsletterModule {}
