@@ -348,7 +348,11 @@ export class MailService {
       context,
     );
   }
-  async sendPasswordResetEmail(name: string, email: string): Promise<void> {
+  async sendPasswordResetEmail(
+    email: string,
+    name: string,
+    resetUrl: string,
+  ): Promise<void> {
     const subject = 'Restablece tu contraseña - ROOTS COOPERATIVA';
     const textAlt =
       `Hola ${name},\n\n` +
@@ -359,6 +363,7 @@ export class MailService {
 
     const context = {
       name,
+      resetUrl,
       appName: 'ROOTS COOPERATIVA',
     };
 
