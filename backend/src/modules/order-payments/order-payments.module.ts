@@ -14,7 +14,6 @@ import { Users } from '../users/Entyties/users.entity';
     ConfigModule,
     TypeOrmModule.forFeature([Order, Users]),
     forwardRef(() => OrdersModule),
-    forwardRef(() => UsersModule),
   ],
   controllers: [OrderPaymentsController],
   providers: [OrderPaymentsService, MercadoPagoService],
