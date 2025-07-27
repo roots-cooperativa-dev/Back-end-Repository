@@ -1,4 +1,4 @@
-import { Address } from 'src/modules/addresses/entities/address.entity';
+import { Address } from 'src/modules/users/Entyties/address.entity';
 import { Donate } from 'src/modules/donations/entities/donation.entity';
 import { Cart } from 'src/modules/orders/entities/cart.entity';
 import { Order } from 'src/modules/orders/entities/order.entity';

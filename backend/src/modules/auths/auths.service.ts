@@ -17,7 +17,7 @@ import {
   IUserAuthResponse,
 } from './interface/IAuth.interface';
 import { MailService } from '../mail/mail.service';
-import { Address } from '../addresses/entities/address.entity';
+import { Address } from '../users/Entyties/address.entity';
 
 @Injectable()
 export class AuthsService {

@@ -15,6 +15,9 @@ import { DonationsModule } from './modules/donations/donations.module';
 import { MailModule } from './modules/mail/mail.module';
 import { PaymentsModule } from './modules/payments/payment.module';
 import { ContactModule } from './modules/contact/contact.module';
+import { OrderPaymentsModule } from './modules/order-payments/order-payments.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { NewsletterModule } from './modules/scheduleLetters/newsletter.module';
 
 @Module({
   imports: [
@@ -44,6 +47,9 @@ import { ContactModule } from './modules/contact/contact.module';
     PaymentsModule,
     MailModule,
     ContactModule,
+    OrderPaymentsModule,
+    ScheduleModule.forRoot(),
+    NewsletterModule,
   ],
   controllers: [],
   providers: [],

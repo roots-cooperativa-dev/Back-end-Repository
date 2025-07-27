@@ -8,4 +8,11 @@ export class UpdateRoleDto {
   })
   @IsBoolean()
   isAdmin: boolean;
+
+  @ApiProperty({
+    example: true,
+    description: 'Define si el usuario será admin o no',
+  })
+  @IsBoolean()
+  isDonator?: boolean;
 }
