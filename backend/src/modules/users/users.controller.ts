@@ -12,6 +12,7 @@ import {
   Req,
   Delete,
   Patch,
+  Post,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -39,6 +40,8 @@ import { PaginatedUsersDto } from './Dtos/paginated-users.dto';
 import { UpdatePasswordDto } from './Dtos/UpdatePasswordDto';
 import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
 import { Users } from './Entyties/users.entity';
+import { ForgotPasswordDto } from './Dtos/forgot-password.dto';
+import { ResetPasswordDto } from './Dtos/reset-password.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -137,5 +140,31 @@ export class UsersController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.usersService.deleteUser(id);
+  }
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Solicitar recuperación de contraseña' })
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Si el email existe, se envía link de reseteo',
+  })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.usersService.sendResetPasswordEmail(dto.email);
+    return {
+      message:
+        'Si el email existe, se envió el link para reestablecer contraseña',
+    };
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Resetear contraseña usando token de email' })
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Contraseña reseteada correctamente',
+  })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.usersService.resetPassword(dto);
+    return { message: 'Contraseña restablecida correctamente' };
   }
 }

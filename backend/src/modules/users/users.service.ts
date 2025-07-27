@@ -16,10 +16,9 @@ import { AuthValidations } from '../auths/validate/auth.validate';
 import * as bcrypt from 'bcrypt';
 import { Address } from './Entyties/address.entity';
 import { ConfigService } from '@nestjs/config';
-import { MapboxGeocodingResponse } from './interface/IUserResponseDto';
-import { CreateAddressDto } from './Dtos/create-address.dto';
 import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
 import { MailService } from '../mail/mail.service';
+import { ResetPasswordDto } from './Dtos/reset-password.dto';
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
@@ -73,14 +72,14 @@ export class UsersService {
 
   async createUserService(dto: CreateUserDbDto): Promise<Users> {
     try {
+      let user: Users;
       if (dto.address) {
-        const address = await this.createAddressWithCoordinates(dto.address);
-        const user = this.usersRepository.create({ ...dto, address });
-        return await this.usersRepository.save(user);
+        const address = this.addressRepository.create(dto.address);
+        user = this.usersRepository.create({ ...dto, address });
       } else {
-        const user = this.usersRepository.create(dto);
-        return await this.usersRepository.save(user);
+        user = this.usersRepository.create(dto);
       }
+      return await this.usersRepository.save(user);
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
@@ -160,6 +159,7 @@ export class UsersService {
 
     this.mailService
       .sendPasswordChangedConfirmationEmail(user.email, user.name)
+
       .catch((err: unknown) => {
         const message =
           err instanceof Error ? err.message : 'Error sending email';
@@ -204,49 +204,38 @@ export class UsersService {
       throw new InternalServerErrorException(`Error deleting User ${id}`);
     }
   }
-
-  private async createAddressWithCoordinates(
-    addressDto: CreateAddressDto,
-  ): Promise<Address> {
-    const token = this.configService.get<string>('MAPBOX_TOKEN');
-
-    if (!token) {
-      throw new BadRequestException('Mapbox token no configurado');
+  async sendResetPasswordEmail(email: string): Promise<void> {
+    const user = await this.usersRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new BadRequestException('Credenciales inválidas');
     }
+    const frontendUrl =
+      this.configService.get<string>('FRONTEND_URL') || 'http://localhost:3000';
+    const resetUrl = `${frontendUrl}/reset-password?token=${encodeURIComponent(email)}`;
+    await this.mailService.sendPasswordResetEmail(
+      user.email,
+      user.name,
+      resetUrl,
+    );
+  }
 
-    try {
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
-          addressDto.street,
-        )}.json?access_token=${token}`,
-      );
-
-      if (!response.ok) {
-        throw new BadRequestException(
-          'Error consultando servicio de geocodificación',
-        );
-      }
-
-      const data = (await response.json()) as MapboxGeocodingResponse;
-
-      if (!Array.isArray(data.features) || !data.features[0]?.center) {
-        throw new BadRequestException('Dirección no encontrada o inválida');
-      }
-
-      const [longitude, latitude] = data.features[0].center;
-      const address = this.addressRepository.create({
-        ...addressDto,
-        latitude,
-        longitude,
-      });
-
-      return await this.addressRepository.save(address);
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-      this.logger.error('Error geocoding address:', error);
-      throw new BadRequestException('Error procesando la dirección');
+  async resetPassword(dto: ResetPasswordDto): Promise<void> {
+    const { token, newPassword, confirmPassword } = dto;
+    if (newPassword !== confirmPassword) {
+      throw new BadRequestException('Las contraseñas no coinciden');
     }
+    const user = await this.usersRepository.findOne({
+      where: { email: token },
+    });
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    const hashedPassword = await AuthValidations.hashPassword(newPassword);
+    user.password = hashedPassword;
+    await this.usersRepository.save(user);
+    await this.mailService.sendPasswordChangedConfirmationEmail(
+      user.email,
+      user.name,
+    );
   }
 }
