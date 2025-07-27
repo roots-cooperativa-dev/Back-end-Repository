@@ -1,3 +1,4 @@
+// src/modules/payments/payment.controller.ts
 import {
   Controller,
   Post,
@@ -17,14 +18,13 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { Request } from 'express';
 import { PaymentsService } from './payment.service';
 import {
   CreatePreferenceDto,
   PaymentStatusDto,
   PreferenceResponseDto,
+  WebhookNotificationDto,
 } from './dto/create-payment.dto';
-import { WebhookNotificationDto } from './dto/create-payment.dto';
 import {
   isWebhookNotification,
   WebhookNotificationDto as WebhookNotificationInterface,
@@ -32,12 +32,17 @@ import {
 import { AuthGuard } from 'src/guards/auth.guards';
 import { RoleGuard } from 'src/guards/auth.guards.admin';
 import { Roles, UserRole } from 'src/decorator/role.decorator';
+import { WebhookRouterService } from './webhooks-router.service';
 
 @ApiTags('Payments')
 @Controller('payments')
 export class PaymentsController {
   private readonly logger = new Logger(PaymentsController.name);
-  constructor(private readonly paymentsService: PaymentsService) {}
+
+  constructor(
+    private readonly paymentsService: PaymentsService,
+    private readonly webhookRouter: WebhookRouterService,
+  ) {}
 
   @Post('create-preference/:userId')
   @ApiBearerAuth()
@@ -70,8 +75,14 @@ export class PaymentsController {
 
   @Post('webhook')
   @HttpCode(200)
-  @ApiOperation({ summary: 'Receive payment webhook notifications' })
+  @ApiOperation({
+    summary: 'Unified webhook for all payment types (donations and orders)',
+  })
   @ApiBody({ type: WebhookNotificationDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Webhook processed successfully',
+  })
   async handleWebhook(
     @Body() notification: WebhookNotificationInterface,
   ): Promise<{ status: string }> {
@@ -81,7 +92,8 @@ export class PaymentsController {
     }
 
     try {
-      await this.paymentsService.handleWebhook(notification);
+      // Usar el WebhookRouterService para procesar el webhook
+      await this.webhookRouter.handleWebhook(notification);
       return { status: 'success' };
     } catch (error) {
       const message =

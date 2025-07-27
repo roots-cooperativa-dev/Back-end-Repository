@@ -15,6 +15,13 @@ import {
   WebhookNotificationDto,
 } from './interface/patment.interface';
 
+export interface CreatePreferenceOptions {
+  userId: string;
+  dto: CreatePreferenceDto;
+  paymentType: 'donation' | 'cart';
+  cartId?: string;
+}
+
 @Injectable()
 export class MercadoPagoService {
   private readonly logger = new Logger(MercadoPagoService.name);
@@ -43,20 +50,64 @@ export class MercadoPagoService {
     userId: string,
     dto: CreatePreferenceDto,
   ): Promise<PreferenceResponseDto> {
+    return this.createPreferenceWithType({
+      userId,
+      dto,
+      paymentType: 'donation',
+    });
+  }
+
+  async createCartPreference(
+    userId: string,
+    cartId: string,
+    dto: CreatePreferenceDto,
+  ): Promise<PreferenceResponseDto> {
+    return this.createPreferenceWithType({
+      userId,
+      dto,
+      paymentType: 'cart',
+      cartId,
+    });
+  }
+
+  private async createPreferenceWithType(
+    options: CreatePreferenceOptions,
+  ): Promise<PreferenceResponseDto> {
+    const { userId, dto, paymentType, cartId } = options;
+
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       this.logger.warn(`User with ID ${userId} not found`);
       throw new BadRequestException(`User with ID ${userId} not found`);
     }
 
+    let externalReference: string;
+    let itemTitle: string;
+    let itemDescription: string;
+
+    if (paymentType === 'donation') {
+      externalReference = `donation-${userId}`;
+      itemTitle = 'Donacion a ROOTS';
+      itemDescription = dto.message || 'Voluntary donation';
+    } else if (paymentType === 'cart') {
+      if (!cartId) {
+        throw new BadRequestException('Cart ID is required for cart payments');
+      }
+      externalReference = `cart-${cartId}`;
+      itemTitle = 'Compra en ROOTS';
+      itemDescription = dto.message || 'Purchase from cart';
+    } else {
+      throw new BadRequestException('Invalid payment type');
+    }
+
     const preferenceData = {
       items: [
         {
-          id: `donation-${user.id}`,
-          title: 'Donacion a ROOTS',
-          description: dto.message || 'Voluntary donation',
+          id: `${paymentType}-${paymentType === 'donation' ? userId : cartId}`,
+          title: itemTitle,
+          description: itemDescription,
           quantity: 1,
-          currency_id: 'ARS',
+          currency_id: dto.currency || 'ARS',
           unit_price: dto.amount,
         },
       ],
@@ -64,19 +115,19 @@ export class MercadoPagoService {
         email: 'test_user_461283922@testuser.com',
       },
       back_urls: {
-        success: `${this.configService.get<string>('FRONTEND_MP_URL')}/donaciones/success`,
-        failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/donaciones/failure`,
-        pending: `${this.configService.get<string>('FRONTEND_MP_URL')}/donaciones/pending`,
+        success: `${this.configService.get<string>('FRONTEND_MP_URL')}/${paymentType === 'donation' ? 'donaciones' : 'orders'}/success`,
+        failure: `${this.configService.get<string>('FRONTEND_MP_URL')}/${paymentType === 'donation' ? 'donaciones' : 'orders'}/failure`,
+        pending: `${this.configService.get<string>('FRONTEND_MP_URL')}/${paymentType === 'donation' ? 'donaciones' : 'orders'}/pending`,
       },
       auto_return: 'approved',
       notification_url: `${this.configService.get<string>('BACKEND_MP_URL')}/payments/webhook`,
-      external_reference: user.id,
+      external_reference: externalReference,
     };
 
     try {
       const response = await this.preference.create({ body: preferenceData });
       this.logger.log(
-        `Payment preference created: ${response.id} for user: ${userId}`,
+        `Payment preference created: ${response.id} for ${paymentType} - user: ${userId}${cartId ? `, cart: ${cartId}` : ''}`,
       );
       return {
         preferenceId: response.id!,
@@ -86,9 +137,11 @@ export class MercadoPagoService {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Error creating payment preference for user ${userId}: ${message}`,
+        `Error creating ${paymentType} preference for user ${userId}: ${message}`,
       );
-      throw new BadRequestException('Failed to create payment preference');
+      throw new BadRequestException(
+        `Failed to create ${paymentType} preference`,
+      );
     }
   }
 
@@ -109,7 +162,6 @@ export class MercadoPagoService {
 
       if (notif.type === 'payment') {
         const paymentId = notif.data.id;
-
         if (
           paymentId === '123456' ||
           paymentId === 'test' ||
@@ -124,7 +176,7 @@ export class MercadoPagoService {
             status_detail: 'accredited',
             transaction_amount: 100,
             currency_id: 'ARS',
-            external_reference: 'b7e7db43-e1a0-493a-bbc3-ba8b6da08ec6',
+            external_reference: 'donation-b7e7db43-e1a0-493a-bbc3-ba8b6da08ec6', // Formato actualizado
             payment_type_id: 'credit_card',
             payment_method_id: 'visa',
             date_approved: new Date().toISOString(),
@@ -149,11 +201,10 @@ export class MercadoPagoService {
         }
 
         this.logger.log(
-          `Payment webhook processed successfully - Status: ${paymentInfo.status}`,
+          `Payment webhook processed successfully - Status: ${paymentInfo.status}, Type: ${this.getPaymentTypeFromReference(paymentInfo.external_reference)}`,
         );
         return paymentInfo;
       } else {
-        // Otros tipos de webhook - solo loguear mínimo y no hacer nada
         this.logger.log(`Received unhandled webhook type: ${notif.type}`);
         return null;
       }
@@ -239,5 +290,12 @@ export class MercadoPagoService {
       }
     }
     return null;
+  }
+
+  private getPaymentTypeFromReference(externalReference: string): string {
+    if (!externalReference) return 'unknown';
+    if (externalReference.startsWith('donation-')) return 'donation';
+    if (externalReference.startsWith('cart-')) return 'cart';
+    return 'legacy-donation'; // Para referencias sin prefijo
   }
 }
