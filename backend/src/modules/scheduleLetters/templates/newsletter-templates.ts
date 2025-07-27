@@ -1,3 +1,5 @@
+// src/modules/scheduleLetters/templates/newsletter-templates.ts
+
 // base template, que recibe contenido, headerImage y logo
 function buildBaseTemplate(
   content: string,
