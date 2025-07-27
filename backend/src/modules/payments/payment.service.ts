@@ -1,9 +1,11 @@
+// src/modules/payments/payment.service.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   IPaymentService,
   PaymentCompletedEvent,
   WebhookNotificationDto,
+  MercadoPagoPaymentInfo,
 } from './interface/patment.interface';
 import {
   CreatePreferenceDto,
@@ -15,8 +17,6 @@ import { MercadoPagoService } from './mercadopago.service';
 @Injectable()
 export class PaymentsService implements IPaymentService {
   private readonly logger = new Logger(PaymentsService.name);
-  private processedWebhooks = new Set<string>();
-  private readonly WEBHOOK_TTL = 60000;
 
   constructor(
     private readonly mercadoPagoService: MercadoPagoService,
@@ -35,29 +35,34 @@ export class PaymentsService implements IPaymentService {
   }
 
   async handleWebhook(notification: WebhookNotificationDto): Promise<void> {
-    const webhookKey = `${notification.type}_${notification.data?.id}_${notification.id}`;
-    if (this.processedWebhooks.has(webhookKey)) {
-      return;
-    }
-    this.processedWebhooks.add(webhookKey);
-    setTimeout(
-      () => this.processedWebhooks.delete(webhookKey),
-      this.WEBHOOK_TTL,
+    this.logger.warn(
+      'handleWebhook called directly on PaymentsService - should use WebhookRouterService',
     );
+    const paymentInfo =
+      await this.mercadoPagoService.processWebhook(notification);
+    if (paymentInfo) {
+      await this.processPaymentInfo(paymentInfo);
+    }
+  }
 
+  async processPaymentInfo(paymentInfo: MercadoPagoPaymentInfo): Promise<void> {
     try {
-      const paymentInfo =
-        await this.mercadoPagoService.processWebhook(notification);
-
-      if (paymentInfo?.status === 'approved') {
+      if (paymentInfo.status === 'approved') {
         if (!paymentInfo.external_reference) {
           this.logger.error('Payment approved but no external_reference found');
           return;
         }
 
+        let userId: string;
+        if (paymentInfo.external_reference.startsWith('donation-')) {
+          userId = paymentInfo.external_reference.replace('donation-', '');
+        } else {
+          userId = paymentInfo.external_reference;
+        }
+
         const event: PaymentCompletedEvent = {
           paymentId: paymentInfo.id.toString(),
-          userId: paymentInfo.external_reference,
+          userId: userId,
           amount: paymentInfo.transaction_amount,
           currency: paymentInfo.currency_id,
           status: paymentInfo.status,
@@ -69,15 +74,20 @@ export class PaymentsService implements IPaymentService {
 
         await this.eventEmitter.emitAsync('payment.completed', event);
         this.logger.log(
-          `Payment completed event emitted for payment: ${paymentInfo.id}`,
+          `Donation payment completed event emitted for payment: ${paymentInfo.id}, user: ${userId}`,
+        );
+      } else {
+        this.logger.log(
+          `Donation payment not approved - Status: ${paymentInfo.status}, Payment: ${paymentInfo.id}`,
         );
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       this.logger.error(
-        `Error processing webhook: ${message}`,
+        `Error processing donation payment: ${message}`,
         error instanceof Error ? error.stack : undefined,
       );
+      throw error;
     }
   }
 }

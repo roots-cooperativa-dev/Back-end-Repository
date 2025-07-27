@@ -23,7 +23,7 @@ export class Donate {
   statusDetail: string;
 
   @Column('float')
-  amount: number; // Cambié transactionAmount a amount para que coincida con el DTO
+  amount: number;
 
   @Column()
   currencyId: string;

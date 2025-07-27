@@ -16,9 +16,10 @@ import { AuthValidations } from '../auths/validate/auth.validate';
 import * as bcrypt from 'bcrypt';
 import { Address } from './Entyties/address.entity';
 import { ConfigService } from '@nestjs/config';
-import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
 import { MailService } from '../mail/mail.service';
+import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
 import { ResetPasswordDto } from './Dtos/reset-password.dto';
+
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
@@ -36,6 +37,7 @@ export class UsersService {
       order: { createdAt: 'DESC' },
     });
   }
+
   async getUsers(pagination: PaginationQueryDto) {
     return paginate(this.usersRepository, pagination, {
       order: { createdAt: 'DESC' },
