@@ -348,7 +348,11 @@ export class MailService {
       context,
     );
   }
-  async sendPasswordResetEmail(name: string, email: string): Promise<void> {
+  async sendPasswordResetEmail(
+    email: string,
+    name: string,
+    resetUrl: string,
+  ): Promise<void> {
     const subject = 'Restablece tu contraseña - ROOTS COOPERATIVA';
     const textAlt =
       `Hola ${name},\n\n` +
@@ -359,6 +363,7 @@ export class MailService {
 
     const context = {
       name,
+      resetUrl,
       appName: 'ROOTS COOPERATIVA',
     };
 
@@ -367,6 +372,32 @@ export class MailService {
       subject,
       textAlt,
       'changed-password.html',
+      context,
+    );
+  }
+  async sendPasswordChangedConfirmationEmail(
+    email: string,
+    name: string,
+  ): Promise<void> {
+    const subject =
+      'Confirmación: Tu Contraseña ha Cambiado - ROOTS COOPERATIVA';
+    const textAlt =
+      `Hola ${name},\n\n` +
+      `Te confirmamos que tu contraseña en ROOTS COOPERATIVA ha sido cambiada correctamente.\n\n` +
+      `Si no realizaste este cambio, te recomendamos contactar a nuestro equipo de soporte inmediatamente.\n\n` +
+      `Gracias por confiar en nosotros.\n\n` +
+      `Saludos cordiales,\nEl equipo de ROOTS COOPERATIVA.`;
+
+    const context = {
+      name,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      email,
+      subject,
+      textAlt,
+      'confirm-password-changed.html',
       context,
     );
   }
@@ -404,5 +435,38 @@ export class MailService {
       'appointment-pending-admin.html',
       context,
     );
+  }
+  async sendAccountDeletedNotification(
+    userEmail: string,
+    userName: string,
+  ): Promise<void> {
+    const subject = 'Tu cuenta ha sido desactivada';
+    const textAlt = `Hola ${userName},\n\nTu cuenta en ROOTS COOPERATIVA ha sido desactivada.\n\nSi esto fue un error, contactá al soporte.`;
+
+    const context = {
+      userName,
+      appName: 'ROOTS COOPERATIVA',
+      supportLink: 'https://frontend-rootscoop.vercel.app/contact',
+    };
+
+    await this.sendMail(
+      userEmail,
+      subject,
+      textAlt,
+      'user-blocked.html',
+      context,
+    );
+  }
+  async sendDonationThanks(userName: string, userEmail: string): Promise<void> {
+    const subject = '¡Gracias por tu generosa donación a ROOTS COOPERATIVA!';
+    const textAlt = `Hola ${userName},\n\nQueremos agradecerte de corazón por tu reciente donación a ROOTS COOPERATIVA. Tu generosidad es fundamental para nuestra misión y nos permite seguir trabajando.\n\nCon gratitud,\nEl equipo de ROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      userEmail,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(userEmail, subject, textAlt, 'donation.html', context);
   }
 }

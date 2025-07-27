@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Users } from 'src/modules/users/Entyties/users.entity';
 import { CartItem } from './cartItem.entity';
+import { OrderPayment } from 'src/modules/order-payments/entities/order-payment.entity';
 
 @Entity({
   name: 'carts',
@@ -34,4 +35,8 @@ export class Cart {
     onDelete: 'CASCADE',
   })
   items: CartItem[];
+
+  @OneToOne(() => OrderPayment, (orderpayments) => orderpayments.cart)
+  @JoinColumn()
+  orderPayments: OrderPayment;
 }

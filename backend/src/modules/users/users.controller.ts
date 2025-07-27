@@ -12,6 +12,7 @@ import {
   Req,
   Delete,
   Patch,
+  Post,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -38,12 +39,28 @@ import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
 import { PaginatedUsersDto } from './Dtos/paginated-users.dto';
 import { UpdatePasswordDto } from './Dtos/UpdatePasswordDto';
 import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
+import { Users } from './Entyties/users.entity';
+import { ForgotPasswordDto } from './Dtos/forgot-password.dto';
+import { ResetPasswordDto } from './Dtos/reset-password.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @ApiOperation({ summary: 'Get all users for newsletter' })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiResponse({
+    status: 200,
+    description: 'Find all users to send newsletter',
+    type: [Users],
+  })
+  @Get('all/newsletter')
+  async findAll(): Promise<Users[]> {
+    return this.usersService.findAll();
+  }
 
   @ApiOperation({ summary: 'Retrieve all users (paginated)' })
   @UseGuards(AuthGuard, RoleGuard)
@@ -126,5 +143,32 @@ export class UsersController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.usersService.deleteUser(id);
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Solicitar recuperación de contraseña' })
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Si el email existe, se envía link de reseteo',
+  })
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    await this.usersService.sendResetPasswordEmail(dto.email);
+    return {
+      message:
+        'Si el email existe, se envió el link para reestablecer contraseña',
+    };
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Resetear contraseña usando token de email' })
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Contraseña reseteada correctamente',
+  })
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    await this.usersService.resetPassword(dto);
+    return { message: 'Contraseña restablecida correctamente' };
   }
 }

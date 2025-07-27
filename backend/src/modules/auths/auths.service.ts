@@ -18,6 +18,7 @@ import {
 } from './interface/IAuth.interface';
 import { MailService } from '../mail/mail.service';
 import { Address } from '../users/Entyties/address.entity';
+import { NewsletterService } from '../scheduleLetters/newsletter.service';
 
 @Injectable()
 export class AuthsService {
@@ -28,6 +29,7 @@ export class AuthsService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
+    private readonly newsletterService: NewsletterService,
   ) {}
 
   async signin(email: string, password: string): Promise<AuthResponse> {
@@ -64,6 +66,13 @@ export class AuthsService {
         createdUser.email,
         AuthValidations.getUserDisplayName(createdUser),
       );
+      await this.newsletterService.sendWelcomeNewsletter({
+        name: AuthValidations.getUserDisplayName(createdUser),
+        email: createdUser.email,
+      });
+      this.logger.log(
+        `Segundo correo de bienvenida (Newsletter) enviado a ${createdUser.email}`,
+      );
 
       return ResponseUserDto.toDTO(createdUser);
     } catch (error) {
@@ -86,6 +95,13 @@ export class AuthsService {
     }
 
     this.sendEmailNotificationAsync(user, isNewUser);
+    await this.newsletterService.sendWelcomeNewsletter({
+      name: AuthValidations.getUserDisplayName(user),
+      email: user.email,
+    });
+    this.logger.log(
+      `Newsletter de bienvenida (Google Login) enviada a nuevo usuario: ${user.email}`,
+    );
 
     return this.generateAuthResponse(user);
   }
