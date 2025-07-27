@@ -33,6 +33,11 @@ export class UsersService {
     private readonly mailService: MailService,
   ) {}
 
+  async findAll(): Promise<Users[]> {
+    return this.usersRepository.find({
+      order: { createdAt: 'DESC' },
+    });
+  }
   async getUsers(pagination: PaginationQueryDto) {
     return paginate(this.usersRepository, pagination, {
       order: { createdAt: 'DESC' },
