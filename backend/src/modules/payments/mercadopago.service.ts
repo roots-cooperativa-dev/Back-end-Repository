@@ -176,7 +176,7 @@ export class MercadoPagoService {
             status_detail: 'accredited',
             transaction_amount: 100,
             currency_id: 'ARS',
-            external_reference: 'donation-b7e7db43-e1a0-493a-bbc3-ba8b6da08ec6', // Formato actualizado
+            external_reference: 'donation-b7e7db43-e1a0-493a-bbc3-ba8b6da08ec6',
             payment_type_id: 'credit_card',
             payment_method_id: 'visa',
             date_approved: new Date().toISOString(),

@@ -1,4 +1,3 @@
-// src/modules/order-payments/order-payments.service.ts
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -30,9 +29,8 @@ export class OrderPaymentsService implements IPaymentService {
 
   async createPreference(
     userId: string,
-    dto: CreatePreferenceDto & { cartId: string }, // Extendemos el DTO para incluir cartId
+    dto: CreatePreferenceDto & { cartId: string },
   ): Promise<PreferenceResponseDto> {
-    // Validar que el carrito existe y pertenece al usuario
     const cart = await this.cartRepository.findOne({
       where: { id: dto.cartId, user: { id: userId } },
       relations: ['user'],
@@ -44,7 +42,6 @@ export class OrderPaymentsService implements IPaymentService {
       );
     }
 
-    // Crear preferencia usando el método específico para carritos
     return this.mercadoPagoService.createCartPreference(
       userId,
       dto.cartId,
@@ -56,12 +53,10 @@ export class OrderPaymentsService implements IPaymentService {
     return this.mercadoPagoService.getPaymentStatus(paymentId);
   }
 
-  // Método legacy para mantener compatibilidad (NO SE DEBE USAR DIRECTAMENTE)
   async handleWebhook(notification: WebhookNotificationDto): Promise<void> {
     this.logger.warn(
       'handleWebhook called directly on OrderPaymentsService - should use WebhookRouterService',
     );
-    // Este método se mantiene por compatibilidad pero se recomienda usar WebhookRouterService
     const paymentInfo =
       await this.mercadoPagoService.processWebhook(notification);
     if (paymentInfo) {
@@ -69,7 +64,6 @@ export class OrderPaymentsService implements IPaymentService {
     }
   }
 
-  // Nuevo método para procesar información de pago (llamado por WebhookRouterService)
   async processPaymentInfo(paymentInfo: MercadoPagoPaymentInfo): Promise<void> {
     try {
       if (paymentInfo.status === 'approved') {
@@ -78,7 +72,6 @@ export class OrderPaymentsService implements IPaymentService {
           return;
         }
 
-        // Extraer cartId del external_reference
         if (!paymentInfo.external_reference.startsWith('cart-')) {
           this.logger.error(
             `Invalid external_reference format for cart payment: ${paymentInfo.external_reference}`,
@@ -88,7 +81,6 @@ export class OrderPaymentsService implements IPaymentService {
 
         const cartId = paymentInfo.external_reference.replace('cart-', '');
 
-        // Buscar el carrito y obtener información del usuario
         const cart = await this.cartRepository.findOne({
           where: { id: cartId },
           relations: ['user'],
@@ -99,7 +91,6 @@ export class OrderPaymentsService implements IPaymentService {
           return;
         }
 
-        // Verificar si ya existe un pago para este carrito
         const existingPayment = await this.orderPaymentsRepository.findOne({
           where: { cart: { id: cartId } },
         });
@@ -111,7 +102,6 @@ export class OrderPaymentsService implements IPaymentService {
           return;
         }
 
-        // Crear registro de pago
         const orderPayment = this.orderPaymentsRepository.create({
           pagoId: paymentInfo.id.toString(),
           status: paymentInfo.status,
@@ -145,7 +135,6 @@ export class OrderPaymentsService implements IPaymentService {
     }
   }
 
-  // Método auxiliar para obtener pagos por carrito
   async getPaymentByCartId(cartId: string): Promise<OrderPayment | null> {
     return this.orderPaymentsRepository.findOne({
       where: { cart: { id: cartId } },
@@ -153,7 +142,6 @@ export class OrderPaymentsService implements IPaymentService {
     });
   }
 
-  // Método auxiliar para obtener pagos por usuario
   async getPaymentsByUserId(userId: string): Promise<OrderPayment[]> {
     return this.orderPaymentsRepository.find({
       where: { user: { id: userId } },

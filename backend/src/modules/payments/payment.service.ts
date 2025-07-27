@@ -34,12 +34,10 @@ export class PaymentsService implements IPaymentService {
     return this.mercadoPagoService.getPaymentStatus(paymentId);
   }
 
-  // Método legacy para mantener compatibilidad (NO SE DEBE USAR DIRECTAMENTE)
   async handleWebhook(notification: WebhookNotificationDto): Promise<void> {
     this.logger.warn(
       'handleWebhook called directly on PaymentsService - should use WebhookRouterService',
     );
-    // Este método se mantiene por compatibilidad pero se recomienda usar WebhookRouterService
     const paymentInfo =
       await this.mercadoPagoService.processWebhook(notification);
     if (paymentInfo) {
@@ -47,7 +45,6 @@ export class PaymentsService implements IPaymentService {
     }
   }
 
-  // Nuevo método para procesar información de pago (llamado por WebhookRouterService)
   async processPaymentInfo(paymentInfo: MercadoPagoPaymentInfo): Promise<void> {
     try {
       if (paymentInfo.status === 'approved') {
@@ -56,12 +53,10 @@ export class PaymentsService implements IPaymentService {
           return;
         }
 
-        // Extraer userId del external_reference
         let userId: string;
         if (paymentInfo.external_reference.startsWith('donation-')) {
           userId = paymentInfo.external_reference.replace('donation-', '');
         } else {
-          // Backward compatibility: si no tiene prefijo, asumimos que es el userId directo
           userId = paymentInfo.external_reference;
         }
 

@@ -1,4 +1,3 @@
-// src/modules/payments/payment.controller.ts
 import {
   Controller,
   Post,
@@ -92,7 +91,6 @@ export class PaymentsController {
     }
 
     try {
-      // Usar el WebhookRouterService para procesar el webhook
       await this.webhookRouter.handleWebhook(notification);
       return { status: 'success' };
     } catch (error) {

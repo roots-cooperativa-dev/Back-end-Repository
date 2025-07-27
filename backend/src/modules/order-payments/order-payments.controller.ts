@@ -1,4 +1,3 @@
-// src/modules/order-payments/order-payments.controller.ts
 import {
   Controller,
   Post,

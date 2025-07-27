@@ -61,6 +61,7 @@ export class UsersController {
   async findAll(): Promise<Users[]> {
     return this.usersService.findAll();
   }
+
   @ApiOperation({ summary: 'Retrieve all users (paginated)' })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
@@ -143,6 +144,7 @@ export class UsersController {
   async remove(@Param('id') id: string) {
     return await this.usersService.deleteUser(id);
   }
+
   @Post('forgot-password')
   @ApiOperation({ summary: 'Solicitar recuperación de contraseña' })
   @ApiBody({ type: ForgotPasswordDto })
