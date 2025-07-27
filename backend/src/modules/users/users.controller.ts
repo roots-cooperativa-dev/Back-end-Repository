@@ -46,13 +46,15 @@ import { Users } from './Entyties/users.entity';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Get all users' })
+  @ApiOperation({ summary: 'Get all users for newsletter' })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
   @ApiResponse({
     status: 200,
-    description: 'Find all users',
+    description: 'Find all users to send newsletter',
     type: [Users],
   })
-  @Get('all')
+  @Get('all/newsletter')
   async findAll(): Promise<Users[]> {
     return this.usersService.findAll();
   }
