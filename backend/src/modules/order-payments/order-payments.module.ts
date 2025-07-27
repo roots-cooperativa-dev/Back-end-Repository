@@ -8,6 +8,7 @@ import { OrdersModule } from '../orders/orders.module';
 import { UsersModule } from '../users/users.module';
 import { Order } from '../orders/entities/order.entity';
 import { Users } from '../users/Entyties/users.entity';
+import { PaymentsModule } from '../payments/payment.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { Users } from '../users/Entyties/users.entity';
     TypeOrmModule.forFeature([Order, Users]),
     forwardRef(() => OrdersModule),
     forwardRef(() => UsersModule),
+    forwardRef(() => PaymentsModule),
   ],
   controllers: [OrderPaymentsController],
   providers: [OrderPaymentsService, MercadoPagoService],

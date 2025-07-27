@@ -8,7 +8,7 @@ import {
 import { Users } from 'src/modules/users/Entyties/users.entity';
 
 @Entity('addresses')
-@Index(['latitude', 'longitude']) // Para consultas geoespaciales
+@Index(['latitude', 'longitude'])
 export class Address {
   @PrimaryGeneratedColumn('uuid')
   id: string;
