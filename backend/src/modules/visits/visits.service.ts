@@ -76,6 +76,23 @@ export class VisitsService {
     createVisitSlotDto: CreateVisitSlotDto,
   ): Promise<VisitSlot> {
     const visit = await this.findOneVisit(visitId);
+    const slotDate = new Date(createVisitSlotDto.date);
+    const now = new Date();
+    const minDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    const maxDate = new Date(now);
+    maxDate.setFullYear(now.getFullYear() + 2);
+
+    if (slotDate < minDate) {
+      throw new BadRequestException(
+        'The slot date must be at least 24 hours in advance.',
+      );
+    }
+
+    if (slotDate > maxDate) {
+      throw new BadRequestException(
+        'The slot date cannot be more than 2 years in the future.',
+      );
+    }
 
     const newSlot = this.visitSlotsRepository.create({
       ...createVisitSlotDto,
@@ -324,24 +341,28 @@ export class VisitsService {
         `Appointment with ID ${appointmentId} not found or no longer exists.`,
       );
     }
+
     if (
       appointment.status === AppointmentStatus.CANCELLED ||
       appointment.status === AppointmentStatus.COMPLETED ||
       appointment.status === AppointmentStatus.REJECTED
     ) {
       throw new BadRequestException(
-        `Cannot change the status of an appointment that is already ${appointment.status}.`,
+        `Cannot change the status of an appointment that is already ${appointment.status.toLowerCase()}.`,
       );
     }
+
     if (
-      (newStatus === AppointmentStatus.REJECTED ||
-        newStatus === AppointmentStatus.CANCELLED) &&
+      newStatus === AppointmentStatus.REJECTED &&
       (appointment.status === AppointmentStatus.PENDING ||
         appointment.status === AppointmentStatus.APPROVED)
     ) {
       if (appointment.visitSlot) {
         appointment.visitSlot.currentAppointmentsCount -=
           appointment.numberOfPeople;
+        if (appointment.visitSlot.currentAppointmentsCount < 0) {
+          appointment.visitSlot.currentAppointmentsCount = 0;
+        }
         if (
           appointment.visitSlot.currentAppointmentsCount <
           appointment.visitSlot.maxAppointments
@@ -353,12 +374,54 @@ export class VisitsService {
     }
 
     appointment.status = newStatus;
-
     const updatedAppointment =
       await this.appointmentsRepository.save(appointment);
 
+    if (
+      appointment.user &&
+      appointment.visitSlot &&
+      appointment.visitSlot.visit
+    ) {
+      const visitDate = new Date(appointment.visitSlot.date);
+
+      try {
+        if (newStatus === AppointmentStatus.APPROVED) {
+          await this.mailService.sendAppointmentApprovedEmail(
+            appointment.user.email,
+            appointment.user.name || appointment.user.username || 'Usuario',
+            updatedAppointment.id,
+            appointment.visitSlot.visit.title,
+            visitDate.toDateString(),
+            appointment.visitSlot.startTime,
+          );
+        } else if (
+          newStatus === AppointmentStatus.CANCELLED ||
+          newStatus === AppointmentStatus.REJECTED
+        ) {
+          await this.mailService.sendAppointmentRejectedToUser(
+            appointment.user.email,
+            appointment.user.name || appointment.user.username || 'Usuario',
+            updatedAppointment.id,
+            appointment.visitSlot.visit.title,
+            visitDate.toDateString(),
+            appointment.visitSlot.startTime,
+          );
+        }
+      } catch (err) {
+        this.logger.error(
+          `Error enviando email de notificación para cita ${appointmentId}:`,
+          err,
+        );
+      }
+    } else {
+      this.logger.warn(
+        `Datos incompletos para enviar notificación de estado para cita ${appointmentId}.`,
+      );
+    }
+
     return updatedAppointment;
   }
+
   async findPendingAppointments(): Promise<Appointment[]> {
     return this.appointmentsRepository.find({
       where: { status: AppointmentStatus.PENDING },

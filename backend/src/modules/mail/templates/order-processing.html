@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Tu Orden Está en Proceso</title>
 
+  <!-- Fuentes -->
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@600&display=swap" rel="stylesheet">
 
   <style>
@@ -38,9 +39,15 @@
     .content {
       padding: 30px;
     }
+    .content h1 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 26px;
+      color: #642d91;
+      margin-bottom: 20px;
+      text-align: left;
+    }
     .content p {
       margin-bottom: 15px;
-      font-family: 'Montserrat', sans-serif;
       font-weight: 600;
     }
     .content strong {
@@ -53,6 +60,7 @@
       border-top: 1px solid #4d206c;
       color: #ffdd00;
       font-size: 0.9em;
+      padding: 10px;
     }
     .footer a {
       color: #ffdd00;
@@ -62,6 +70,12 @@
     .social-container {
       margin: 30px auto;
       text-align: center;
+    }
+    .social-container p {
+      font-weight: 600;
+      font-family: 'Montserrat', sans-serif;
+      margin-bottom: 10px;
+      color: #642d91;
     }
     .social-icons {
       display: inline-flex;
@@ -80,13 +94,16 @@
       body {
         padding: 10px;
       }
-      div[style*="max-width:600px"], .container {
+      .container {
         width: 100% !important;
         margin: 10px auto !important;
         box-shadow: none !important;
       }
       .content {
         padding: 15px !important;
+      }
+      .content h1 {
+        font-size: 22px !important;
       }
     }
   </style>
@@ -103,6 +120,7 @@
 
     <!-- Contenido -->
     <div class="content">
+      <h1>Estado de tu pedido</h1>
       <p>Hola <strong>{{userName}}</strong>,</p>
       <p>Tu orden <strong>#{{orderId}}</strong> se encuentra actualmente <strong class="status">en proceso</strong>.</p>
       <p>Te notificaremos nuevamente una vez que esté lista para retiro o haya sido enviada.</p>
@@ -119,19 +137,14 @@
 
     <!-- Redes sociales -->
     <div class="social-container">
-      <p style="font-family: 'Montserrat', sans-serif; font-weight: 600; margin-bottom: 10px; color: #642d91;">
-        Seguinos en nuestras redes:
-      </p>
+      <p>Seguinos en nuestras redes:</p>
       <div class="social-icons">
-        <!-- WhatsApp -->
         <a href="https://wa.link/b4wyji" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="20" height="20" />
         </a>
-        <!-- Instagram -->
-        <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" class="social-icon">
+        <a href="https://www.instagram.com/roots_cooperativa" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="20" height="20" />
         </a>
-        <!-- YouTube -->
         <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="20" height="20" />
         </a>
