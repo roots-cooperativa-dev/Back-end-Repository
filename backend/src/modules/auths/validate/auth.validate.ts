@@ -5,7 +5,6 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { GoogleUser, IUserAuthResponse } from '../interface/IAuth.interface';
-
 export class AuthValidations {
   private static readonly BCRYPT_ROUNDS = 12;
 
@@ -55,6 +54,12 @@ export class AuthValidations {
   static validateUserExists(user: any): asserts user is IUserAuthResponse {
     if (!user) {
       throw new UnauthorizedException('Invalid credencials');
+    }
+  }
+
+  static validateEmailIsNotTaken(email?: string | null): void {
+    if (email) {
+      throw new UnauthorizedException('El email ya está registrado');
     }
   }
 

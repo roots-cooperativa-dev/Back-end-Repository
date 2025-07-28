@@ -5,7 +5,6 @@ import {
   ManyToOne,
   CreateDateColumn,
   JoinColumn,
-  OneToOne,
 } from 'typeorm';
 import { Users } from 'src/modules/users/Entyties/users.entity';
 import { Cart } from 'src/modules/orders/entities/cart.entity';
@@ -43,7 +42,7 @@ export class OrderPayment {
   @JoinColumn()
   user: Users;
 
-  @OneToOne(() => Cart, (cart) => cart.orderPayments)
+  @ManyToOne(() => Cart, (cart) => cart.orderPayments)
   @JoinColumn()
   cart: Cart;
 

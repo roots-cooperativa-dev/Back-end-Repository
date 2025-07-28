@@ -36,7 +36,7 @@ export class Cart {
   })
   items: CartItem[];
 
-  @OneToOne(() => OrderPayment, (orderpayments) => orderpayments.cart)
+  @OneToMany(() => OrderPayment, (orderpayments) => orderpayments.cart)
   @JoinColumn()
   orderPayments: OrderPayment;
 }

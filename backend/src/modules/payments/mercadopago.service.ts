@@ -296,6 +296,6 @@ export class MercadoPagoService {
     if (!externalReference) return 'unknown';
     if (externalReference.startsWith('donation-')) return 'donation';
     if (externalReference.startsWith('cart-')) return 'cart';
-    return 'legacy-donation'; // Para referencias sin prefijo
+    return 'legacy-donation';
   }
 }
