@@ -91,17 +91,6 @@ export class OrderPaymentsService implements IPaymentService {
           return;
         }
 
-        const existingPayment = await this.orderPaymentsRepository.findOne({
-          where: { cart: { id: cartId } },
-        });
-
-        if (existingPayment) {
-          this.logger.warn(
-            `Payment already exists for cart ${cartId}, skipping...`,
-          );
-          return;
-        }
-
         const orderPayment = this.orderPaymentsRepository.create({
           pagoId: paymentInfo.id.toString(),
           status: paymentInfo.status,
@@ -136,17 +125,21 @@ export class OrderPaymentsService implements IPaymentService {
   }
 
   async getPaymentByCartId(cartId: string): Promise<OrderPayment | null> {
-    return this.orderPaymentsRepository.findOne({
+    return await this.orderPaymentsRepository.findOne({
       where: { cart: { id: cartId } },
       relations: ['user', 'cart'],
     });
   }
 
   async getPaymentsByUserId(userId: string): Promise<OrderPayment[]> {
-    return this.orderPaymentsRepository.find({
+    return await this.orderPaymentsRepository.find({
       where: { user: { id: userId } },
       relations: ['user', 'cart'],
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async getAllOrdersPayment(): Promise<OrderPayment[]> {
+    return this.orderPaymentsRepository.find();
   }
 }
