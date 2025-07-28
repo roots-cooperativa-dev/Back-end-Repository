@@ -284,7 +284,7 @@ function buildWelcomeNewsletterContent(
   images: Array<{ url: string; alt: string; description?: string }>,
 ): { textContent: string; imageHtml: string } {
   const textContent = `
-    <h1 style="font-family: 'Bebas Neue', sans-serif; color: #017d74; margin-top:20px;">¡Bienvenidx ${name} 👋!</h1>
+    <h1 style="font-family: 'Bebas Neue', sans-serif; color: #017d74; margin-top:20px;">¡Bienvenido/a ${name} 👋!</h1>
     <p>Gracias por registrarte en ROOTS COOPERATIVA 🌿</p>
     <p>Estamos felices de que te sumes a esta comunidad consciente y sustentable.</p>
     <p>En breve recibirás novedades y beneficios exclusivos.</p>

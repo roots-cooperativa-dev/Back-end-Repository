@@ -114,7 +114,7 @@ export class AuthsService {
       googleUser.email,
     );
 
-    return await this.userService.createUserService({
+    const user = this.userService.createUserService({
       name: googleUser.name,
       email: googleUser.email,
       birthdate: new Date().toISOString().split('T')[0],
@@ -129,6 +129,16 @@ export class AuthsService {
       isSuperAdmin: false,
       isDonator: false,
     });
+    await this.newsletterService.sendWelcomeNewsletter({
+      name: googleUser.name,
+      email: googleUser.email,
+    });
+
+    this.logger.log(
+      `Newsletter de bienvenida (Google Login) enviada a nuevo usuario: ${googleUser.email}`,
+    );
+
+    return user;
   }
 
   private generateAuthResponse(user: IUserAuthResponse): AuthResponse {

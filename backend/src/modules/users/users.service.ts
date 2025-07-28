@@ -191,11 +191,20 @@ export class UsersService {
 
   async deleteUser(id: string): Promise<{ message: string }> {
     try {
+      const user = await this.usersRepository.findOne({ where: { id } });
+
+      if (!user) {
+        throw new NotFoundException(`User: ${id} not found`);
+      }
       const result = await this.usersRepository.softDelete(id);
 
       if (!result.affected) {
         throw new NotFoundException(`User: ${id} not found`);
       }
+      await this.mailService.sendAccountDeletedNotification(
+        user.email,
+        user.name,
+      );
 
       return { message: `User ${id} successfully removed.` };
     } catch (error) {
