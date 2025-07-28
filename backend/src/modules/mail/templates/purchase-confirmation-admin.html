@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nueva Compra Realizada</title>
 
+  <!-- Fuentes -->
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body {
@@ -12,7 +13,7 @@
       padding: 0;
       background-color: #ffffff;
       font-family: 'Montserrat', sans-serif;
-      color: #392f5a;
+      color: #642d91;
       line-height: 1.6;
     }
     .container {
@@ -41,13 +42,22 @@
       margin-bottom: 15px;
       font-weight: 600;
     }
+    .content h1 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 28px;
+      color: #017d74;
+      margin-bottom: 20px;
+      text-align: left;
+    }
     .content .highlight {
       color: #017d74;
+      font-weight: 600;
     }
     .footer {
       border-top: 1px solid #01564c;
       color: #ffdd00;
       font-size: 0.9em;
+      padding: 10px;
     }
     .footer a {
       color: #ffdd00;
@@ -81,6 +91,9 @@
       .content {
         padding: 15px !important;
       }
+      .content h1 {
+        font-size: 24px !important;
+      }
     }
   </style>
 </head>
@@ -93,9 +106,7 @@
 
     <!-- Contenido -->
     <div class="content">
-      <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: #392f5a; margin-bottom: 15px;">
-        Nueva compra realizada
-      </h1>
+      <h1>Nueva compra realizada</h1>
       <p>Hola equipo,</p>
       <p>Se ha realizado una nueva compra por parte de <strong>{{customerName}}</strong>.</p>
       <p><strong>Detalles de la compra:</strong></p>
@@ -118,7 +129,7 @@
 
     <!-- Redes sociales -->
     <div class="social-container">
-      <p style="font-weight: 600; color: #017d74;">
+      <p style="font-weight: 600; color: #017d74; font-family: 'Montserrat', sans-serif;">
         Seguinos en nuestras redes:
       </p>
       <div class="social-icons">
