@@ -62,6 +62,25 @@ export class OrderPaymentsController {
     );
   }
 
+  @Get()
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Check payment status by payment ID' })
+  @ApiParam({
+    name: 'paymentId',
+    type: String,
+    description: 'Payment ID',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment status retrieved successfully',
+    type: PaymentStatusDto,
+  })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  async getAllPaymentStatus() {
+    return await this.orderPaymentsService.getAllOrdersPayment();
+  }
+
   @Get('status/:paymentId')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Check payment status by payment ID' })
@@ -131,8 +150,7 @@ export class OrderPaymentsController {
     status: 200,
     description: 'User payments retrieved successfully',
   })
-  @UseGuards(AuthGuard, RoleGuard)
-  @Roles(UserRole.ADMIN || UserRole.DONOR_USER)
+  @UseGuards(AuthGuard)
   async getUserPayments(
     @Param('userId', ParseUUIDPipe) userId: string,
   ): Promise<any[]> {
