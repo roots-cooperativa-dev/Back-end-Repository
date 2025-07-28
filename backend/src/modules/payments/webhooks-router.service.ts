@@ -1,4 +1,3 @@
-// src/modules/payments/webhook-router.service.ts
 import { Injectable, Logger } from '@nestjs/common';
 import { PaymentsService } from './payment.service';
 import { OrderPaymentsService } from '../order-payments/order-payments.service';
@@ -63,7 +62,7 @@ export class WebhookRouterService {
         `Error processing webhook: ${message}`,
         error instanceof Error ? error.stack : undefined,
       );
-      throw error; // Re-throw para que el controller pueda manejarlo
+      throw error;
     }
   }
 
@@ -82,8 +81,6 @@ export class WebhookRouterService {
       return 'cart';
     }
 
-    // Para backward compatibility con el sistema actual de donaciones
-    // Si no tiene prefijo, asumimos que es una donación (UUID directo)
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (uuidRegex.test(externalReference)) {
