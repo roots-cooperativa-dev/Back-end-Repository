@@ -9,7 +9,6 @@ import { ConfigService } from '@nestjs/config';
 import { UsersService } from '../users/users.service';
 import { CreateUserDto } from '../users/Dtos/CreateUserDto';
 import { ResponseUserDto } from '../users/interface/IUserResponseDto';
-
 import { AuthValidations } from './validate/auth.validate';
 import {
   AuthResponse,
@@ -17,7 +16,6 @@ import {
   IUserAuthResponse,
 } from './interface/IAuth.interface';
 import { MailService } from '../mail/mail.service';
-import { Address } from '../users/Entyties/address.entity';
 import { NewsletterService } from '../scheduleLetters/newsletter.service';
 
 @Injectable()
@@ -107,7 +105,7 @@ export class AuthsService {
       googleUser.email,
     );
 
-    const user = this.userService.createUserService({
+    const user = await this.userService.createUserService({
       name: googleUser.name,
       email: googleUser.email,
       birthdate: new Date().toISOString().split('T')[0],
@@ -116,8 +114,9 @@ export class AuthsService {
       phone: 0,
       address: {
         street: 'Sin dirección',
-      } as Address,
-
+        latitude: 0,
+        longitude: 0,
+      },
       isAdmin: false,
       isSuperAdmin: false,
       isDonator: false,
