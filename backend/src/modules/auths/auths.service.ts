@@ -49,6 +49,8 @@ export class AuthsService {
     const { password, confirmPassword, ...userData } = data;
 
     AuthValidations.validatePasswordMatch(password, confirmPassword);
+    const email = await this.userService.findByEmail(userData.email);
+    AuthValidations.validateEmailIsNotTaken(email?.email);
 
     try {
       const hashedPassword = await AuthValidations.hashPassword(password);
