@@ -19,6 +19,7 @@ import { ConfigService } from '@nestjs/config';
 import { MailService } from '../mail/mail.service';
 import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
 import { ResetPasswordDto } from './Dtos/reset-password.dto';
+import { AddressService } from './address.service';
 
 @Injectable()
 export class UsersService {
@@ -30,6 +31,7 @@ export class UsersService {
     private readonly addressRepository: Repository<Address>,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
+    private readonly addressService: AddressService,
   ) {}
 
   async findAll(): Promise<Users[]> {
@@ -91,10 +93,7 @@ export class UsersService {
     }
   }
 
-  async updateUserService(
-    id: string,
-    dto: Partial<UpdateUserDbDto>,
-  ): Promise<Users> {
+  async updateUserService(id: string, dto: UpdateUserDbDto): Promise<Users> {
     const camposRestringidos = ['isAdmin', 'isDonator', 'isSuperAdmin'];
 
     for (const campo of camposRestringidos) {
@@ -103,21 +102,58 @@ export class UsersService {
       }
     }
 
-    const result = await this.usersRepository.update({ id }, dto);
+    const { address, ...restDto } = dto;
+
+    const result = await this.usersRepository.update({ id }, restDto);
 
     if (result.affected === 0) {
       throw new NotFoundException(`Usuario con id ${id} no encontrado`);
     }
 
+    if (address) {
+      const userWithAddress = await this.usersRepository.findOne({
+        where: { id },
+        relations: ['address'],
+      });
+
+      if (!userWithAddress) {
+        throw new InternalServerErrorException(
+          `Usuario con id ${id} no encontrado tras la actualización`,
+        );
+      }
+
+      if (userWithAddress.address) {
+        await this.addressRepository.update(
+          userWithAddress.address.id,
+          address,
+        );
+      } else {
+        const newAddress = this.addressRepository.create(address);
+        await this.addressRepository.save(newAddress);
+        userWithAddress.address = newAddress;
+        await this.usersRepository.save(userWithAddress);
+      }
+    }
+
     const updatedUser = await this.usersRepository.findOne({
       where: { id },
+      relations: [
+        'address',
+        'donates',
+        'orders',
+        'appointments',
+        'cart',
+        'cart.items',
+        'cart.items.product',
+      ],
     });
 
     if (!updatedUser) {
       throw new InternalServerErrorException(
-        `Error inesperado: Usuario con id ${id} no encontrado tras la actualización`,
+        `Error inesperado: Usuario con id ${id} no encontrado tras la actualización final`,
       );
     }
+
     this.mailService
       .sendUserDataChangedNotification(updatedUser.email, updatedUser.name)
       .catch((err: unknown) => {

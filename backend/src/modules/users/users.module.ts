@@ -7,6 +7,7 @@ import { AuthsModule } from '../auths/auths.module';
 import { DonationsModule } from '../donations/donations.module';
 import { MailModule } from '../mail/mail.module';
 import { Address } from './Entyties/address.entity';
+import { AddressService } from './address.service';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { Address } from './Entyties/address.entity';
     forwardRef(() => DonationsModule),
     MailModule,
   ],
-  providers: [UsersService],
+  providers: [UsersService, AddressService],
   controllers: [UsersController],
   exports: [UsersService],
 })
