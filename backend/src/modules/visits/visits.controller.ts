@@ -150,7 +150,8 @@ export class VisitsController {
   })
   @ApiParam({
     name: 'status',
-    description: 'New appointment status (approved, rejected, cancelled)',
+    description:
+      'New appointment status (approved, rejected, cancelled, completed)',
     enum: AppointmentStatus,
   })
   @ApiResponse({
@@ -186,10 +187,11 @@ export class VisitsController {
     if (
       status !== AppointmentStatus.APPROVED &&
       status !== AppointmentStatus.REJECTED &&
-      status !== AppointmentStatus.CANCELLED
+      status !== AppointmentStatus.CANCELLED &&
+      status !== AppointmentStatus.COMPLETED
     ) {
       throw new BadRequestException(
-        'You can only approve, reject or cancel on this.',
+        'You can only approve, reject, completed or cancel on this.',
       );
     }
 

@@ -95,13 +95,6 @@ export class AuthsService {
     }
 
     this.sendEmailNotificationAsync(user, isNewUser);
-    await this.newsletterService.sendWelcomeNewsletter({
-      name: AuthValidations.getUserDisplayName(user),
-      email: user.email,
-    });
-    this.logger.log(
-      `Newsletter de bienvenida (Google Login) enviada a nuevo usuario: ${user.email}`,
-    );
 
     return this.generateAuthResponse(user);
   }
