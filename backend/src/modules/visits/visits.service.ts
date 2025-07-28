@@ -344,8 +344,7 @@ export class VisitsService {
 
     if (
       appointment.status === AppointmentStatus.CANCELLED ||
-      appointment.status === AppointmentStatus.COMPLETED ||
-      appointment.status === AppointmentStatus.REJECTED
+      appointment.status === AppointmentStatus.COMPLETED
     ) {
       throw new BadRequestException(
         `Cannot change the status of an appointment that is already ${appointment.status.toLowerCase()}.`,
