@@ -257,7 +257,7 @@ export class MailService {
     const context = {
       userName,
       appName: 'ROOTS COOPERATIVA',
-      supportLink: 'https://frontend-rootscoop.vercel.app/contact',
+      supportLink: 'https://frontend-rootscoop.vercel.app/contacto',
     };
 
     await this.sendMail(
@@ -300,7 +300,7 @@ export class MailService {
     const context = {
       userName,
       appName: 'ROOTS COOPERATIVA',
-      supportLink: 'https://frontend-rootscoop.vercel.app/contact',
+      supportLink: 'https://frontend-rootscoop.vercel.app/contacto',
     };
 
     await this.sendMail(
@@ -328,7 +328,7 @@ export class MailService {
       email,
       reason,
       appName: 'ROOTS COOPERATIVA',
-      supportLink: 'https://frontend-rootscoop.vercel.app/contact',
+      supportLink: 'https://frontend-rootscoop.vercel.app/contacto',
     };
 
     await this.sendMail(email, subject, textAlt, 'contact-info.html', context);
@@ -478,7 +478,7 @@ export class MailService {
     const context = {
       userName,
       appName: 'ROOTS COOPERATIVA',
-      supportLink: 'https://frontend-rootscoop.vercel.app/contact',
+      supportLink: 'https://frontend-rootscoop.vercel.app/contacto',
     };
 
     await this.sendMail(
