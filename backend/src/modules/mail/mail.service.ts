@@ -362,15 +362,13 @@ export class MailService {
       context,
     );
   }
-  async sendPurchaseConfirmation(email: string, name: string): Promise<void> {
+  async sendPurchaseConfirmation(email: string): Promise<void> {
     const subject = '¡Gracias por tu compra en ROOTS COOPERATIVA!';
     const textAlt =
-      `Hola ${name},\n\n` +
       `Gracias por tu compra. Pronto recibirás los detalles del envío.\n\n` +
       `Saludos,\nEl equipo de ROOTS COOPERATIVA.`;
 
     const context = {
-      name,
       appName: 'ROOTS COOPERATIVA',
     };
 
@@ -491,12 +489,11 @@ export class MailService {
       context,
     );
   }
-  async sendDonationThanks(userName: string, userEmail: string): Promise<void> {
+  async sendDonationThanks(userEmail: string): Promise<void> {
     const subject = '¡Gracias por tu generosa donación a ROOTS COOPERATIVA!';
-    const textAlt = `Hola ${userName},\n\nQueremos agradecerte de corazón por tu reciente donación a ROOTS COOPERATIVA. Tu generosidad es fundamental para nuestra misión y nos permite seguir trabajando.\n\nCon gratitud,\nEl equipo de ROOTS COOPERATIVA.`;
+    const textAlt = `Hola!,\n\nQueremos agradecerte de corazón por tu reciente donación a ROOTS COOPERATIVA. Tu generosidad es fundamental para nuestra misión y nos permite seguir trabajando.\n\nCon gratitud,\nEl equipo de ROOTS COOPERATIVA.`;
 
     const context = {
-      userName,
       userEmail,
       appName: 'ROOTS COOPERATIVA',
     };
