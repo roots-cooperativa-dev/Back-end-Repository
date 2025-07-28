@@ -107,7 +107,7 @@ export class UsersController {
     return { message: 'Los roles se actualizaron correctamente', userRole };
   }
 
-  @Put('upadte/user')
+  @Put('update/user')
   @ApiOperation({ summary: 'Update user information' })
   @ApiParam({ name: 'id', type: String })
   @ApiBody({ type: UpdateUserDbDto })
@@ -115,7 +115,7 @@ export class UsersController {
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   async updateUser(
     @Req() req: AuthenticatedRequest,
-    @Body() updateData: Partial<UpdateUserDbDto>,
+    @Body() updateData: UpdateUserDbDto,
   ): Promise<IUserResponseDto> {
     const user = await this.usersService.updateUserService(
       req.user.sub,

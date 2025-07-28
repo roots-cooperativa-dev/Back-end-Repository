@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -17,11 +18,26 @@ export class CategoryService {
 
   async createCategory(dto: CreateCategoryDTO): Promise<Category> {
     try {
+      const existingCategory = await this.categoryRepository
+        .createQueryBuilder('category')
+        .withDeleted()
+        .where('LOWER(category.name) = LOWER(:name)', { name: dto.name })
+        .getOne();
+
+      if (existingCategory) {
+        throw new BadRequestException(
+          `Ya existe una categoría con el nombre '${dto.name}'`,
+        );
+      }
+
       const category = this.categoryRepository.create(dto);
       return await this.categoryRepository.save(category);
     } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException('Failed to create category');
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      throw new BadRequestException('Failed to create category');
     }
   }
 

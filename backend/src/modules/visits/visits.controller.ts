@@ -66,9 +66,6 @@ export class VisitsController {
   async findPendingAppointments() {
     const pendingAppointments =
       await this.visitsService.findPendingAppointments();
-    if (pendingAppointments.length === 0) {
-      throw new NotFoundException('No pending appointments found.');
-    }
     return pendingAppointments;
   }
   @ApiOperation({
@@ -138,38 +135,8 @@ export class VisitsController {
       +limit,
     );
 
-    if (result.data.length === 0) {
-      throw new NotFoundException(
-        `No appointments found${status ? ` with status "${status}"` : ''}.`,
-      );
-    }
-
     return result;
   }
-  // async findAllAppointmentsFiltered(
-  //   @Query('status') status?: AppointmentStatus,
-  // ): Promise<Appointment[]> {
-  //   let appointments: Appointment[];
-
-  //   if (status) {
-  //     if (!Object.values(AppointmentStatus).includes(status)) {
-  //       throw new BadRequestException(
-  //         `Invalid appointment status: "${status}". Allowed values are: ${Object.values(AppointmentStatus).join(', ')}.`,
-  //       );
-  //     }
-  //     appointments = await this.visitsService.findAppointmentsByStatus(status);
-  //   } else {
-  //     appointments = await this.visitsService.findAllAppointments();
-  //   }
-
-  //   if (appointments.length === 0) {
-  //     throw new NotFoundException(
-  //       `No appointments found${status ? ` with status "${status}"` : ''}.`,
-  //     );
-  //   }
-
-  //   return appointments;
-  // }
 
   @ApiOperation({
     summary:
@@ -183,7 +150,8 @@ export class VisitsController {
   })
   @ApiParam({
     name: 'status',
-    description: 'New appointment status (approved, rejected, cancelled)',
+    description:
+      'New appointment status (approved, rejected, cancelled, completed)',
     enum: AppointmentStatus,
   })
   @ApiResponse({
@@ -219,10 +187,11 @@ export class VisitsController {
     if (
       status !== AppointmentStatus.APPROVED &&
       status !== AppointmentStatus.REJECTED &&
-      status !== AppointmentStatus.CANCELLED
+      status !== AppointmentStatus.CANCELLED &&
+      status !== AppointmentStatus.COMPLETED
     ) {
       throw new BadRequestException(
-        'You can only approve, reject or cancel on this.',
+        'You can only approve, reject, completed or cancel on this.',
       );
     }
 
@@ -333,54 +302,6 @@ export class VisitsController {
 
     return result;
   }
-  // @ApiOperation({
-  //   summary:
-  //     'Get all appointments scheduled by the current user (All authenticated users)',
-  // })
-  // @ApiResponse({
-  //   status: HttpStatus.OK,
-  //   description: 'Appointments successfully obtained.',
-  // })
-  // @ApiResponse({
-  //   status: HttpStatus.UNAUTHORIZED,
-  //   description: 'UNAUTHORIZED.',
-  // })
-  // @ApiQuery({
-  //   name: 'status',
-  //   enum: AppointmentStatus,
-  //   description:
-  //     'Opcional: Filtrar citas por estado (PENDING, APPROVED, REJECTED, CANCELED).',
-  //   required: false,
-  // })
-  // @UseGuards(AuthGuard)
-  // @Get('my-appointments')
-  // async findMyAppointments(
-  //   @Req() req: AuthRequest,
-  //   @Query('status') status?: AppointmentStatus,
-  // ): Promise<Appointment[]> {
-  //   const userId = req.user.sub;
-  //   let appointments: Appointment[];
-  //   if (status) {
-  //     if (!Object.values(AppointmentStatus).includes(status)) {
-  //       throw new BadRequestException(
-  //         `Estado de cita inválido: "${status}". Los valores permitidos son: ${Object.values(AppointmentStatus).join(', ')}.`,
-  //       );
-  //     }
-  //     appointments = await this.visitsService.findAppointmentsByUserAndStatus(
-  //       userId,
-  //       status,
-  //     );
-  //   } else {
-  //     appointments = await this.visitsService.findAppointmentsByUser(userId);
-  //   }
-  //   if (appointments.length === 0) {
-  //     throw new NotFoundException(
-  //       `No se encontraron citas para el usuario con ID ${userId}${status ? ` y estado "${status}"` : ''}.`,
-  //     );
-  //   }
-
-  //   return appointments;
-  // }
 
   @ApiOperation({
     summary: 'Get all available visits (All authenticated users)',

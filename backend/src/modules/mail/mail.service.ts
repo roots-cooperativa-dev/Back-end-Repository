@@ -193,6 +193,40 @@ export class MailService {
       context,
     );
   }
+  async sendAppointmentRejectedToUser(
+    email: string,
+    userName: string,
+    appointmentId: string,
+    visitTitle: string,
+    slotDate: string,
+    slotTime: string,
+  ): Promise<void> {
+    const subject = 'Tu cita ha sido cancelada - ROOTS COOPERATIVA';
+
+    const textAlt =
+      `Hola ${userName},\n\n` +
+      `Lamentamos informarte que tu cita para "${visitTitle}" ha sido cancelada por el equipo.\n\n` +
+      `Fecha: ${slotDate}\nHora: ${slotTime}\nID: ${appointmentId}\n\n` +
+      `Podés volver a solicitar una nueva cita desde el sitio.\n\n` +
+      `Equipo de ROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      appointmentId,
+      visitTitle,
+      slotDate,
+      slotTime,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      email,
+      subject,
+      textAlt,
+      'appointment-rejected.html',
+      context,
+    );
+  }
 
   async sendWelcomeEmail(userEmail: string, userName: string): Promise<void> {
     const subject = '¡Bienvenido a ROOTS COOPERATIVA!';
@@ -328,15 +362,13 @@ export class MailService {
       context,
     );
   }
-  async sendPurchaseConfirmation(email: string, name: string): Promise<void> {
+  async sendPurchaseConfirmation(email: string): Promise<void> {
     const subject = '¡Gracias por tu compra en ROOTS COOPERATIVA!';
     const textAlt =
-      `Hola ${name},\n\n` +
       `Gracias por tu compra. Pronto recibirás los detalles del envío.\n\n` +
       `Saludos,\nEl equipo de ROOTS COOPERATIVA.`;
 
     const context = {
-      name,
       appName: 'ROOTS COOPERATIVA',
     };
 
@@ -457,16 +489,49 @@ export class MailService {
       context,
     );
   }
-  async sendDonationThanks(userName: string, userEmail: string): Promise<void> {
+  async sendDonationThanks(userEmail: string): Promise<void> {
     const subject = '¡Gracias por tu generosa donación a ROOTS COOPERATIVA!';
-    const textAlt = `Hola ${userName},\n\nQueremos agradecerte de corazón por tu reciente donación a ROOTS COOPERATIVA. Tu generosidad es fundamental para nuestra misión y nos permite seguir trabajando.\n\nCon gratitud,\nEl equipo de ROOTS COOPERATIVA.`;
+    const textAlt = `Hola!,\n\nQueremos agradecerte de corazón por tu reciente donación a ROOTS COOPERATIVA. Tu generosidad es fundamental para nuestra misión y nos permite seguir trabajando.\n\nCon gratitud,\nEl equipo de ROOTS COOPERATIVA.`;
 
     const context = {
-      userName,
       userEmail,
       appName: 'ROOTS COOPERATIVA',
     };
 
     await this.sendMail(userEmail, subject, textAlt, 'donation.html', context);
+  }
+  async sendAppointmentApprovedEmail(
+    email: string,
+    userName: string,
+    visitTitle: string,
+    slotDate: string,
+    slotTime: string,
+    appointmentId: string,
+  ): Promise<void> {
+    const subject = '¡Tu cita ha sido aprobada! - ROOTS COOPERATIVA';
+
+    const textAlt =
+      `Hola ${userName},\n\n` +
+      `Tu cita para "${visitTitle}" ha sido aprobada.\n\n` +
+      `Fecha: ${slotDate}\nHora: ${slotTime}\nID de la cita: ${appointmentId}\n\n` +
+      `Te esperamos. Si necesitás modificar o cancelar tu cita, podés hacerlo desde tu perfil o escribiéndonos.\n\n` +
+      `Saludos cordiales,\nEl equipo de ROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      visitTitle,
+      slotDate,
+      slotTime,
+      appointmentId,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      email,
+      subject,
+      textAlt,
+      'appointment-approved.html',
+      context,
+    );
   }
 }
