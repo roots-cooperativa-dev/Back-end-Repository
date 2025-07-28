@@ -123,6 +123,7 @@ export class AuthsService {
       isSuperAdmin: false,
       isDonator: false,
     });
+    await this.mailService.sendWelcomeEmail(googleUser.email, googleUser.name);
     await this.newsletterService.sendWelcomeNewsletter({
       name: googleUser.name,
       email: googleUser.email,

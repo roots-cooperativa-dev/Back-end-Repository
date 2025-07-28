@@ -388,16 +388,22 @@ export class VisitsService {
           await this.mailService.sendAppointmentApprovedEmail(
             appointment.user.email,
             appointment.user.name || appointment.user.username || 'Usuario',
+            appointment.visitSlot.visit.title,
+            visitDate.toDateString(),
+            appointment.visitSlot.startTime,
+            updatedAppointment.id,
+          );
+        } else if (newStatus === AppointmentStatus.REJECTED) {
+          await this.mailService.sendAppointmentRejectedToUser(
+            appointment.user.email,
+            appointment.user.name || appointment.user.username || 'Usuario',
             updatedAppointment.id,
             appointment.visitSlot.visit.title,
             visitDate.toDateString(),
             appointment.visitSlot.startTime,
           );
-        } else if (
-          newStatus === AppointmentStatus.CANCELLED ||
-          newStatus === AppointmentStatus.REJECTED
-        ) {
-          await this.mailService.sendAppointmentRejectedToUser(
+        } else if (newStatus === AppointmentStatus.CANCELLED) {
+          await this.mailService.sendAppointmentCancelledNotification(
             appointment.user.email,
             appointment.user.name || appointment.user.username || 'Usuario',
             updatedAppointment.id,
