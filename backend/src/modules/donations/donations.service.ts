@@ -11,7 +11,7 @@ import { FindManyOptions, Repository, QueryFailedError } from 'typeorm';
 
 import { Donate } from './entities/donation.entity';
 import { Users } from '../users/Entyties/users.entity';
-import { CreateDonateDto, PaymentStatus } from './dto/create-donation.dto';
+import { CreateDonateDto } from './dto/create-donation.dto';
 import { ResponseDonateDto } from './interface/IDonateResponse';
 import { MailService } from '../mail/mail.service';
 
@@ -70,7 +70,7 @@ export class DonationsService {
 
       const saved = await this.donateRepository.save(donate);
 
-      if (dto.status === PaymentStatus.APPROVED && !user.isDonator) {
+      if (donate) {
         user.isDonator = true;
         await this.userRepository.save(user);
         this.logger.log(`User ${userId} marked as donor`);

@@ -263,35 +263,44 @@ export class UsersService {
       throw new InternalServerErrorException(`Error deleting User ${id}`);
     }
   }
+
   async restoreUser(id: string): Promise<Users> {
-    const result = await this.usersRepository.restore(id);
+    try {
+      const user = await this.usersRepository.findOne({
+        where: { id },
+        withDeleted: true,
+        select: ['id', 'deletedAt'],
+      });
 
-    if (!result.affected) {
-      throw new NotFoundException(
-        `Usuario con id ${id} no encontrado para restaurar`,
+      if (!user) {
+        throw new NotFoundException(`User: ${id} not found`);
+      }
+
+      if (!user.deletedAt) {
+        throw new BadRequestException(`User: ${id} is not deleted`);
+      }
+
+      const result = await this.usersRepository.restore(id);
+
+      if (!result.affected) {
+        throw new NotFoundException(`User: ${id} could not be restored`);
+      }
+
+      return user;
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+
+      this.logger.error(
+        `Error interno al restaurar usuario ${id}:`,
+        error instanceof Error ? error.message : String(error),
       );
+      throw new InternalServerErrorException(`Error restoring User ${id}`);
     }
-
-    const user = await this.usersRepository.findOne({
-      where: { id },
-      relations: [
-        'address',
-        'donates',
-        'orders',
-        'appointments',
-        'cart',
-        'cart.items',
-        'cart.items.product',
-      ],
-    });
-
-    if (!user) {
-      throw new NotFoundException(
-        `Usuario con id ${id} no encontrado tras restaurar`,
-      );
-    }
-
-    return user;
   }
 
   async sendResetPasswordEmail(email: string): Promise<void> {
