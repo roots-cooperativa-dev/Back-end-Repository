@@ -12,6 +12,7 @@ import { AuthsModule } from '../auths/auths.module';
 import { OrderPaymentsModule } from '../order-payments/order-payments.module';
 import { WebhookRouterService } from './webhooks-router.service';
 import { OrderPaymentsService } from '../order-payments/order-payments.service';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { OrderPaymentsService } from '../order-payments/order-payments.service';
     EventEmitterModule.forRoot(),
     forwardRef(() => AuthsModule),
     forwardRef(() => OrderPaymentsModule),
+    MailModule,
   ],
   controllers: [PaymentsController],
   providers: [

@@ -98,12 +98,13 @@ export class UsersController {
   }
 
   @Patch('Roles/:id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.SUPERADMIN)
   async rollChange(
-    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) userId: string,
     @Body() dto: UpdateRoleDto,
   ) {
-    const userRole = await this.usersService.rollChange(req.user.sub, dto);
+    const userRole = await this.usersService.rollChange(userId, dto);
     return { message: 'Los roles se actualizaron correctamente', userRole };
   }
 
@@ -163,6 +164,17 @@ export class UsersController {
   ): Promise<ResponseUserDto> {
     const user = await this.usersService.restoreUser(id);
     return ResponseUserDto.toDTO(user);
+  }
+
+  @Post('restore/user/:id')
+  @ApiOperation({ summary: 'Restaurar usuario eliminado' })
+  @ApiResponse({
+    status: 200,
+    description:
+      'Usuario restaurado exitosamenteUsuario restaurado exitosamente',
+  })
+  async restoreUser(@Param('id', ParseUUIDPipe) userId: string) {
+    return await this.usersService.restoreUser(userId);
   }
 
   @Post('forgot-password')

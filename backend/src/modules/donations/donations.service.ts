@@ -13,6 +13,7 @@ import { Donate } from './entities/donation.entity';
 import { Users } from '../users/Entyties/users.entity';
 import { CreateDonateDto, PaymentStatus } from './dto/create-donation.dto';
 import { ResponseDonateDto } from './interface/IDonateResponse';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class DonationsService {
@@ -24,6 +25,8 @@ export class DonationsService {
 
     @InjectRepository(Users)
     private readonly userRepository: Repository<Users>,
+
+    private readonly mailService: MailService,
   ) {}
 
   async createDonate(
@@ -74,6 +77,9 @@ export class DonationsService {
       }
 
       this.logger.log(`Donation created successfully: ${saved.id}`);
+
+      this.sendDoantionNotificationAsync(user.email);
+
       return ResponseDonateDto.toDTO(saved);
     } catch (error) {
       if (
@@ -183,5 +189,21 @@ export class DonationsService {
       this.logger.error('Unexpected error retrieving donation:', error);
       throw new InternalServerErrorException('Internal Server Error');
     }
+  }
+
+  private sendDoantionNotificationAsync(email: string): void {
+    this.mailService
+      .sendDonationThanks(email)
+      .then(() => {
+        this.logger.log(
+          `Correo de notificación de donacion enviado a ${email}`,
+        );
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Donation notification email sent to ${email}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      });
   }
 }
