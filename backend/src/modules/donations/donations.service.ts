@@ -7,13 +7,15 @@ import {
   Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindManyOptions, Repository, QueryFailedError } from 'typeorm';
+import { Repository, QueryFailedError } from 'typeorm';
 
 import { Donate } from './entities/donation.entity';
 import { Users } from '../users/Entyties/users.entity';
 import { CreateDonateDto } from './dto/create-donation.dto';
 import { ResponseDonateDto } from './interface/IDonateResponse';
 import { MailService } from '../mail/mail.service';
+import { PaginationQueryDonationDto } from './dto/donations.paginate';
+import { paginate } from 'src/common/pagination/paginate';
 
 @Injectable()
 export class DonationsService {
@@ -103,53 +105,11 @@ export class DonationsService {
     }
   }
 
-  async findAll(page?: number, limit?: number): Promise<ResponseDonateDto[]> {
-    try {
-      if (page !== undefined && (!Number.isInteger(page) || page < 1)) {
-        throw new BadRequestException(
-          'Page must be a positive integer starting from 1',
-        );
-      }
-
-      if (
-        limit !== undefined &&
-        (!Number.isInteger(limit) || limit < 1 || limit > 100)
-      ) {
-        throw new BadRequestException(
-          'Limit must be an integer between 1 and 100',
-        );
-      }
-
-      const options: FindManyOptions<Donate> = {
-        relations: ['user'],
-        order: { dateApproved: 'DESC' },
-      };
-
-      if (page && limit) {
-        options.skip = (page - 1) * limit;
-        options.take = limit;
-      }
-
-      const donations = await this.donateRepository.find(options);
-
-      this.logger.log(`Recovered ${donations.length} donations`);
-      return ResponseDonateDto.toDTOList(donations);
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-
-      if (error instanceof QueryFailedError) {
-        this.logger.error(
-          'Database error retrieving donations:',
-          error.message,
-        );
-        throw new InternalServerErrorException('Error retrieving donations');
-      }
-
-      this.logger.error('Unexpected error retrieving donations:', error);
-      throw new InternalServerErrorException('Internal Server Error');
-    }
+  async findAllDonations(pagination: PaginationQueryDonationDto) {
+    return paginate(this.donateRepository, pagination, {
+      order: { createdAt: 'DESC' },
+      relations: ['user'],
+    });
   }
 
   async findOne(id: string): Promise<ResponseDonateDto> {
