@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nueva Donación Recibida</title>
+
+  <!-- Fuentes -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Unica+One&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      color: #333333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .header {
+      background-color: #f5f5f5;
+      padding: 15px 20px;
+    }
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .header img {
+      max-width: 160px;
+      height: auto;
+      display: block;
+    }
+
+    .content {
+      padding: 30px 20px;
+      background-color: #ffffff;
+    }
+
+    .content h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 26px;
+      color: #922f4e;
+      margin-bottom: 25px;
+    }
+
+    .content p {
+      margin-bottom: 15px;
+      font-weight: 500;
+      line-height: 1.6;
+    }
+
+    .content strong {
+      color: #017d74;
+    }
+
+    .footer {
+      background-color: #f1f1f1;
+      color: #333;
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+    }
+
+    .footer a {
+      color: #922f4e;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    @media screen and (max-width: 600px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .header img {
+        max-width: 140px;
+        margin: 10px auto;
+      }
+
+      .content {
+        padding: 20px;
+      }
+
+      .content h1 {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Encabezado institucional -->
+    <div class="header">
+      <div class="header-content">
+        <div style="font-family: 'Unica One', sans-serif; font-size: 22px; color: #4d206c;">
+          ROOTS COOPERATIVA
+        </div>
+        <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753703082/sol_sf2bpt.png" alt="Logo ROOTS COOPERATIVA" />
+      </div>
+    </div>
+
+    <!-- Contenido -->
+    <div class="content">
+      <h1>Nueva Donación Recibida 💰</h1>
+      <p><strong>Hola equipo ROOTS,</strong></p>
+      <p>Se ha recibido una nueva donación a través del sistema.</p>
+
+      <p><strong>Donante:</strong> {{name}}</p>
+      <p><strong>Monto:</strong> ${{amount}}</p>
+
+      <p>¡Seguimos sumando voluntades para transformar! 🌱</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Este mensaje es solo para uso interno de <strong>ROOTS COOPERATIVA</strong>.</p>
+      <p><a href="https://frontend-rootscoop.vercel.app">Ir al panel de administración</a></p>
+    </div>
+  </div>
+</body>
+</html>

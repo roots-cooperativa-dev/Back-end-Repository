@@ -60,7 +60,7 @@ export class AuthValidations {
   }
 
   static validateUserNameExist(userName: string, user: Users) {
-    if (user.username) {
+    if (user.username == userName) {
       throw new ConflictException(`Username '${userName}' already exists`);
     }
   }

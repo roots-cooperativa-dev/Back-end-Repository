@@ -96,7 +96,7 @@ export class NewsletterService {
       await this.transporter.sendMail({
         to: user.email,
         from: `"ROOTS Cooperativa" <${this.configService.get('EMAIL_USER')}>`,
-        subject: '🌿 ¡Bienvenidx a ROOTS COOPERATIVA!',
+        subject: '🌿 ¡Tu newsleter de bienvenida!',
         html,
       });
       this.logger.log(`👋 Newsletter bienvenida enviada a ${user.email}`);

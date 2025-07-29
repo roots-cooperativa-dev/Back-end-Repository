@@ -365,7 +365,7 @@ export class MailService {
   async sendPurchaseConfirmation(email: string): Promise<void> {
     const subject = '¡Gracias por tu compra en ROOTS COOPERATIVA!';
     const textAlt =
-      `Gracias por tu compra. Pronto recibirás los detalles del envío.\n\n` +
+      `Gracias por tu compra.\n\n` +
       `Saludos,\nEl equipo de ROOTS COOPERATIVA.`;
 
     const context = {
@@ -377,6 +377,38 @@ export class MailService {
       subject,
       textAlt,
       'purchase-confirmation.html',
+      context,
+    );
+  }
+  async sendPurchaseAlertToAdmin(
+    name: string,
+    email: string,
+    orderId?: string,
+  ): Promise<void> {
+    const adminEmail = 'rootscooperativadev@gmail.com';
+    const subject = 'Nueva compra realizada en ROOTS COOPERATIVA';
+
+    const textAlt =
+      `Hola equipo ROOTS,\n\n` +
+      `Se ha realizado una nueva compra en la tienda.\n\n` +
+      `Comprador: ${name}\n` +
+      `Email: ${email}\n` +
+      `${orderId ? `ID de orden: ${orderId}\n` : ''}` +
+      `\nPor favor, revisá el panel de administración para más detalles.\n\n` +
+      `- ROOTS COOPERATIVA`;
+
+    const context = {
+      name,
+      email,
+      orderId,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      adminEmail,
+      subject,
+      textAlt,
+      'purchase-admin.html',
       context,
     );
   }
@@ -499,6 +531,34 @@ export class MailService {
     };
 
     await this.sendMail(userEmail, subject, textAlt, 'donation.html', context);
+  }
+  async sendDonationAlertToAdmin(name: string, amount: number): Promise<void> {
+    const adminEmail = 'rootscooperativadev@gmail.com';
+    const subject = 'Nueva donación recibida en ROOTS COOPERATIVA';
+    const textAlt = `Hola equipo ROOTS,
+
+Se ha recibido una nueva donación.
+
+Donante: ${name}
+Monto: $${amount}
+
+Seguimos sumando voluntades.
+
+- ROOTS COOPERATIVA`;
+
+    const context = {
+      name,
+      amount,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      adminEmail,
+      subject,
+      textAlt,
+      'donation-admin.html',
+      context,
+    );
   }
   async sendAppointmentApprovedEmail(
     email: string,

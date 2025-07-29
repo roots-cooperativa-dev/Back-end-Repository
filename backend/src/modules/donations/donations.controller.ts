@@ -19,6 +19,10 @@ import { ResponseDonateDto } from './interface/IDonateResponse';
 import { RoleGuard } from 'src/guards/auth.guards.admin';
 import { Roles, UserRole } from 'src/decorator/role.decorator';
 import { AuthGuard } from 'src/guards/auth.guards';
+import {
+  PaginatedDonateDto,
+  PaginationQueryDonationDto,
+} from './dto/donations.paginate';
 
 @ApiTags('Donations')
 @ApiBearerAuth()
@@ -28,29 +32,27 @@ export class DonationsController {
 
   @Get()
   @ApiOperation({ summary: 'Get all donations' })
-  @ApiQuery({
-    name: 'page',
-    description: 'Page number',
-    required: false,
-  })
-  @ApiQuery({
-    name: 'limit',
-    description: 'Items per page',
-    required: false,
-  })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiResponse({
     status: 200,
     description: 'List of donations successfully retrieved',
+    type: PaginatedDonateDto,
   })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
-  async findAll(
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
-  ): Promise<ResponseDonateDto[]> {
-    const pageNumber = page ? Number(page) : undefined;
-    const limitNumber = limit ? Number(limit) : undefined;
-    return this.donationsService.findAll(pageNumber, limitNumber);
+  async findAllDon(
+    @Query() pagination: PaginationQueryDonationDto,
+  ): Promise<PaginatedDonateDto> {
+    const { items, ...meta } =
+      await this.donationsService.findAllDonations(pagination);
+
+    const donateItems = ResponseDonateDto.toDTOList(items);
+
+    return {
+      ...meta,
+      items: donateItems,
+    };
   }
 
   @Get(':id')
