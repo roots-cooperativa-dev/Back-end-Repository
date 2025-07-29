@@ -138,4 +138,5 @@ export class CreateUserDbDto extends OmitType(CreateUserDto, [
 
 export class UpdateUserDbDto extends OmitType(UpdateUserDto, [
   'confirmPassword',
+  'email',
 ] as const) {}

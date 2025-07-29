@@ -98,12 +98,13 @@ export class UsersController {
   }
 
   @Patch('Roles/:id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.SUPERADMIN)
   async rollChange(
-    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) userId: string,
     @Body() dto: UpdateRoleDto,
   ) {
-    const userRole = await this.usersService.rollChange(req.user.sub, dto);
+    const userRole = await this.usersService.rollChange(userId, dto);
     return { message: 'Los roles se actualizaron correctamente', userRole };
   }
 
