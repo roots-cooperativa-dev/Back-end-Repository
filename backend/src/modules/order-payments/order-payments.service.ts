@@ -46,9 +46,9 @@ export class OrderPaymentsService implements IPaymentService {
         `Cart with ID ${dto.cartId} not found or doesn't belong to user ${userId}`,
       );
     }
-
     const cartTotal = Number(cart.total);
     const dtoAmount = Number(dto.amount);
+
     if (cartTotal !== dtoAmount) {
       throw new BadRequestException(
         `Amount mismatch: Cart total is ${cartTotal}, but received amount is ${dtoAmount}`,

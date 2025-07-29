@@ -165,7 +165,14 @@
       <h1>Estado de tu pedido</h1>
       <p>Hola <strong>{{userName}}</strong>,</p>
       <p>Tu orden <strong>#{{orderId}}</strong> se encuentra actualmente <span class="status">en proceso</span>.</p>
-      <p>Te notificaremos nuevamente una vez que esté lista para retiro o haya sido enviada.</p>
+      <p><strong>Detalles de la compra:</strong></p>
+      <ul>
+        <li>ID de la orden: <span class="highlight">{{orderId}}</span></li>
+        <li>Producto(s): <span class="highlight">{{productList}}</span></li>
+        <li>Total: <span class="highlight">{{totalAmount}}</span></li>
+        <li>Fecha: <span class="highlight">{{purchaseDate}}</span></li>
+      </ul>
+      <p>Nos comunicaremos con vos a la brevedad cuando el pago se haya completado.</p>
       <p>Podés ver los detalles en tu cuenta o contactarnos si tenés dudas.</p>
       <p>Saludos cordiales,</p>
       <p>El equipo de <strong>{{appName}}</strong>.</p>
@@ -178,7 +185,7 @@
         <a href="https://wa.link/b4wyji" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" />
         </a>
-        <a href="https://www.instagram.com/roots_cooperativa" target="_blank" class="social-icon">
+        <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" class="social-icon">
           <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" />
         </a>
         <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon">
