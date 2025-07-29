@@ -120,6 +120,10 @@ export class OrderPaymentsService implements IPaymentService {
         await this.orderPaymentsRepository.save(orderPayment);
 
         await this.sendOrderPaymentNotificationAsync(cart.user.id);
+        await this.sendOrderPaymentNotificationAsyncToAdmin(
+          cart.user.id,
+          cart.id,
+        );
 
         this.logger.log(
           `Order payment completed and saved for cart: ${cartId}, payment: ${paymentInfo.id}, user: ${cart.user.id}`,
@@ -178,6 +182,34 @@ export class OrderPaymentsService implements IPaymentService {
       .catch((error) => {
         this.logger.error(
           `Error enviando notificación de compra a ${user.email}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      });
+  }
+
+  private async sendOrderPaymentNotificationAsyncToAdmin(
+    id: string,
+    cartId: string,
+  ): Promise<void> {
+    const user = await this.userRespository.findOne({ where: { id } });
+
+    if (!user) {
+      this.logger.warn(
+        `Usuario con ID ${id} no encontrado para notificación de orden`,
+      );
+      return;
+    }
+
+    this.mailService
+      .sendPurchaseAlertToAdmin(user.username, user.email, cartId)
+      .then(() => {
+        this.logger.log(
+          `Correo de notificación de compra enviado a ${user.username}`,
+        );
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Error enviando notificación de compra a ${user.username}:`,
           error instanceof Error ? error.message : String(error),
         );
       });

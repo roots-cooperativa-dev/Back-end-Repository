@@ -532,11 +532,7 @@ export class MailService {
 
     await this.sendMail(userEmail, subject, textAlt, 'donation.html', context);
   }
-  async sendDonationAlertToAdmin(
-    name: string,
-    amount: number,
-    donorMessage?: string,
-  ): Promise<void> {
+  async sendDonationAlertToAdmin(name: string, amount: number): Promise<void> {
     const adminEmail = 'rootscooperativadev@gmail.com';
     const subject = 'Nueva donación recibida en ROOTS COOPERATIVA';
     const textAlt = `Hola equipo ROOTS,
@@ -545,7 +541,6 @@ Se ha recibido una nueva donación.
 
 Donante: ${name}
 Monto: $${amount}
-${donorMessage ? `Mensaje: "${donorMessage}"\n` : ''}
 
 Seguimos sumando voluntades.
 
@@ -554,7 +549,6 @@ Seguimos sumando voluntades.
     const context = {
       name,
       amount,
-      donorMessage,
       appName: 'ROOTS COOPERATIVA',
     };
 
