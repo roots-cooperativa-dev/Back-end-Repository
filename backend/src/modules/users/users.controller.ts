@@ -144,6 +144,26 @@ export class UsersController {
   async remove(@Param('id') id: string) {
     return await this.usersService.deleteUser(id);
   }
+  @Patch('restore/:id')
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Restaurar usuario eliminado (soft delete)' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'ID del usuario a restaurar',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Usuario restaurado correctamente',
+    type: ResponseUserDto,
+  })
+  async restoreUser(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ResponseUserDto> {
+    const user = await this.usersService.restoreUser(id);
+    return ResponseUserDto.toDTO(user);
+  }
 
   @Post('forgot-password')
   @ApiOperation({ summary: 'Solicitar recuperación de contraseña' })

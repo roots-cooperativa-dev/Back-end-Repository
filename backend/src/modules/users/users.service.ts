@@ -254,6 +254,36 @@ export class UsersService {
       throw new InternalServerErrorException(`Error deleting User ${id}`);
     }
   }
+  async restoreUser(id: string): Promise<Users> {
+    const result = await this.usersRepository.restore(id);
+
+    if (!result.affected) {
+      throw new NotFoundException(
+        `Usuario con id ${id} no encontrado para restaurar`,
+      );
+    }
+
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: [
+        'address',
+        'donates',
+        'orders',
+        'appointments',
+        'cart',
+        'cart.items',
+        'cart.items.product',
+      ],
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `Usuario con id ${id} no encontrado tras restaurar`,
+      );
+    }
+
+    return user;
+  }
   async sendResetPasswordEmail(email: string): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) {
