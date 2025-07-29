@@ -166,17 +166,6 @@ export class UsersController {
     return ResponseUserDto.toDTO(user);
   }
 
-  @Post('restore/user/:id')
-  @ApiOperation({ summary: 'Restaurar usuario eliminado' })
-  @ApiResponse({
-    status: 200,
-    description:
-      'Usuario restaurado exitosamenteUsuario restaurado exitosamente',
-  })
-  async restoreUser(@Param('id', ParseUUIDPipe) userId: string) {
-    return await this.usersService.restoreUser(userId);
-  }
-
   @Post('forgot-password')
   @ApiOperation({ summary: 'Solicitar recuperación de contraseña' })
   @ApiBody({ type: ForgotPasswordDto })

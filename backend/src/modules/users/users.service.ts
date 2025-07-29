@@ -237,7 +237,6 @@ export class UsersService {
     }
   }
 
-
   async deleteUser(id: string): Promise<{ message: string }> {
     try {
       const user = await this.usersRepository.findOne({ where: { id } });
@@ -328,83 +327,5 @@ export class UsersService {
       user.email,
       user.name,
     );
-  }
-
-  async deleteUser(id: string): Promise<{ message: string }> {
-    try {
-      const user = await this.usersRepository.findOne({ where: { id } });
-
-      if (!user) {
-        throw new NotFoundException(`User: ${id} not found`);
-      }
-      if (user.deletedAt) {
-        throw new BadRequestException(`User: ${id} is already deleted`);
-      }
-
-      const result = await this.usersRepository.softDelete(id);
-
-      if (!result.affected) {
-        throw new NotFoundException(`User: ${id} not found`);
-      }
-
-      await this.mailService.sendAccountDeletedNotification(
-        user.email,
-        user.name,
-      );
-
-      return { message: `User ${id} successfully removed.` };
-    } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof BadRequestException
-      ) {
-        throw error;
-      }
-
-      this.logger.error(
-        `Error interno al eliminar usuario ${id}:`,
-        error instanceof Error ? error.message : String(error),
-      );
-      throw new InternalServerErrorException(`Error deleting User ${id}`);
-    }
-  }
-
-  async restoreUser(id: string): Promise<{ message: string }> {
-    try {
-      const user = await this.usersRepository.findOne({
-        where: { id },
-        withDeleted: true,
-        select: ['id', 'deletedAt'],
-      });
-
-      if (!user) {
-        throw new NotFoundException(`User: ${id} not found`);
-      }
-
-      if (!user.deletedAt) {
-        throw new BadRequestException(`User: ${id} is not deleted`);
-      }
-
-      const result = await this.usersRepository.restore(id);
-
-      if (!result.affected) {
-        throw new NotFoundException(`User: ${id} could not be restored`);
-      }
-
-      return { message: `User ${id} successfully restored.` };
-    } catch (error) {
-      if (
-        error instanceof NotFoundException ||
-        error instanceof BadRequestException
-      ) {
-        throw error;
-      }
-
-      this.logger.error(
-        `Error interno al restaurar usuario ${id}:`,
-        error instanceof Error ? error.message : String(error),
-      );
-      throw new InternalServerErrorException(`Error restoring User ${id}`);
-    }
   }
 }
