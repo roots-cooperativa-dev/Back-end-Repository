@@ -150,7 +150,7 @@ function buildBaseTemplate(
     }
     .social-icons {
       display: inline-flex;
-      gap: 25px;
+      gap: 40px;
       justify-content: center;
       align-items: center;
     }
@@ -242,13 +242,13 @@ function buildBaseTemplate(
       </p>
       <div class="social-icons">
         <a href="https://wa.link/b4wyji" target="_blank" class="social-icon">
-          <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="20" height="20" style="display: block;">
+          <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="28" height="28" style="display: block;">
         </a>
         <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" class="social-icon">
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="20" height="20" style="display: block;">
+          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="28" height="28" style="display: block;">
         </a>
         <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon">
-          <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="20" height="20" style="display: block;">
+          <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="28" height="28" style="display: block;">
         </a>
       </div>
     </div>
