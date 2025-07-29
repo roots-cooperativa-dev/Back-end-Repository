@@ -14,6 +14,8 @@ import {
 import { MercadoPagoService } from '../payments/mercadopago.service';
 import { OrderPayment } from './entities/order-payment.entity';
 import { Cart } from '../orders/entities/cart.entity';
+import { MailService } from '../mail/mail.service';
+import { Users } from '../users/Entyties/users.entity';
 
 @Injectable()
 export class OrderPaymentsService implements IPaymentService {
@@ -25,6 +27,9 @@ export class OrderPaymentsService implements IPaymentService {
     private readonly orderPaymentsRepository: Repository<OrderPayment>,
     @InjectRepository(Cart)
     private readonly cartRepository: Repository<Cart>,
+    private readonly mailService: MailService,
+    @InjectRepository(Users)
+    private readonly userRespository: Repository<Users>,
   ) {}
 
   async createPreference(
@@ -39,6 +44,14 @@ export class OrderPaymentsService implements IPaymentService {
     if (!cart) {
       throw new BadRequestException(
         `Cart with ID ${dto.cartId} not found or doesn't belong to user ${userId}`,
+      );
+    }
+    const cartTotal = Number(cart.total);
+    const dtoAmount = Number(dto.amount);
+
+    if (cartTotal !== dtoAmount) {
+      throw new BadRequestException(
+        `Amount mismatch: Cart total is ${cartTotal}, but received amount is ${dtoAmount}`,
       );
     }
 
@@ -106,6 +119,8 @@ export class OrderPaymentsService implements IPaymentService {
 
         await this.orderPaymentsRepository.save(orderPayment);
 
+        await this.sendOrderPaymentNotificationAsync(cart.user.id);
+
         this.logger.log(
           `Order payment completed and saved for cart: ${cartId}, payment: ${paymentInfo.id}, user: ${cart.user.id}`,
         );
@@ -141,5 +156,30 @@ export class OrderPaymentsService implements IPaymentService {
 
   async getAllOrdersPayment(): Promise<OrderPayment[]> {
     return this.orderPaymentsRepository.find();
+  }
+
+  private async sendOrderPaymentNotificationAsync(id: string): Promise<void> {
+    const user = await this.userRespository.findOne({ where: { id } });
+
+    if (!user) {
+      this.logger.warn(
+        `Usuario con ID ${id} no encontrado para notificación de orden`,
+      );
+      return;
+    }
+
+    this.mailService
+      .sendPurchaseConfirmation(user.email)
+      .then(() => {
+        this.logger.log(
+          `Correo de notificación de compra enviado a ${user.email}`,
+        );
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Error enviando notificación de compra a ${user.email}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      });
   }
 }

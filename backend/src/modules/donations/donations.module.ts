@@ -9,6 +9,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PaymentsModule } from '../payments/payment.module';
 import { PaymentCompletedListener } from '../payments/listener/payment.listener';
 import { AuthsModule } from '../auths/auths.module';
+import { MailModule } from '../mail/mail.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([Donate, Users]),
@@ -24,6 +25,7 @@ import { AuthsModule } from '../auths/auths.module';
     forwardRef(() => UsersModule),
     forwardRef(() => PaymentsModule),
     forwardRef(() => AuthsModule),
+    MailModule,
   ],
   controllers: [DonationsController],
   providers: [DonationsService, PaymentCompletedListener],
