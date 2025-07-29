@@ -1,108 +1,172 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>¡Gracias por tu compra!</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <!-- Fuentes -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
       padding: 0;
       background-color: #ffffff;
       font-family: 'Montserrat', sans-serif;
-      color: #392f5a;
-      line-height: 1.6;
+      color: #333333;
     }
+
     .container {
-      max-width: 1200px;
-      margin: 20px auto;
-      background-color: #ffffff;
+      max-width: 600px;
+      margin: 30px auto;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-    .header, .footer {
-      background-color: #922f4e;
-      padding: 1px;
-      text-align: center;
+
+  /* Header gris con padding y flexbox */
+  .header {
+      background-color: #f5f5f5;
+      padding: 15px 20px;
     }
-    .header img {
-      max-width: 240px;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-    }
+
+   .header-content {
+  display: flex;
+  justify-content: space-between; /* Empuja texto a la izquierda y logo a la derecha */
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto; /* centra el bloque completo dentro del contenedor */
+  width: 100%;
+  box-sizing: border-box; /* para que padding no afecte ancho */
+}
+
+.header img {
+  max-width: 160px;
+  height: auto;
+  display: block;
+  margin: 0; /* sin márgenes que lo centren */
+}
+
     .content {
-      padding: 30px;
+      padding: 30px 20px;
+      background-color: #ffffff;
     }
-    .content p {
+
+    .content h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 26px;
+      color: #017d74;
       margin-bottom: 15px;
-      font-weight: 600;
     }
+
+    .content p {
+      margin: 10px 0;
+      font-weight: 500;
+      line-height: 1.6;
+    }
+
     .btn {
       display: inline-block;
-      padding: 12px 25px;
       margin-top: 20px;
-      background-color: #017d74;
-      color: #ffffff !important;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
+      background-color: #922f4e;
+      color: #fff !important;
+      padding: 12px 24px;
+      border-radius: 6px;
+      text-decoration: none !important;
+      font-weight: 600;
     }
+
     .footer {
-      border-top: 1px solid #01564c;
-      color: #ffdd00;
-      font-size: 0.9em;
-    }
-    .footer a {
-      color: #ffdd00;
-      text-decoration: none;
-    }
-    .social-container {
-      margin: 30px auto;
+      background-color: #f1f1f1;
+      color: #333;
       text-align: center;
+      padding: 20px;
+      font-size: 14px;
     }
+
+    .footer a {
+      color: #922f4e;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .social-container {
+      text-align: center;
+      padding: 30px 20px 40px;
+      background-color: #f5f5f5;
+    }
+
+    .social-container p {
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: #642d91;
+    }
+
     .social-icons {
       display: inline-flex;
-      gap: 25px;
       justify-content: center;
       align-items: center;
+      gap: 50px;
     }
-    .social-icon {
-      background-color: #ffffff;
-      padding: 10px;
-      border-radius: 50%;
-      display: inline-block;
+
+    .social-icon img {
+      width: 28px;
+      height: 28px;
+      display: block;
     }
-    @media screen and (max-width: 480px) {
-      body {
-        padding: 10px;
+
+    @media screen and (max-width: 600px) {
+      .header table {
+        flex-direction: column;
+        text-align: center;
       }
-      .container {
-        width: 100% !important;
-        margin: 10px auto !important;
-        box-shadow: none !important;
+
+      .header img {
+        max-width: 140px;
+        margin: 10px auto;
       }
+
       .content {
-        padding: 15px !important;
+        padding: 20px;
+      }
+
+      .content h1 {
+        font-size: 24px;
+      }
+
+      .social-icons {
+        gap: 20px;
+      }
+
+      .social-icon img {
+        width: 24px;
+        height: 24px;
       }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Encabezado -->
+ <div class="container">
+    <!-- Encabezado institucional -->
     <div class="header">
-      <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png" alt="Logo ROOTS COOPERATIVA" />
-    </div>
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+  <tr>
+    <!-- Texto a la izquierda -->
+    <td align="left" style="padding: 15px; font-family: 'Unica One', Arial, sans-serif; font-size: 22px; color: #4d206c; letter-spacing: 1px;">
+  ROOTS COOPERATIVA
+</td>
+
+
+    <!-- Logo a la derecha -->
+    <td align="right" style="padding: 15px;">
+      <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753703082/sol_sf2bpt.png" alt="Logo ROOTS COOPERATIVA" style="max-width: 160px; height: auto; display: block;" />
+    </td>
+  </tr>
+</table>
 
     <!-- Contenido -->
     <div class="content">
-      <h1 style="font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: #392f5a; margin-bottom: 15px;">
-        ¡Gracias por tu compra, {{name}}!
-      </h1>
+      <h1>¡Gracias por tu compra, {{name}}!</h1>
       <p>Tu pedido ha sido procesado correctamente.</p>
       <p>En breve recibirás la confirmación con los detalles de envío.</p>
       <p>Podés ver más información o contactarnos si necesitás asistencia.</p>
@@ -110,28 +174,26 @@
       <a href="https://frontend-rootscoop.vercel.app" class="btn">Volver al sitio</a>
     </div>
 
-    <!-- Pie de página -->
-    <div class="footer">
-      <p>Este correo ha sido enviado por <strong style="color: #ffffff;">{{appName}}</strong>.</p>
-      <p style="text-align: center;"><a href="https://frontend-rootscoop.vercel.app">Visita nuestro sitio web</a></p>
-    </div>
-
     <!-- Redes sociales -->
     <div class="social-container">
-      <p style="font-weight: 600; color: #017d74;">
-        Seguinos en nuestras redes:
-      </p>
+      <p>Seguinos en nuestras redes:</p>
       <div class="social-icons">
         <a href="https://wa.link/b4wyji" target="_blank" class="social-icon">
-          <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="20" height="20" />
+          <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" />
         </a>
         <a href="https://www.instagram.com/roots_cooperativa" target="_blank" class="social-icon">
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="20" height="20" />
+          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" />
         </a>
         <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon">
-          <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="20" height="20" />
+          <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" />
         </a>
       </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Este correo fue enviado por <strong>{{appName}}</strong>.</p>
+      <p><a href="https://frontend-rootscoop.vercel.app">Visita nuestro sitio web</a></p>
     </div>
   </div>
 </body>

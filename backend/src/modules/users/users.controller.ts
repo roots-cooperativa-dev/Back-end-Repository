@@ -98,12 +98,13 @@ export class UsersController {
   }
 
   @Patch('Roles/:id')
-  @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.SUPERADMIN)
   async rollChange(
-    @Req() req: AuthenticatedRequest,
+    @Param('id', ParseUUIDPipe) userId: string,
     @Body() dto: UpdateRoleDto,
   ) {
-    const userRole = await this.usersService.rollChange(req.user.sub, dto);
+    const userRole = await this.usersService.rollChange(userId, dto);
     return { message: 'Los roles se actualizaron correctamente', userRole };
   }
 
@@ -143,6 +144,26 @@ export class UsersController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return await this.usersService.deleteUser(id);
+  }
+  @Patch('restore/:id')
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Restaurar usuario eliminado (soft delete)' })
+  @ApiParam({
+    name: 'id',
+    type: String,
+    description: 'ID del usuario a restaurar',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Usuario restaurado correctamente',
+    type: ResponseUserDto,
+  })
+  async restoreUser(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ResponseUserDto> {
+    const user = await this.usersService.restoreUser(id);
+    return ResponseUserDto.toDTO(user);
   }
 
   @Post('forgot-password')

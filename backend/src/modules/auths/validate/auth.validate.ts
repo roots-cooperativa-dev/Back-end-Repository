@@ -1,10 +1,12 @@
 import {
   BadRequestException,
+  ConflictException,
   InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { GoogleUser, IUserAuthResponse } from '../interface/IAuth.interface';
+import { Users } from 'src/modules/users/Entyties/users.entity';
 export class AuthValidations {
   private static readonly BCRYPT_ROUNDS = 12;
 
@@ -54,6 +56,12 @@ export class AuthValidations {
   static validateUserExists(user: any): asserts user is IUserAuthResponse {
     if (!user) {
       throw new UnauthorizedException('Invalid credencials');
+    }
+  }
+
+  static validateUserNameExist(userName: string, user: Users) {
+    if (user.username) {
+      throw new ConflictException(`Username '${userName}' already exists`);
     }
   }
 

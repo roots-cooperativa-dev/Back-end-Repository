@@ -17,12 +17,17 @@ import {
 } from './interface/IAuth.interface';
 import { MailService } from '../mail/mail.service';
 import { NewsletterService } from '../scheduleLetters/newsletter.service';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Users } from '../users/Entyties/users.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthsService {
   private readonly logger = new Logger(AuthsService.name);
 
   constructor(
+    @InjectRepository(Users)
+    private readonly usersRepository: Repository<Users>,
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
@@ -49,6 +54,15 @@ export class AuthsService {
     const { password, confirmPassword, ...userData } = data;
 
     AuthValidations.validatePasswordMatch(password, confirmPassword);
+    const email = await this.userService.findByEmail(userData.email);
+    AuthValidations.validateEmailIsNotTaken(email?.email);
+    const existingUser = await this.usersRepository.findOne({
+      where: { username: userData.username },
+      select: ['id', 'username'],
+    });
+    if (existingUser) {
+      AuthValidations.validateUserNameExist(userData.username, existingUser);
+    }
 
     try {
       const hashedPassword = await AuthValidations.hashPassword(password);
@@ -121,6 +135,7 @@ export class AuthsService {
       isSuperAdmin: false,
       isDonator: false,
     });
+    await this.mailService.sendWelcomeEmail(googleUser.email, googleUser.name);
     await this.newsletterService.sendWelcomeNewsletter({
       name: googleUser.name,
       email: googleUser.email,

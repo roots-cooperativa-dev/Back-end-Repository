@@ -19,7 +19,6 @@ import { ConfigService } from '@nestjs/config';
 import { MailService } from '../mail/mail.service';
 import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
 import { ResetPasswordDto } from './Dtos/reset-password.dto';
-import { AddressService } from './address.service';
 
 @Injectable()
 export class UsersService {
@@ -31,7 +30,6 @@ export class UsersService {
     private readonly addressRepository: Repository<Address>,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
-    private readonly addressService: AddressService,
   ) {}
 
   async findAll(): Promise<Users[]> {
@@ -103,6 +101,20 @@ export class UsersService {
     }
 
     const { address, ...restDto } = dto;
+
+    if (restDto.username) {
+      const existingUser = await this.usersRepository.findOne({
+        where: { username: restDto.username },
+        select: ['id', 'username'],
+      });
+
+      if (existingUser && existingUser.id !== id) {
+        AuthValidations.validateUserNameExist(restDto.username, existingUser);
+      }
+    }
+    if (restDto.password) {
+      restDto.password = await AuthValidations.hashPassword(restDto.password);
+    }
 
     const result = await this.usersRepository.update({ id }, restDto);
 
@@ -251,6 +263,37 @@ export class UsersService {
       throw new InternalServerErrorException(`Error deleting User ${id}`);
     }
   }
+  async restoreUser(id: string): Promise<Users> {
+    const result = await this.usersRepository.restore(id);
+
+    if (!result.affected) {
+      throw new NotFoundException(
+        `Usuario con id ${id} no encontrado para restaurar`,
+      );
+    }
+
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: [
+        'address',
+        'donates',
+        'orders',
+        'appointments',
+        'cart',
+        'cart.items',
+        'cart.items.product',
+      ],
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `Usuario con id ${id} no encontrado tras restaurar`,
+      );
+    }
+
+    return user;
+  }
+
   async sendResetPasswordEmail(email: string): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) {
