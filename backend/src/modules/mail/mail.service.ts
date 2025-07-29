@@ -408,7 +408,7 @@ export class MailService {
       adminEmail,
       subject,
       textAlt,
-      'purchase-admin.html',
+      'purchase-confirmation-admin.html',
       context,
     );
   }
