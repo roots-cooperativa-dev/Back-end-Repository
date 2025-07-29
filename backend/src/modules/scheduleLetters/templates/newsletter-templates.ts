@@ -12,11 +12,12 @@ function buildImageRows(
       <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 600px; table-layout: fixed;">
         <tr>
           <td class="image-2-col-cell" width="50%" style="width: 50%; padding: 5px; vertical-align: top;">
-            <img src="${images[0].url}" alt="${images[0].alt}" style="max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 5px;" />
+            <img src="${images[0].url}" alt="${images[0].alt}" style="max-width: 100%; height: 200px; object-fit: cover; display: block; margin: 0 auto; border-radius: 5px;" />
             ${images[0].description ? `<p style="text-align: center; font-size: 0.85em; color: #333; margin-top: 10px; font-family: 'Montserrat', sans-serif; font-weight: 600;">${images[0].description}</p>` : ''}
           </td>
          <td class="image-2-col-cell" width="50%" style="width: 50%; padding: 5px; vertical-align: top;">
-            <img src="${images[1].url}" alt="${images[1].alt}" style="max-width: 100%; height: auto; display: block; margin: 0 auto; border-radius: 5px;" />
+            <img src="${images[1].url}" alt="${images[1].alt}" style="max-width: 100%; height: 200px; object-fit: cover; display: block; margin: 0 auto; border-radius: 5px;" />
+
             ${images[1].description ? `<p style="text-align: center; font-size: 0.85em; color: #333; margin-top: 10px; font-family: 'Montserrat', sans-serif; font-weight: 600;">${images[1].description}</p>` : ''}
           </td>
         </tr>
