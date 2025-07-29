@@ -1,164 +1,242 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>¡Bienvenido a ROOTS COOPERATIVA!</title>
-
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Unica+One&display=swap" rel="stylesheet" />
 
   <style>
+    /* Fondo general gris claro que ocupa toda la pantalla */
     body {
       margin: 0;
-      padding: 0;
-      font-family: 'Montserrat', sans-serif;
-      line-height: 1.6;
-      color: #642d91;
+      padding: 30px 10px; /* Un poco de espacio alrededor */
       background-color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      color: #392f5a;
+      box-sizing: border-box;
     }
-    .header,
-    .footer {
-      background-color: #922f4e;
-      padding: 1px;
+
+    /* Contenedor blanco centrado */
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    /* Header gris con padding y flexbox */
+  .header {
+      background-color: #f5f5f5;
+      padding: 15px 20px;
+    }
+
+   .header-content {
+  display: flex;
+  justify-content: space-between; /* Empuja texto a la izquierda y logo a la derecha */
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto; /* centra el bloque completo dentro del contenedor */
+  width: 100%;
+  box-sizing: border-box; /* para que padding no afecte ancho */
+}
+
+.header img {
+  max-width: 160px;
+  height: auto;
+  display: block;
+  margin: 0; /* sin márgenes que lo centren */
+}
+
+    /* Contenido central blanco con texto centrado */
+    .content {
+      padding: 30px 20px;
+      background-color: #ffffff;
       text-align: center;
-      border-bottom: 1px solid #4d206c;
     }
-    .footer {
-      border-top: 1px solid #4d206c;
-      color: #ffdd00;
-      font-size: 0.9em;
-    }
-    .footer a {
-      color: #ffdd00;
-      text-decoration: none;
-    }
-    .btn {
-      display: inline-block;
-      padding: 12px 25px;
-      background-color: #017d74;
-      color: #ffffff !important;
-      text-decoration: none;
-      border-radius: 5px;
-      font-weight: bold;
-    }
-    .title {
+
+    .subtitle {
       font-family: 'Montserrat', sans-serif;
       font-size: 24px;
-      color: #642d91;
-      margin-bottom: 10px;
-    }
-    .subtitle {
-      font-family: 'Bebas Neue', cursive;
-      font-size: 20px;
       color: #017d74;
-      margin-bottom: 20px;
-    }
-    .content p {
+      font-weight: 600;
       margin-bottom: 15px;
+    }
+
+    .content p {
+      margin: 10px 0;
+      font-weight: 500;
+      line-height: 1.6;
+    }
+
+    .btn {
+      display: inline-block;
+      margin: 20px 0;
+      background-color: #922f4e;
+      color: #ffffff !important;
+      padding: 12px 24px;
+      border-radius: 6px;
+      text-decoration: none !important;
       font-weight: 600;
     }
+
+    /* Bloque redes sociales con fondo gris claro y padding */
     .social-container {
-      margin-top: 25px;
+      background-color: #f5f5f5; /* mismo gris claro que body */
       text-align: center;
+      padding: 30px 20px 40px;
     }
+
+    .social-container p {
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: #642d91;
+    }
+
     .social-icons {
       display: inline-flex;
-      gap: 25px;
       justify-content: center;
       align-items: center;
+      gap: 50px;
     }
+
     .social-icon {
-      background-color: #ffffff;
+      background-color: #ffffff; /* iconos con fondo blanco redondeado */
       padding: 10px;
       border-radius: 50%;
       display: inline-block;
     }
+
+    .social-icon img {
+      width: 28px;
+      height: 28px;
+      display: block;
+    }
+
+    /* Footer gris con padding */
+    .footer {
+      background-color: #f1f1f1;
+      color: #333333;
+      text-align: center;
+      padding: 20px;
+      font-size: 14px;
+    }
+
+    .footer a {
+      color: #922f4e;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    /* Responsive */
     @media screen and (max-width: 600px) {
-      .image-table td {
-        display: block;
-        width: 100% !important;
-        margin-bottom: 15px;
-      }
-      .btn {
-        display: block;
+      .header {
+        flex-direction: column;
+        align-items: center;
         text-align: center;
-        margin: 0 auto;
+        gap: 10px;
+      }
+
+      .header-logo img {
+        max-width: 140px;
+      }
+
+      .content {
+        padding: 20px;
+      }
+
+      .subtitle {
+        font-size: 24px;
+      }
+
+      .social-icons {
+        gap: 20px;
+      }
+
+      .social-icon img {
+        width: 24px;
+        height: 24px;
       }
     }
   </style>
 </head>
 <body>
 
-  <div style="max-width: 1200px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-
-    <!-- Header -->
+ <div class="container">
+    <!-- Encabezado institucional -->
     <div class="header">
-      <img
-        src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753451997/logo_2024_CUMPLE_png_xadugi.png"
-        alt="Logo ROOTS COOPERATIVA"
-        style="max-width: 240px; height: auto; display: block; margin: 0 auto;"
-      />
-    </div>
+  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+  <tr>
+    <!-- Texto a la izquierda -->
+    <td align="left" style="padding: 15px; font-family: 'Unica One', Arial, sans-serif; font-size: 22px; color: #4d206c; letter-spacing: 1px;">
+  ROOTS COOPERATIVA
+</td>
 
-    <!-- Content -->
-    <div class="content" style="padding: 30px; text-align: center;">
-  <p class="subtitle">¡Hola <strong>{{userName}}</strong>!</p>
-  <p>
-    Bienvenido/a a <strong>{{appName}}</strong>. Estamos encantados de tenerte como parte de nuestra comunidad.
-  </p>
-  <p>
-    Ahora podés acceder a todas nuestras funcionalidades. ¡Esperamos que disfrutes de tu experiencia!
-  </p>
-  <p>
-    <a href="https://frontend-rootscoop.vercel.app/contacto" class="btn">Ir a la Aplicación</a>
-  </p>
-  <p>Si tenés alguna pregunta, no dudes en contactarnos.</p>
 
-  <!-- Espaciado extra antes de imágenes -->
-  <div style="height: 40px;"></div>
+    <!-- Logo a la derecha -->
+    <td align="right" style="padding: 15px;">
+      <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753703082/sol_sf2bpt.png" alt="Logo ROOTS COOPERATIVA" style="max-width: 160px; height: auto; display: block;" />
+    </td>
+  </tr>
+</table>
 
-  <!-- Imágenes lado a lado -->
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" class="image-table" style="text-align: center;">
-    <tr>
-      <td style="width: 50%; padding: 10px;">
-        <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753466464/para_editar6_pohgga.jpg"
-             alt="Imagen 1"
-             style="width: 100%; max-width: 250px; height: auto; border-radius: 8px;" />
-      </td>
-      <td style="width: 50%; padding: 10px;">
-        <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753704587/Logo_simbolos_FINAL-1_gp16ik.png"
-             alt="Imagen 2"
-             style="width: 100%; max-width: 250px; height: auto; border-radius: 8px;" />
-      </td>
-    </tr>
-  </table>
-</div>
-
-    <!-- Footer -->
-    <div class="footer">
-      <p>Este correo ha sido enviado por <strong style="color: #ffffff;">{{appName}}</strong>.</p>
-      <p><a href="https://frontend-rootscoop.vercel.app">Visita nuestro sitio web</a></p>
-    </div>
-
-    <!-- Redes sociales -->
-    <div class="social-container">
-      <p style="font-family: 'Montserrat', sans-serif; font-weight: 600; margin-bottom: 10px; color: #642d91;">
-        Seguinos en nuestras redes:
+    <!-- Contenido principal -->
+    <div class="content">
+      <p class="subtitle">¡Hola <strong>{{userName}}</strong>!</p>
+      <p>
+        Bienvenido/a a <strong>{{appName}}</strong>. Estamos encantados de tenerte como parte de nuestra comunidad.
       </p>
+      <p>
+        Ahora podés acceder a todas nuestras funcionalidades. ¡Esperamos que disfrutes de tu experiencia!
+      </p>
+      <p>
+        <a href="https://frontend-rootscoop.vercel.app/contacto" class="btn">Ir a la Aplicación</a>
+      </p>
+      <p>Si tenés alguna pregunta, no dudes en contactarnos.</p>
+
+      <!-- Espacio antes de imágenes -->
+      <div style="height: 40px;"></div>
+
+      <!-- Imágenes lado a lado -->
+      <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="text-align: center;">
+        <tr>
+          <td style="width: 50%; padding: 10px;">
+            <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753466464/para_editar6_pohgga.jpg"
+                 alt="Imagen 1"
+                 style="width: 100%; max-width: 250px; height: auto; border-radius: 8px;" />
+          </td>
+          <td style="width: 50%; padding: 10px;">
+            <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753704587/Logo_simbolos_FINAL-1_gp16ik.png"
+                 alt="Imagen 2"
+                 style="width: 100%; max-width: 250px; height: auto; border-radius: 8px;" />
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Redes sociales con fondo gris claro -->
+    <div class="social-container">
+      <p>Seguinos en nuestras redes:</p>
       <div class="social-icons">
-        <a href="https://wa.link/b4wyji" target="_blank" class="social-icon">
-          <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="20" height="20" />
+        <a href="https://wa.link/b4wyji" target="_blank" class="social-icon" rel="noopener noreferrer">
+          <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" />
         </a>
-        <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" class="social-icon">
-          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="20" height="20" />
+        <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" class="social-icon" rel="noopener noreferrer">
+          <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" />
         </a>
-        <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon">
-          <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="20" height="20" />
+        <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" class="social-icon" rel="noopener noreferrer">
+          <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" />
         </a>
       </div>
     </div>
 
+    <!-- Footer gris -->
+    <div class="footer">
+      <p>Este correo ha sido enviado por <strong>{{appName}}</strong>.</p>
+      <p><a href="https://frontend-rootscoop.vercel.app">Visita nuestro sitio web</a></p>
+    </div>
   </div>
 
 </body>
