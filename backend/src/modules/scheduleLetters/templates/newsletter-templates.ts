@@ -1,12 +1,10 @@
 import * as juice from 'juice';
 
-// --- Nueva función auxiliar para la disposición de imágenes ---
 function buildImageRows(
   images: Array<{ url: string; alt: string; description?: string }>,
 ): string {
   let imageHtml = '';
 
-  // Si hay al menos 2 imágenes, ponemos las dos primeras en una fila de dos columnas
   if (images.length >= 2) {
     imageHtml += `
       <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 600px; table-layout: fixed;">
@@ -23,7 +21,6 @@ function buildImageRows(
         </tr>
       </table>
     `;
-    // Si hay más imágenes, procesamos el resto una por una, a ancho completo
     for (let i = 2; i < images.length; i++) {
       imageHtml += `
         <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 600px; table-layout: fixed; padding: 10px 0;">
@@ -37,7 +34,6 @@ function buildImageRows(
       `;
     }
   } else if (images.length === 1) {
-    // Si solo hay una imagen, que ocupe todo el ancho
     imageHtml += `
       <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="width: 100%; max-width: 600px; table-layout: fixed; padding: 10px 0;">
         <tr>
@@ -52,10 +48,9 @@ function buildImageRows(
   return imageHtml;
 }
 
-// --- Función base que ahora incluye estilos responsivos y un slot para las imágenes ---
 function buildBaseTemplate(
   content: string,
-  imageContent: string, // Nuevo parámetro para el HTML de las imágenes
+  imageContent: string,
   headerImageUrl: string,
   logoUrl: string,
 ): string {
@@ -258,11 +253,9 @@ function buildBaseTemplate(
 </html>
 
   `;
-  return juice(html); // Aplicamos juice para inline los estilos
+  return juice(html);
 }
 
-// --- Contenido de la Monthly Newsletter ---
-// NOTA: Estas funciones no se exportan directamente, solo se usan internamente.
 function buildMonthlyNewsletterContent(
   name: string,
   images: Array<{ url: string; alt: string; description?: string }>,
@@ -274,36 +267,32 @@ function buildMonthlyNewsletterContent(
     <p style="margin-top: 30px;">Visitá nuestro sitio para más info:</p>
     <a href="https://frontend-rootscoop.vercel.app" style="display: inline-block; background-color: #017d74; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none;">Ir al sitio</a>
   `;
-  const imageHtml = buildImageRows(images); // Correctly using buildImageRows here
+  const imageHtml = buildImageRows(images);
   return { textContent, imageHtml };
 }
 
-// --- Contenido de la Welcome Newsletter ---
-// NOTA: Estas funciones no se exportan directamente, solo se usan internamente.
 function buildWelcomeNewsletterContent(
   name: string,
   images: Array<{ url: string; alt: string; description?: string }>,
 ): { textContent: string; imageHtml: string } {
   const textContent = `
     <h1 style="font-family: 'Bebas Neue', sans-serif; color: #017d74; margin-top:20px;">¡Bienvenido/a ${name} 👋!</h1>
-    <p>Gracias por registrarte en ROOTS COOPERATIVA 🌿</p>
+    <p>Gracias por ser parte de ROOTS COOPERATIVA 🌿</p>
     <p>Estamos felices de que te sumes a esta comunidad consciente y sustentable.</p>
     <p>En breve recibirás novedades y beneficios exclusivos.</p>
     <p style="margin-top: 30px;">Explorá nuestros contenidos:</p>
     <a href="https://frontend-rootscoop.vercel.app" style="display: inline-block; background-color: #017d74; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none;">Ir al sitio</a>
   `;
-  const imageHtml = buildImageRows(images); // Correctly using buildImageRows here
+  const imageHtml = buildImageRows(images);
   return { textContent, imageHtml };
 }
 
-// --- Funciones que SÍ se exportan y se usan desde NewsletterService ---
 export function buildMonthlyNewsletterHtml(name: string): string {
   const headerImageUrl =
     'https://res.cloudinary.com/djzcrrbfb/image/upload/v1753694170/IMG_5118_vaess8.jpg';
   const logoUrl =
     'https://res.cloudinary.com/djzcrrbfb/image/upload/v1753703082/sol_sf2bpt.png';
 
-  // Define tus imágenes para la newsletter mensual aquí
   const monthlyImages = [
     {
       url: 'https://res.cloudinary.com/djzcrrbfb/image/upload/v1753694123/1_49_1_jngdpy.jpg',
@@ -343,7 +332,6 @@ export function buildMonthlyNewsletterHtml(name: string): string {
     name,
     monthlyImages,
   );
-  // buildBaseTemplate recibe textContent y imageHtml como argumentos separados
   return buildBaseTemplate(textContent, imageHtml, headerImageUrl, logoUrl);
 }
 
@@ -353,7 +341,6 @@ export function buildWelcomeNewsletterHtml(name: string): string {
   const logoUrl =
     'https://res.cloudinary.com/djzcrrbfb/image/upload/v1753703082/sol_sf2bpt.png';
 
-  // Define tus imágenes para la newsletter de bienvenida aquí
   const welcomeImages = [
     {
       url: 'https://res.cloudinary.com/djzcrrbfb/image/upload/v1753694136/Compartida_desde_Lightroom_1_1_xp2t5m.jpg',
@@ -376,6 +363,5 @@ export function buildWelcomeNewsletterHtml(name: string): string {
     name,
     welcomeImages,
   );
-  // buildBaseTemplate recibe textContent y imageHtml como argumentos separados
   return buildBaseTemplate(textContent, imageHtml, headerImageUrl, logoUrl);
 }
