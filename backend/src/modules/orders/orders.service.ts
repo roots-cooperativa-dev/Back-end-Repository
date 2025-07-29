@@ -536,7 +536,7 @@ export class OrdersService {
   async getAllOrders(
     page = 1,
     limit = 10,
-  ): Promise<{ data: Order[]; total: number }> {
+  ): Promise<{ data: Order[]; total: number; pages: number }> {
     try {
       const [orders, total] = await this.orderRepository.findAndCount({
         skip: (page - 1) * limit,
@@ -550,7 +550,9 @@ export class OrdersService {
         order: { date: 'DESC' },
       });
 
-      return { data: orders, total };
+      const pages = Math.ceil(total / limit);
+
+      return { data: orders, total, pages };
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Could not fetch orders');
