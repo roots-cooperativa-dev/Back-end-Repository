@@ -103,6 +103,9 @@ export class UsersService {
     }
 
     const { address, ...restDto } = dto;
+    if (restDto.password) {
+      restDto.password = await AuthValidations.hashPassword(restDto.password);
+    }
 
     const result = await this.usersRepository.update({ id }, restDto);
 
