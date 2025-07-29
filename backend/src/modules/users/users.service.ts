@@ -237,6 +237,64 @@ export class UsersService {
     }
   }
 
+
+  async deleteUser(id: string): Promise<{ message: string }> {
+    try {
+      const user = await this.usersRepository.findOne({ where: { id } });
+
+      if (!user) {
+        throw new NotFoundException(`User: ${id} not found`);
+      }
+      const result = await this.usersRepository.softDelete(id);
+
+      if (!result.affected) {
+        throw new NotFoundException(`User: ${id} not found`);
+      }
+      await this.mailService.sendAccountDeletedNotification(
+        user.email,
+        user.name,
+      );
+
+      return { message: `User ${id} successfully removed.` };
+    } catch (error) {
+      this.logger.error(
+        'Error: Al eliminar la cuenta intente mas tarde',
+        error,
+      );
+      throw new InternalServerErrorException(`Error deleting User ${id}`);
+    }
+  }
+  async restoreUser(id: string): Promise<Users> {
+    const result = await this.usersRepository.restore(id);
+
+    if (!result.affected) {
+      throw new NotFoundException(
+        `Usuario con id ${id} no encontrado para restaurar`,
+      );
+    }
+
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: [
+        'address',
+        'donates',
+        'orders',
+        'appointments',
+        'cart',
+        'cart.items',
+        'cart.items.product',
+      ],
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `Usuario con id ${id} no encontrado tras restaurar`,
+      );
+    }
+
+    return user;
+  }
+
   async sendResetPasswordEmail(email: string): Promise<void> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) {

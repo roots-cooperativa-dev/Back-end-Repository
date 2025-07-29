@@ -14,6 +14,7 @@ export interface IUserResponseDto {
   username: string;
   isAdmin?: boolean;
   isDonator?: boolean;
+  isSuperAdmin?: boolean;
   donates?: IDonateResponseDtoUser[];
   orders?: IOrderResponseDto[];
   appointments?: IAppointmentResponseDto[];
@@ -103,6 +104,7 @@ export class ResponseUserDto {
       username: user.username,
       isAdmin: user.isAdmin,
       isDonator: user.isDonator,
+      isSuperAdmin: user.isSuperAdmin,
       donates:
         user.donates?.map((donate) => ({
           id: donate.id,
@@ -157,6 +159,7 @@ export class ResponseUserDto {
 }
 
 export interface IUserResponseWithAdmin extends IUserResponseDto {
+  isSuperAdmin: boolean;
   isAdmin: boolean;
   isDonator: boolean;
   password: string;
@@ -166,6 +169,7 @@ export class ResponseUserWithAdminDto {
   static toDTO(user: Users): IUserResponseWithAdmin {
     return {
       ...ResponseUserDto.toDTO(user),
+      isSuperAdmin: user.isSuperAdmin,
       isAdmin: user.isAdmin,
       isDonator: user.isDonator,
       password: user.password,
