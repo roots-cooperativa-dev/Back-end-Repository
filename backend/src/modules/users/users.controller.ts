@@ -51,7 +51,7 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Get all users for newsletter' })
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN || UserRole.SUPERADMIN)
   @ApiResponse({
     status: 200,
     description: 'Find all users to send newsletter',
@@ -66,7 +66,7 @@ export class UsersController {
     summary: 'Retrieve all users (paginated) with optional search filters',
   })
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN || UserRole.SUPERADMIN)
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({
@@ -83,6 +83,8 @@ export class UsersController {
   })
   @ApiResponse({ status: 200, description: 'OK', type: PaginatedUsersDto })
   @Get()
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN || UserRole.SUPERADMIN)
   async getUsers(
     @Query() searchQuery: UserSearchQueryDto,
   ): Promise<PaginatedUsersDto> {
@@ -162,7 +164,7 @@ export class UsersController {
 
   @Patch('restore/:id')
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN || UserRole.SUPERADMIN)
   @ApiOperation({ summary: 'Restaurar usuario eliminado (soft delete)' })
   @ApiParam({
     name: 'id',
