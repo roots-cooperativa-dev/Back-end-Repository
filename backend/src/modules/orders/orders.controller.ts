@@ -113,11 +113,21 @@ export class OrdersController {
   @ApiOperation({ summary: 'Retrieve all available orders' })
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['active', 'cancelled', 'processed', 'finalized'],
+    description: 'Optional order status filter',
+  })
   @ApiResponse({ status: 200, description: 'List of orders' })
-  getOrders(@Query('page') page: string, @Query('limit') limit: string) {
+  getOrders(
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Query('status') status?: string,
+  ) {
     const pageNum = page ? +page : 1;
     const limitNum = limit ? +limit : 10;
-    return this.ordersService.getAllOrders(pageNum, limitNum);
+    return this.ordersService.getAllOrders(pageNum, limitNum, status);
   }
 
   @Get('my-orders')

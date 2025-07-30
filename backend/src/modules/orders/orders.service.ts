@@ -534,19 +534,24 @@ export class OrdersService {
   async getAllOrders(
     page = 1,
     limit = 10,
+    status?: string,
   ): Promise<{ data: Order[]; total: number; pages: number }> {
     try {
-      const [orders, total] = await this.orderRepository.findAndCount({
-        skip: (page - 1) * limit,
-        take: limit,
-        relations: [
-          'user',
-          'orderDetail',
-          'orderDetail.products',
-          'orderDetail.products.sizes',
-        ],
-        order: { date: 'DESC' },
-      });
+      const query = this.orderRepository
+        .createQueryBuilder('order')
+        .leftJoinAndSelect('order.user', 'user')
+        .leftJoinAndSelect('order.orderDetail', 'orderDetail')
+        .leftJoinAndSelect('orderDetail.products', 'products')
+        .leftJoinAndSelect('products.sizes', 'sizes');
+
+      if (status) {
+        query.where('order.status = :status', { status });
+      }
+
+      query.orderBy('order.date', 'DESC');
+      query.skip((page - 1) * limit).take(limit);
+
+      const [orders, total] = await query.getManyAndCount();
 
       const pages = Math.ceil(total / limit);
 
