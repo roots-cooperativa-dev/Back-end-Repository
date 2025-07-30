@@ -81,7 +81,12 @@ export class DonationsService {
       this.logger.log(`Donation created successfully: ${saved.id}`);
 
       this.sendDoantionNotificationAsync(user.email);
-      this.sendDoantionNotificationAsyncToAdmin(user.username, donate.amount);
+      this.sendDoantionNotificationAsyncToAdmin(
+        user.username,
+        donate.amount,
+        user.email,
+        user.phone,
+      );
 
       return ResponseDonateDto.toDTO(saved);
     } catch (error) {
@@ -169,19 +174,19 @@ export class DonationsService {
   }
 
   private sendDoantionNotificationAsyncToAdmin(
-    username: string,
+    name: string,
     amount: number,
+    email: string,
+    phone: number,
   ): void {
     this.mailService
-      .sendDonationAlertToAdmin(username, amount)
+      .sendDonationAlertToAdmin(name, amount, email, phone)
       .then(() => {
-        this.logger.log(
-          `Correo de notificación de donacion enviado a ${username}`,
-        );
+        this.logger.log('Alerta de nueva donación enviada al admin');
       })
       .catch((error) => {
         this.logger.error(
-          `Donation notification email sent to ${username}:`,
+          'Error enviando alerta de donación al admin:',
           error instanceof Error ? error.message : String(error),
         );
       });

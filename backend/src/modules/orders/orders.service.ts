@@ -476,10 +476,21 @@ export class OrdersService {
       savedOrder.orderDetail = savedDetail;
       await queryRunner.manager.save(savedOrder);
 
-      this.sendOrderNotificationAsync(
-        cart.user.name,
+      const productsForEmail = orderDetailProductsWithQuantity.map((item) => ({
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.priceAtAddition,
+      }));
+
+      const orderDate = new Date();
+
+      await this.mailService.sendOrderProcessingNotification(
         cart.user.email,
-        orderDetail.id,
+        cart.user.name,
+        savedOrder.id.toString(),
+        productsForEmail,
+        parseFloat(orderTotal.toFixed(2)),
+        orderDate,
       );
 
       await queryRunner.manager.remove(cart.items);
@@ -670,28 +681,5 @@ export class OrdersService {
 
     order.status = dto.status;
     return this.orderRepository.save(order);
-  }
-
-  private sendOrderNotificationAsync(
-    name: string,
-    email: string,
-    orderId: string,
-  ): void {
-    if (email == '') {
-      this.logger.log(`No existe este correo: ${email}`);
-      return;
-    }
-    this.mailService
-      .sendOrderProcessingNotification(email, name, orderId)
-
-      .then(() => {
-        this.logger.log(`Correo de notificación de orden enviado a ${email}`);
-      })
-      .catch((error) => {
-        this.logger.error(
-          `Error enviando email de notificación a ${email}:`,
-          error instanceof Error ? error.message : String(error),
-        );
-      });
   }
 }
