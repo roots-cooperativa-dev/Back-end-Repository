@@ -476,6 +476,12 @@ export class OrdersService {
       savedOrder.orderDetail = savedDetail;
       await queryRunner.manager.save(savedOrder);
 
+      this.sendOrderNotificationAsync(
+        cart.user.name,
+        cart.user.email,
+        orderDetail.id,
+      );
+
       await queryRunner.manager.remove(cart.items);
 
       cart.items = [];
@@ -616,8 +622,6 @@ export class OrdersService {
 
       await queryRunner.commitTransaction();
 
-      this.sendOrderNotificationAsync(user.name, user.email, orderDetail.id);
-
       return {
         id: savedOrder.id,
         date: savedOrder.date,
@@ -662,21 +666,25 @@ export class OrdersService {
     order.status = dto.status;
     return this.orderRepository.save(order);
   }
+
   private sendOrderNotificationAsync(
     name: string,
     email: string,
     orderId: string,
   ): void {
+    if (email == '') {
+      this.logger.log(`No existe este correo: ${email}`);
+      return;
+    }
     this.mailService
-      .sendOrderProcessingNotification(name, email, orderId)
+      .sendOrderProcessingNotification(email, name, orderId)
+
       .then(() => {
-        this.logger.log(
-          `Correo de notificación de donacion enviado a ${email}`,
-        );
+        this.logger.log(`Correo de notificación de orden enviado a ${email}`);
       })
       .catch((error) => {
         this.logger.error(
-          `Donation notification email sent to ${email}:`,
+          `Error enviando email de notificación a ${email}:`,
           error instanceof Error ? error.message : String(error),
         );
       });
