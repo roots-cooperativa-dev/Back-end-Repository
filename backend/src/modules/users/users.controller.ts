@@ -51,7 +51,7 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Get all users for newsletter' })
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN) // ✅ Corregido
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   @ApiResponse({
     status: 200,
     description: 'Find all users to send newsletter',
@@ -80,8 +80,8 @@ export class UsersController {
     description: 'Email to search for users',
   })
   @ApiResponse({ status: 200, description: 'OK', type: PaginatedUsersDto })
-  @UseGuards(AuthGuard, RoleGuard) // ✅ Solo una vez
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN) // ✅ Corregido
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
   @Get()
   async getUsers(
     @Query() searchQuery: UserSearchQueryDto,
@@ -162,7 +162,7 @@ export class UsersController {
 
   @Patch('restore/:id')
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN) // ✅ Corregido
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Restaurar usuario eliminado (soft delete)' })
   @ApiParam({
     name: 'id',
