@@ -483,15 +483,7 @@ export class OrdersService {
       await queryRunner.manager.save(cart);
 
       await queryRunner.commitTransaction();
-      try {
-        await this.mailService.sendOrderProcessingNotification(
-          cart.user.email,
-          cart.user.name,
-          savedOrder.id,
-        );
-      } catch (emailError) {
-        this.logger.log('Error sending order processing email:', emailError);
-      }
+
       return this.getOrderById(savedOrder.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
