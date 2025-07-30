@@ -165,17 +165,21 @@
   </tr>
 </table>
 
-    <!-- Contenido -->
+    <!-- Contenido --> 
     <div class="content">
       <h1>Nueva compra realizada</h1>
       <p>Hola equipo,</p>
       <p>Se ha realizado una nueva compra por parte de <strong>{{userName}}</strong>.</p>
       <p><strong>Detalles de la compra:</strong></p>
       <ul>
-        <li>ID de la orden: <span class="highlight">{{orderId}}</span></li>
-        <li>Producto(s): <span class="highlight">{{productList}}</span></li>
-        <li>Total: <span class="highlight">{{totalAmount}}</span></li>
-        <li>Fecha: <span class="highlight">{{purchaseDate}}</span></li>
+       <li>ID de la orden: <span class="highlight">{{orderId}}</span></li> 
+  {{#each products}}
+    <li>{{ quantity }} x {{ name }} - ${{ price }}</li>
+  {{/each}}
+</ul>
+
+<p><strong>Total:</strong> ${{ orderTotal }}</p>
+<p><strong>Fecha:</strong> {{ orderDate }}</p>
       </ul>
       <p>Por favor, revisen el sistema para procesar el pedido.</p>
       <p>Gracias,</p>
