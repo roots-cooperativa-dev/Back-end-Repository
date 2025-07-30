@@ -43,6 +43,12 @@ export class CategoryController {
     type: Number,
     description: 'Number of categories per page (default: 3)',
   })
+  @ApiQuery({
+    name: 'name',
+    required: false,
+    type: String,
+    description: 'Search categories by partial name match (case-insensitive)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Successfully retrieved all categories',
@@ -51,8 +57,9 @@ export class CategoryController {
   async findAll(
     @Query('page') page: number = 1,
     @Query('limit') limit: number = 3,
+    @Query('name') name?: string,
   ) {
-    return await this.categoryService.findAllCategory(page, limit);
+    return await this.categoryService.findAllCategory(page, limit, name);
   }
 
   @ApiBearerAuth()
