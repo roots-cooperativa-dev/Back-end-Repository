@@ -44,10 +44,39 @@ export class UsersService {
     if (!username && !email) {
       return paginate(this.usersRepository, pagination, {
         order: { createdAt: 'DESC' },
+        withDeleted: true,
+        select: [
+          'id',
+          'name',
+          'email',
+          'birthdate',
+          'phone',
+          'address',
+          'username',
+          'isAdmin',
+          'isDonator',
+          'isSuperAdmin',
+          'createdAt',
+          'deletedAt',
+        ],
       });
     }
 
     const queryBuilder = this.usersRepository.createQueryBuilder('user');
+    queryBuilder.withDeleted();
+    queryBuilder.select([
+      'user.id',
+      'user.name',
+      'user.email',
+      'user.birthdate',
+      'user.phone',
+      'user.username',
+      'user.isAdmin',
+      'user.isDonator',
+      'user.isSuperAdmin',
+      'user.createdAt',
+      'user.deletedAt',
+    ]);
     queryBuilder.leftJoinAndSelect('user.address', 'address');
     queryBuilder.leftJoinAndSelect('user.donates', 'donates');
     queryBuilder.leftJoinAndSelect('user.orders', 'orders');
