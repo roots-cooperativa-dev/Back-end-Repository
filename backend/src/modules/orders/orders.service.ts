@@ -616,6 +616,8 @@ export class OrdersService {
 
       await queryRunner.commitTransaction();
 
+      this.sendOrderNotificationAsync(user.name, user.email, orderDetail.id);
+
       return {
         id: savedOrder.id,
         date: savedOrder.date,
@@ -659,5 +661,24 @@ export class OrdersService {
 
     order.status = dto.status;
     return this.orderRepository.save(order);
+  }
+  private sendOrderNotificationAsync(
+    name: string,
+    email: string,
+    orderId: string,
+  ): void {
+    this.mailService
+      .sendOrderProcessingNotification(name, email, orderId)
+      .then(() => {
+        this.logger.log(
+          `Correo de notificación de donacion enviado a ${email}`,
+        );
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Donation notification email sent to ${email}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      });
   }
 }
