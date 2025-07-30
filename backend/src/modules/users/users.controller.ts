@@ -35,7 +35,7 @@ import {
   AuthenticatedRequest,
 } from './interface/IUserResponseDto';
 import { UpdateUserDbDto } from './Dtos/CreateUserDto';
-import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
+import { UserSearchQueryDto } from './Dtos/PaginationQueryDto';
 import { PaginatedUsersDto } from './Dtos/paginated-users.dto';
 import { UpdatePasswordDto } from './Dtos/UpdatePasswordDto';
 import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
@@ -51,7 +51,7 @@ export class UsersController {
 
   @ApiOperation({ summary: 'Get all users for newsletter' })
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
   @ApiResponse({
     status: 200,
     description: 'Find all users to send newsletter',
@@ -62,17 +62,31 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @ApiOperation({ summary: 'Retrieve all users (paginated)' })
-  @UseGuards(AuthGuard, RoleGuard)
-  @Roles(UserRole.ADMIN)
+  @ApiOperation({
+    summary: 'Retrieve all users (paginated) with optional search filters',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({
+    name: 'username',
+    required: false,
+    type: String,
+    description: 'Username to search for users',
+  })
+  @ApiQuery({
+    name: 'email',
+    required: false,
+    type: String,
+    description: 'Email to search for users',
+  })
   @ApiResponse({ status: 200, description: 'OK', type: PaginatedUsersDto })
+  @UseGuards(AuthGuard, RoleGuard)
+  @Roles(UserRole.ADMIN)
   @Get()
   async getUsers(
-    @Query() pagination: PaginationQueryDto,
+    @Query() searchQuery: UserSearchQueryDto,
   ): Promise<PaginatedUsersDto> {
-    const { items, ...meta } = await this.usersService.getUsers(pagination);
+    const { items, ...meta } = await this.usersService.getUsers(searchQuery);
     return { ...meta, items: ResponseUserWithAdminDto.toDTOList(items) };
   }
 
@@ -99,7 +113,7 @@ export class UsersController {
 
   @Patch('Roles/:id')
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(UserRole.SUPERADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   async rollChange(
     @Param('id', ParseUUIDPipe) userId: string,
     @Body() dto: UpdateRoleDto,

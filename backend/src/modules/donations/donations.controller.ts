@@ -71,7 +71,7 @@ export class DonationsController {
     description: 'Donation not found',
   })
   @UseGuards(AuthGuard, RoleGuard)
-  @Roles(UserRole.ADMIN || UserRole.DONOR_USER)
+  @Roles(UserRole.DONOR_USER)
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<ResponseDonateDto> {

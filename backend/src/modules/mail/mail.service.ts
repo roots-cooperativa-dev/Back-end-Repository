@@ -274,7 +274,7 @@ export class MailService {
     orderId: string,
   ): Promise<void> {
     const subject = 'Tu Orden Está en Proceso';
-    const textAlt = `Hola ${userName},\n\nTu orden #${orderId} está siendo procesada. Te avisaremos cuando esté lista para retiro o envío.\n\nSaludos,\nROOTS COOPERATIVA.`;
+    const textAlt = `Hola ${userName},\n\nTu orden #${orderId} está siendo procesada.\n\nSaludos,\nROOTS COOPERATIVA.`;
 
     const context = {
       userName,
@@ -408,7 +408,7 @@ export class MailService {
       adminEmail,
       subject,
       textAlt,
-      'purchase-admin.html',
+      'purchase-confirmation-admin.html',
       context,
     );
   }

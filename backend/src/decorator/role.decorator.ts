@@ -3,7 +3,7 @@ export enum UserRole {
   USER = 'user',
   DONOR_USER = 'donorUser',
   ADMIN = 'admin',
-  SUPERADMIN = 'superadmin',
+  SUPER_ADMIN = 'superAdmin',
 }
 
 export const Roles = (...roles: UserRole[]) => SetMetadata('roles', roles);

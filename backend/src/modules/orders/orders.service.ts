@@ -476,6 +476,12 @@ export class OrdersService {
       savedOrder.orderDetail = savedDetail;
       await queryRunner.manager.save(savedOrder);
 
+      this.sendOrderNotificationAsync(
+        cart.user.name,
+        cart.user.email,
+        orderDetail.id,
+      );
+
       await queryRunner.manager.remove(cart.items);
 
       cart.items = [];
@@ -483,15 +489,7 @@ export class OrdersService {
       await queryRunner.manager.save(cart);
 
       await queryRunner.commitTransaction();
-      try {
-        await this.mailService.sendOrderProcessingNotification(
-          cart.user.email,
-          cart.user.name,
-          savedOrder.id,
-        );
-      } catch (emailError) {
-        this.logger.log('Error sending order processing email:', emailError);
-      }
+
       return this.getOrderById(savedOrder.id);
     } catch (error) {
       await queryRunner.rollbackTransaction();
@@ -536,19 +534,24 @@ export class OrdersService {
   async getAllOrders(
     page = 1,
     limit = 10,
+    status?: string,
   ): Promise<{ data: Order[]; total: number; pages: number }> {
     try {
-      const [orders, total] = await this.orderRepository.findAndCount({
-        skip: (page - 1) * limit,
-        take: limit,
-        relations: [
-          'user',
-          'orderDetail',
-          'orderDetail.products',
-          'orderDetail.products.sizes',
-        ],
-        order: { date: 'DESC' },
-      });
+      const query = this.orderRepository
+        .createQueryBuilder('order')
+        .leftJoinAndSelect('order.user', 'user')
+        .leftJoinAndSelect('order.orderDetail', 'orderDetail')
+        .leftJoinAndSelect('orderDetail.products', 'products')
+        .leftJoinAndSelect('products.sizes', 'sizes');
+
+      if (status) {
+        query.where('order.status = :status', { status });
+      }
+
+      query.orderBy('order.date', 'DESC');
+      query.skip((page - 1) * limit).take(limit);
+
+      const [orders, total] = await query.getManyAndCount();
 
       const pages = Math.ceil(total / limit);
 
@@ -667,5 +670,28 @@ export class OrdersService {
 
     order.status = dto.status;
     return this.orderRepository.save(order);
+  }
+
+  private sendOrderNotificationAsync(
+    name: string,
+    email: string,
+    orderId: string,
+  ): void {
+    if (email == '') {
+      this.logger.log(`No existe este correo: ${email}`);
+      return;
+    }
+    this.mailService
+      .sendOrderProcessingNotification(email, name, orderId)
+
+      .then(() => {
+        this.logger.log(`Correo de notificación de orden enviado a ${email}`);
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Error enviando email de notificación a ${email}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      });
   }
 }
