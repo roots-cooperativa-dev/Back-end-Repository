@@ -9,7 +9,7 @@ import { Users } from './Entyties/users.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDbDto, UpdateUserDbDto } from './Dtos/CreateUserDto';
-import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
+import { UserSearchQueryDto } from './Dtos/PaginationQueryDto';
 import { paginate } from 'src/common/pagination/paginate';
 import { UpdatePasswordDto } from './Dtos/UpdatePasswordDto';
 import { AuthValidations } from '../auths/validate/auth.validate';
@@ -38,10 +38,48 @@ export class UsersService {
     });
   }
 
-  async getUsers(pagination: PaginationQueryDto) {
-    return paginate(this.usersRepository, pagination, {
-      order: { createdAt: 'DESC' },
-    });
+  async getUsers(searchQuery: UserSearchQueryDto) {
+    const { username, email, ...pagination } = searchQuery;
+
+    if (!username && !email) {
+      return paginate(this.usersRepository, pagination, {
+        order: { createdAt: 'DESC' },
+      });
+    }
+
+    const queryBuilder = this.usersRepository.createQueryBuilder('user');
+    queryBuilder.leftJoinAndSelect('user.address', 'address');
+    queryBuilder.leftJoinAndSelect('user.donates', 'donates');
+    queryBuilder.leftJoinAndSelect('user.orders', 'orders');
+    queryBuilder.leftJoinAndSelect('user.appointments', 'appointments');
+    queryBuilder.leftJoinAndSelect('user.cart', 'cart');
+    queryBuilder.where('1 = 1');
+
+    if (username) {
+      queryBuilder.andWhere('LOWER(user.username) LIKE LOWER(:username)', {
+        username: `%${username}%`,
+      });
+    }
+
+    if (email) {
+      queryBuilder.andWhere('LOWER(user.email) LIKE LOWER(:email)', {
+        email: `%${email}%`,
+      });
+    }
+
+    queryBuilder.orderBy('user.createdAt', 'DESC');
+
+    const skip = (pagination.page - 1) * pagination.limit;
+    queryBuilder.skip(skip).take(pagination.limit);
+
+    const [items, total] = await queryBuilder.getManyAndCount();
+    const pages = Math.ceil(total / pagination.limit);
+
+    return {
+      items,
+      total,
+      pages,
+    };
   }
 
   async getUserById(id: string): Promise<Users> {

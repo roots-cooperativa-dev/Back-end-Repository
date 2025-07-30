@@ -35,7 +35,7 @@ import {
   AuthenticatedRequest,
 } from './interface/IUserResponseDto';
 import { UpdateUserDbDto } from './Dtos/CreateUserDto';
-import { PaginationQueryDto } from './Dtos/PaginationQueryDto';
+import { UserSearchQueryDto } from './Dtos/PaginationQueryDto';
 import { PaginatedUsersDto } from './Dtos/paginated-users.dto';
 import { UpdatePasswordDto } from './Dtos/UpdatePasswordDto';
 import { UpdateRoleDto } from './Dtos/UpdateRoleDto';
@@ -62,17 +62,31 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @ApiOperation({ summary: 'Retrieve all users (paginated)' })
+  @ApiOperation({
+    summary: 'Retrieve all users (paginated) with optional search filters',
+  })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({
+    name: 'username',
+    required: false,
+    type: String,
+    description: 'Username to search for users',
+  })
+  @ApiQuery({
+    name: 'email',
+    required: false,
+    type: String,
+    description: 'Email to search for users',
+  })
   @ApiResponse({ status: 200, description: 'OK', type: PaginatedUsersDto })
   @Get()
   async getUsers(
-    @Query() pagination: PaginationQueryDto,
+    @Query() searchQuery: UserSearchQueryDto,
   ): Promise<PaginatedUsersDto> {
-    const { items, ...meta } = await this.usersService.getUsers(pagination);
+    const { items, ...meta } = await this.usersService.getUsers(searchQuery);
     return { ...meta, items: ResponseUserWithAdminDto.toDTOList(items) };
   }
 
