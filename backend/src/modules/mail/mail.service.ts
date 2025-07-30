@@ -272,6 +272,9 @@ export class MailService {
     userEmail: string,
     userName: string,
     orderId: string,
+    products: { name: string; quantity: number; price: number }[],
+    orderTotal: number,
+    orderDate: Date,
   ): Promise<void> {
     const subject = 'Tu Orden Está en Proceso';
     const textAlt = `Hola ${userName},\n\nTu orden #${orderId} está siendo procesada.\n\nSaludos,\nROOTS COOPERATIVA.`;
@@ -280,6 +283,9 @@ export class MailService {
       userName,
       orderId,
       appName: 'ROOTS COOPERATIVA',
+      products,
+      orderTotal,
+      orderDate: orderDate.toLocaleDateString(),
     };
 
     await this.sendMail(
@@ -532,7 +538,12 @@ export class MailService {
 
     await this.sendMail(userEmail, subject, textAlt, 'donation.html', context);
   }
-  async sendDonationAlertToAdmin(name: string, amount: number): Promise<void> {
+  async sendDonationAlertToAdmin(
+    name: string,
+    amount: number,
+    email: string,
+    phone: number,
+  ): Promise<void> {
     const adminEmail = 'rootscooperativadev@gmail.com';
     const subject = 'Nueva donación recibida en ROOTS COOPERATIVA';
     const textAlt = `Hola equipo ROOTS,
@@ -540,6 +551,8 @@ export class MailService {
 Se ha recibido una nueva donación.
 
 Donante: ${name}
+Email: ${email}
+Teléfono: ${phone}
 Monto: $${amount}
 
 Seguimos sumando voluntades.
@@ -549,6 +562,8 @@ Seguimos sumando voluntades.
     const context = {
       name,
       amount,
+      email,
+      phone,
       appName: 'ROOTS COOPERATIVA',
     };
 
