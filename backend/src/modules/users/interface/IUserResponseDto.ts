@@ -16,6 +16,7 @@ export interface IUserResponseDto {
   isDonator?: boolean;
   isSuperAdmin?: boolean;
   createdAt: Date;
+  deletedAt: Date;
   donates?: IDonateResponseDtoUser[];
   orders?: IOrderResponseDto[];
   appointments?: IAppointmentResponseDto[];
@@ -107,6 +108,7 @@ export class ResponseUserDto {
       isDonator: user.isDonator,
       isSuperAdmin: user.isSuperAdmin,
       createdAt: user.createdAt ?? new Date(0),
+      deletedAt: user.deletedAt ?? new Date(0),
       donates:
         user.donates?.map((donate) => ({
           id: donate.id,
