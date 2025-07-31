@@ -44,16 +44,24 @@ export class CategoryService {
   async findAllCategory(
     page: number,
     limit: number,
+    name?: string,
   ): Promise<{ categories: Category[]; total: number; pages: number }> {
     try {
       const skip = (page - 1) * limit;
-      const [categories, total] = await this.categoryRepository
+      const queryBuilder = this.categoryRepository
         .createQueryBuilder('category')
         .withDeleted()
         .addSelect('category.deleted_at')
         .take(limit)
-        .skip(skip)
-        .getManyAndCount();
+        .skip(skip);
+
+      if (name) {
+        queryBuilder.where('category.name ILIKE :name', {
+          name: `%${name}%`,
+        });
+      }
+
+      const [categories, total] = await queryBuilder.getManyAndCount();
 
       const pages = Math.ceil(total / limit);
 

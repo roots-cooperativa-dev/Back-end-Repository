@@ -119,11 +119,22 @@ export class OrderPaymentsService implements IPaymentService {
 
         await this.orderPaymentsRepository.save(orderPayment);
 
-        await this.sendOrderPaymentNotificationAsync(cart.user.id);
-        await this.sendOrderPaymentNotificationAsyncToAdmin(
-          cart.user.id,
-          cart.id,
-        );
+        if (orderPayment.status === 'approved') {
+          await this.sendOrderPaymentNotificationAsync(cart.user.id);
+          await this.sendOrderPaymentNotificationAsyncToAdmin(
+            cart.user.id,
+            cart,
+          );
+        }
+        if (
+          orderPayment.status === 'pending' ||
+          orderPayment.status === 'in_process'
+        ) {
+          await this.sendOrderPaymentPendingNotificationAsync(cart.user.id);
+        }
+        if (orderPayment.status === 'rejected') {
+          await this.sendOrderPaymentFailureNotificationAsync(cart.user.id);
+        }
 
         this.logger.log(
           `Order payment completed and saved for cart: ${cartId}, payment: ${paymentInfo.id}, user: ${cart.user.id}`,
@@ -187,9 +198,63 @@ export class OrderPaymentsService implements IPaymentService {
       });
   }
 
+  private async sendOrderPaymentPendingNotificationAsync(
+    id: string,
+  ): Promise<void> {
+    const user = await this.userRespository.findOne({ where: { id } });
+
+    if (!user) {
+      this.logger.warn(
+        `Usuario con ID ${id} no encontrado para notificación de pago pendiente`,
+      );
+      return;
+    }
+
+    this.mailService
+      .sendPaymentPendingEmail(user.email, user.username)
+      .then(() => {
+        this.logger.log(
+          `Correo de notificación de pago pendiente enviado a ${user.email}`,
+        );
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Error enviando notificación de pago pendiente a ${user.email}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      });
+  }
+
+  private async sendOrderPaymentFailureNotificationAsync(
+    id: string,
+  ): Promise<void> {
+    const user = await this.userRespository.findOne({ where: { id } });
+
+    if (!user) {
+      this.logger.warn(
+        `Usuario con ID ${id} no encontrado para notificación de pago rechazado`,
+      );
+      return;
+    }
+
+    this.mailService
+      .sendPaymentRejectedEmail(user.email, user.username)
+      .then(() => {
+        this.logger.log(
+          `Correo de notificación de pago rechazado enviado a ${user.email}`,
+        );
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Error enviando notificación de pago rechazado a ${user.email}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      });
+  }
+
   private async sendOrderPaymentNotificationAsyncToAdmin(
     id: string,
-    cartId: string,
+    cart: Cart,
   ): Promise<void> {
     const user = await this.userRespository.findOne({ where: { id } });
 
@@ -201,7 +266,13 @@ export class OrderPaymentsService implements IPaymentService {
     }
 
     this.mailService
-      .sendPurchaseAlertToAdmin(user.username, user.email, cartId)
+      .sendPurchaseAlertToAdmin(
+        user.username,
+        user.email,
+        cart.id,
+        cart.total,
+        cart.updatedAt,
+      )
       .then(() => {
         this.logger.log(
           `Correo de notificación de compra enviado a ${user.username}`,

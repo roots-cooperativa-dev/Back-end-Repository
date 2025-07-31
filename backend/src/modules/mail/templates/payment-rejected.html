@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Nueva Compra Realizada</title>
-
-  <!-- Fuentes -->
+  <title>Pago Rechazado</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Unica+One&display=swap" rel="stylesheet">
 
@@ -26,8 +24,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-
-  .header {
+    .header {
       background-color: #f5f5f5;
       padding: 15px 20px;
     }
@@ -35,6 +32,7 @@
    .header-content {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   max-width: 600px;
   margin: 0 auto;
   width: 100%;
@@ -48,12 +46,19 @@
   margin: 0;
 }
 
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #4d206c;
+      letter-spacing: 0.5px;
+    }
+
     .content {
       padding: 30px 20px;
       background-color: #ffffff;
     }
 
-    .content h1 {
+    .subtitle {
       font-family: 'Montserrat', sans-serif;
       font-size: 26px;
       color: #017d74;
@@ -66,16 +71,46 @@
       line-height: 1.6;
     }
 
-    .content ul {
-      margin-left: 20px;
-      font-weight: 600;
+    .content a {
       color: #4d206c;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+    .content h1 { font-size: 26px; color: #f11010; margin-bottom: 25px; }
+
+    .btn {
+      display: inline-block;
+      margin-top: 20px;
+      background-color: #922f4e;
+      color: #fff !important;
+      padding: 12px 24px;
+      border-radius: 6px;
+      text-decoration: none !important;
+      font-weight: 600;
     }
 
-    .highlight {
-      color: #017d74;
-      font-weight: 600;
-    }
+    .social-container {
+  text-align: center;
+  padding: 30px 20px 40px;
+}
+
+.social-container p {
+  margin-bottom: 15px;
+  font-weight: 600;
+  color: #642d91;
+}
+.social-icons {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 50px;
+}
+
+.social-icon img {
+  width: 28px;
+  height: 28px;
+  display: block;
+}
 
     .footer {
       background-color: #f1f1f1;
@@ -91,47 +126,23 @@
       font-weight: 500;
     }
 
-    .social-container {
-      text-align: center;
-      padding: 30px 20px 40px;
-      background-color: #f5f5f5;
-    }
-
-    .social-container p {
-      margin-bottom: 15px;
-      font-weight: 600;
-      color: #642d91;
-    }
-
-    .social-icons {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      gap: 50px;
-    }
-
-    .social-icon img {
-      width: 28px;
-      height: 28px;
-      display: block;
-    }
-
     @media screen and (max-width: 600px) {
-      .header table {
+      .header-content {
         flex-direction: column;
+        align-items: center;
         text-align: center;
+        gap: 10px;
       }
 
       .header img {
         max-width: 140px;
-        margin: 10px auto;
       }
 
       .content {
         padding: 20px;
       }
 
-      .content h1 {
+      .subtitle {
         font-size: 24px;
       }
 
@@ -147,7 +158,7 @@
   </style>
 </head>
 <body>
-<div class="container">
+ <div class="container">
     <!-- Encabezado institucional -->
     <div class="header">
   <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
@@ -165,29 +176,34 @@
   </tr>
 </table>
 
-    <!-- Contenido --> 
     <div class="content">
-      <h1>Nueva compra realizada</h1>
-      <p>Hola equipo,</p>
-      <p>Se ha realizado una nueva compra por parte de <strong>{{userName}}</strong>.</p>
-      <p><strong>Detalles de la compra:</strong></p>
-      <ul>
-       <li>ID de la orden: <span class="highlight">{{orderId}}</span></li> 
-  {{#each products}}
-    <li>{{ quantity }} x {{ name }} - ${{ price }}</li>
-  {{/each}}
-</ul>
-<p><strong>Email:</strong> {{userEmail}}</p>
-<p><strong>Total:</strong> ${{orderTotal}}</p>
-<p><strong>Fecha:</strong> {{orderDate}}</p>
-
-      </ul>
-      <p>Por favor, revisen el sistema para procesar el pedido.</p>
-      <p>Gracias,</p>
-      <p>El equipo de <strong>{{appName}}</strong>.</p>
+      <h1>Pago rechazado</h1>
+      <p>Hola <strong>{{userName}}</strong>,</p>
+      <p>Tu intento de pago fue <strong style="color: #cc0000;">rechazado</strong>.</p>
+      <p>Si el problema persiste, podés volver a intentar el pago</p>
+       <p>Saludos cordiales,<br>El equipo de <strong>{{appName}}</strong>.</p>
+      <div style="text-align: center;">
+          <a href="https://frontend-rootscoop.vercel.app/contacto" class="btn">Contactar Soporte</a>
+      </div>
+     
     </div>
+    <!-- Redes sociales -->
+<div class="social-container" style="text-align: center; margin: 30px auto;">
+  <p style="font-weight: 600; color: #642d91; margin-bottom: 15px;">Seguinos en nuestras redes:</p>
+  <div class="social-icons" style="display: inline-flex; gap: 40px; justify-content: center; align-items: center;">
+    <a href="https://wa.link/b4wyji" target="_blank" style="display: inline-block; padding: 10px; border-radius: 50%; background: #fff;">
+      <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" width="28" height="28" />
+    </a>
+    <a href="https://www.instagram.com/roots_cooperativa?igsh=MWx3OTI3NjZidDJ3dg==" target="_blank" style="display: inline-block; padding: 10px; border-radius: 50%; background: #fff;">
+      <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram" width="28" height="28" />
+    </a>
+    <a href="http://www.youtube.com/@rootscooperativa561" target="_blank" style="display: inline-block; padding: 10px; border-radius: 50%; background: #fff;">
+      <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube" width="28" height="28" />
+    </a>
+  </div>
+</div>
 
-    <!-- Footer -->
+    <!-- Pie de página -->
     <div class="footer">
       <p>Este correo fue enviado por <strong>{{appName}}</strong>.</p>
       <p><a href="https://frontend-rootscoop.vercel.app">Visita nuestro sitio web</a></p>
