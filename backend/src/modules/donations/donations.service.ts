@@ -72,7 +72,7 @@ export class DonationsService {
 
       const saved = await this.donateRepository.save(donate);
 
-      if (donate) {
+      if (donate && donate.status === 'approved') {
         user.isDonator = true;
         await this.userRepository.save(user);
         this.logger.log(`User ${userId} marked as donor`);
@@ -80,13 +80,27 @@ export class DonationsService {
 
       this.logger.log(`Donation created successfully: ${saved.id}`);
 
-      this.sendDoantionNotificationAsync(user.email);
-      this.sendDoantionNotificationAsyncToAdmin(
-        user.username,
-        donate.amount,
-        user.email,
-        user.phone,
-      );
+      if (donate.status === 'approved') {
+        this.sendDoantionNotificationAsync(user.email);
+        this.sendDoantionNotificationAsyncToAdmin(
+          user.username,
+          donate.amount,
+          user.email,
+          user.phone,
+        );
+      }
+      if (donate.status === 'pending' || donate.status === 'in_process') {
+        this.sendOrderPaymentPendingNotificationAsync(
+          user.email,
+          user.username,
+        );
+      }
+      if (donate.status === 'rejected') {
+        this.sendOrderPaymentFailureNotificationAsync(
+          user.email,
+          user.username,
+        );
+      }
 
       return ResponseDonateDto.toDTO(saved);
     } catch (error) {
@@ -168,6 +182,44 @@ export class DonationsService {
       .catch((error) => {
         this.logger.error(
           `Donation notification email sent to ${email}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      });
+  }
+
+  private sendOrderPaymentPendingNotificationAsync(
+    email: string,
+    username: string,
+  ): void {
+    this.mailService
+      .sendPaymentPendingEmail(email, username)
+      .then(() => {
+        this.logger.log(
+          `Correo de notificación de pago pendiente enviado a ${email}`,
+        );
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Error enviando notificación de pago pendiente a ${email}:`,
+          error instanceof Error ? error.message : String(error),
+        );
+      });
+  }
+
+  private sendOrderPaymentFailureNotificationAsync(
+    email: string,
+    username: string,
+  ): void {
+    this.mailService
+      .sendPaymentRejectedEmail(email, username)
+      .then(() => {
+        this.logger.log(
+          `Correo de notificación de pago rechazado enviado a ${email}`,
+        );
+      })
+      .catch((error) => {
+        this.logger.error(
+          `Error enviando notificación de pago rechazado a ${email}:`,
           error instanceof Error ? error.message : String(error),
         );
       });

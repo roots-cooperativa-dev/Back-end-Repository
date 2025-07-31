@@ -47,7 +47,12 @@ export class PaymentsService implements IPaymentService {
 
   async processPaymentInfo(paymentInfo: MercadoPagoPaymentInfo): Promise<void> {
     try {
-      if (paymentInfo.status === 'approved') {
+      if (
+        paymentInfo.status === 'approved' ||
+        paymentInfo.status === 'pending' ||
+        paymentInfo.status === 'in_process' ||
+        paymentInfo.status === 'rejected'
+      ) {
         if (!paymentInfo.external_reference) {
           this.logger.error('Payment approved but no external_reference found');
           return;
