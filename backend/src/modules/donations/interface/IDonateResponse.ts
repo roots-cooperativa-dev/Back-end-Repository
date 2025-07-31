@@ -11,7 +11,7 @@ export interface IDonateResponseDto {
   paymentMethodId: string;
   dateApproved: Date;
   createdAt: Date;
-  userId: string;
+  userId: string | null; // Permitir null
 }
 
 export class ResponseDonateDto {
@@ -27,11 +27,11 @@ export class ResponseDonateDto {
       paymentMethodId: donate.paymentMethodId,
       dateApproved: donate.dateApproved,
       createdAt: donate.createdAt,
-      userId: donate.user.id,
+      userId: donate.user?.id || null,
     };
   }
 
-  static toDTOList(donate: Donate[]): IDonateResponseDto[] {
-    return donate.map((donate) => this.toDTO(donate));
+  static toDTOList(donates: Donate[]): IDonateResponseDto[] {
+    return donates.map((donate) => this.toDTO(donate));
   }
 }
