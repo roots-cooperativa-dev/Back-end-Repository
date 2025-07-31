@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Notificación</title>
+  <title>Pago Rechazado</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Unica+One&display=swap" rel="stylesheet">
 
@@ -76,6 +76,7 @@
       text-decoration: underline;
       font-weight: 600;
     }
+    .content h1 { font-size: 26px; color: #f11010; margin-bottom: 25px; }
 
     .btn {
       display: inline-block;
@@ -158,34 +159,28 @@
 </head>
 <body>
   <div class="container">
-    <!-- Encabezado institucional -->
     <div class="header">
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
-  <tr>
-    <!-- Texto a la izquierda -->
-    <td align="left" style="padding: 15px; font-family: 'Unica One', Arial, sans-serif; font-size: 22px; color: #4d206c; letter-spacing: 1px;">
-  ROOTS COOPERATIVA
-</td>
+      <table role="presentation" width="100%" style="max-width: 600px; margin: 0 auto;">
+        <tr>
+          <td align="left" style="padding: 15px; font-family: 'Unica One'; font-size: 22px; color: #4d206c;">ROOTS COOPERATIVA</td>
+          <td align="right" style="padding: 15px;">
+            <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753703082/sol_sf2bpt.png" alt="Logo ROOTS COOPERATIVA" />
+          </td>
+        </tr>
+      </table>
+    </div>
 
-
-    <!-- Logo a la derecha -->
-    <td align="right" style="padding: 15px;">
-      <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753703082/sol_sf2bpt.png" alt="Logo ROOTS COOPERATIVA" style="max-width: 160px; height: auto; display: block;" />
-    </td>
-  </tr>
-</table>
-    <!-- Contenido -->
     <div class="content">
-      <h1 class="subtitle">¡Hola <strong>{{userName}}</strong>!</h1>
-      <p>Se ha iniciado sesión en tu cuenta de <strong>{{appName}}</strong>.</p>
-      <p>Si no fuiste vos quien inició sesión, por favor, <a href="https://frontend-rootscoop.vercel.app/contacto">contactá a soporte inmediatamente</a>.</p>
-      <p>Saludos cordiales,<br>El equipo de <strong>{{appName}}</strong>.</p>
+      <h1>Pago rechazado</h1>
+      <p>Hola <strong>{{userName}}</strong>,</p>
+      <p>Tu intento de pago fue <strong style="color: #cc0000;">rechazado</strong>.</p>
+      <p>Si el problema persiste, podés volver a intentar el pago</p>
+       <p>Saludos cordiales,<br>El equipo de <strong>{{appName}}</strong>.</p>
       <div style="text-align: center;">
           <a href="https://frontend-rootscoop.vercel.app/contacto" class="btn">Contactar Soporte</a>
       </div>
      
     </div>
-
     <!-- Redes sociales -->
 <div class="social-container" style="text-align: center; margin: 30px auto;">
   <p style="font-weight: 600; color: #642d91; margin-bottom: 15px;">Seguinos en nuestras redes:</p>
