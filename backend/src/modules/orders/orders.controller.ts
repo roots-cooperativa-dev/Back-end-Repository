@@ -175,6 +175,7 @@ export class OrdersController {
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update order status by ID' })
   @ApiParam({ name: 'id', type: 'string', description: 'Order ID' })
   @ApiBody({ type: UpdateOrderStatusDTO })
   @ApiResponse({
