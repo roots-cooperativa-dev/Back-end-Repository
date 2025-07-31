@@ -55,7 +55,6 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Find all users to send newsletter',
-    type: [Users],
   })
   @Get('all/newsletter')
   async findAll(): Promise<Users[]> {
@@ -91,6 +90,7 @@ export class UsersController {
   }
 
   @Patch('password')
+  @ApiOperation({ summary: 'Update password' })
   @UseGuards(AuthGuard)
   async changeOwnPassword(
     @Req() req: AuthenticatedRequest,
@@ -112,6 +112,7 @@ export class UsersController {
   }
 
   @Patch('Roles/:id')
+  @ApiOperation({ summary: 'Role change by ID' })
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.SUPER_ADMIN)
   async rollChange(
@@ -163,15 +164,15 @@ export class UsersController {
   @Patch('restore/:id')
   @UseGuards(AuthGuard, RoleGuard)
   @Roles(UserRole.ADMIN)
-  @ApiOperation({ summary: 'Restaurar usuario eliminado (soft delete)' })
+  @ApiOperation({ summary: 'Restore deleted user (soft delete)' })
   @ApiParam({
     name: 'id',
     type: String,
-    description: 'ID del usuario a restaurar',
+    description: 'User ID to restore',
   })
   @ApiResponse({
     status: 200,
-    description: 'Usuario restaurado correctamente',
+    description: 'User successfully restored',
     type: ResponseUserDto,
   })
   async restoreUser(
@@ -182,29 +183,28 @@ export class UsersController {
   }
 
   @Post('forgot-password')
-  @ApiOperation({ summary: 'Solicitar recuperación de contraseña' })
+  @ApiOperation({ summary: 'Request password recovery' })
   @ApiBody({ type: ForgotPasswordDto })
   @ApiResponse({
     status: 200,
-    description: 'Si el email existe, se envía link de reseteo',
+    description: 'If the email exists, a reset link is sent.',
   })
   async forgotPassword(@Body() dto: ForgotPasswordDto) {
     await this.usersService.sendResetPasswordEmail(dto.email);
     return {
-      message:
-        'Si el email existe, se envió el link para reestablecer contraseña',
+      message: 'If the email exists, the password reset link has been sent.',
     };
   }
 
   @Post('reset-password')
-  @ApiOperation({ summary: 'Resetear contraseña usando token de email' })
+  @ApiOperation({ summary: 'Reset password using email token' })
   @ApiBody({ type: ResetPasswordDto })
   @ApiResponse({
     status: 200,
-    description: 'Contraseña reseteada correctamente',
+    description: 'Password reset successfully',
   })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     await this.usersService.resetPassword(dto);
-    return { message: 'Contraseña restablecida correctamente' };
+    return { message: 'Password reset successfully' };
   }
 }
