@@ -404,6 +404,8 @@ export class MailService {
       `Fecha: ${orderDate.toLocaleDateString()}\n\nRevisar sistema.\n\nGracias,\nROOTS COOPERATIVA`;
 
     const context = {
+      userName,
+      userEmail,
       orderId,
       orderTotal,
       orderDate: orderDate.toLocaleDateString(),
