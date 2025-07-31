@@ -14,7 +14,7 @@ import { Users } from '../users/Entyties/users.entity';
 import { CreateDonateDto } from './dto/create-donation.dto';
 import { ResponseDonateDto } from './interface/IDonateResponse';
 import { MailService } from '../mail/mail.service';
-import { PaginationQueryDonationDto } from './dto/donations.paginate';
+import { DonationSearchQueryDtoExtended } from './dto/donations.paginate';
 import { paginate } from 'src/common/pagination/paginate';
 
 @Injectable()
@@ -125,11 +125,39 @@ export class DonationsService {
     }
   }
 
-  async findAllDonations(pagination: PaginationQueryDonationDto) {
-    return paginate(this.donateRepository, pagination, {
-      order: { createdAt: 'DESC' },
-      relations: ['user'],
-    });
+  async findAllDonationsExtended(searchQuery: DonationSearchQueryDtoExtended) {
+    const { status, sortBy, sortOrder, ...pagination } = searchQuery;
+
+    if (!status && sortBy === 'createdAt' && sortOrder === 'DESC') {
+      return paginate(this.donateRepository, pagination, {
+        order: { createdAt: 'DESC' },
+        relations: ['user'],
+      });
+    }
+
+    const queryBuilder = this.donateRepository.createQueryBuilder('donate');
+    queryBuilder.leftJoinAndSelect('donate.user', 'user');
+    queryBuilder.where('donate.user IS NOT NULL');
+
+    if (status) {
+      queryBuilder.andWhere('donate.status = :status', { status });
+    }
+
+    const field = sortBy || 'createdAt';
+    const order = sortOrder || 'DESC';
+    queryBuilder.orderBy(`donate.${field}`, order);
+
+    const skip = (pagination.page - 1) * pagination.limit;
+    queryBuilder.skip(skip).take(pagination.limit);
+
+    const [items, total] = await queryBuilder.getManyAndCount();
+    const pages = Math.ceil(total / pagination.limit);
+
+    return {
+      items,
+      total,
+      pages,
+    };
   }
 
   async findOne(id: string): Promise<ResponseDonateDto> {
