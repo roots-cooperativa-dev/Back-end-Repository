@@ -120,10 +120,7 @@ export class OrderPaymentsService implements IPaymentService {
         await this.orderPaymentsRepository.save(orderPayment);
 
         await this.sendOrderPaymentNotificationAsync(cart.user.id);
-        await this.sendOrderPaymentNotificationAsyncToAdmin(
-          cart.user.id,
-          cart.id,
-        );
+        await this.sendOrderPaymentNotificationAsyncToAdmin(cart.user.id, cart);
 
         this.logger.log(
           `Order payment completed and saved for cart: ${cartId}, payment: ${paymentInfo.id}, user: ${cart.user.id}`,
@@ -189,7 +186,7 @@ export class OrderPaymentsService implements IPaymentService {
 
   private async sendOrderPaymentNotificationAsyncToAdmin(
     id: string,
-    cartId: string,
+    cart: Cart,
   ): Promise<void> {
     const user = await this.userRespository.findOne({ where: { id } });
 
@@ -201,7 +198,13 @@ export class OrderPaymentsService implements IPaymentService {
     }
 
     this.mailService
-      .sendPurchaseAlertToAdmin(user.username, user.email, cartId)
+      .sendPurchaseAlertToAdmin(
+        user.username,
+        user.email,
+        cart.id,
+        cart.total,
+        cart.updatedAt,
+      )
       .then(() => {
         this.logger.log(
           `Correo de notificación de compra enviado a ${user.username}`,

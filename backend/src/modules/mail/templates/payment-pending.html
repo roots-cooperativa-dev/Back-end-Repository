@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Notificación</title>
+  <title>Pago Pendiente</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&family=Bebas+Neue&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Unica+One&display=swap" rel="stylesheet">
 
@@ -140,6 +140,7 @@
       .content {
         padding: 20px;
       }
+      .content h1 { font-size: 26px; color: #e88c00; margin-bottom: 25px; }
 
       .subtitle {
         font-size: 24px;
@@ -158,34 +159,28 @@
 </head>
 <body>
   <div class="container">
-    <!-- Encabezado institucional -->
     <div class="header">
-  <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
-  <tr>
-    <!-- Texto a la izquierda -->
-    <td align="left" style="padding: 15px; font-family: 'Unica One', Arial, sans-serif; font-size: 22px; color: #4d206c; letter-spacing: 1px;">
-  ROOTS COOPERATIVA
-</td>
-
-
-    <!-- Logo a la derecha -->
-    <td align="right" style="padding: 15px;">
-      <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753703082/sol_sf2bpt.png" alt="Logo ROOTS COOPERATIVA" style="max-width: 160px; height: auto; display: block;" />
-    </td>
-  </tr>
-</table>
-    <!-- Contenido -->
-    <div class="content">
-      <h1 class="subtitle">¡Hola <strong>{{userName}}</strong>!</h1>
-      <p>Se ha iniciado sesión en tu cuenta de <strong>{{appName}}</strong>.</p>
-      <p>Si no fuiste vos quien inició sesión, por favor, <a href="https://frontend-rootscoop.vercel.app/contacto">contactá a soporte inmediatamente</a>.</p>
-      <p>Saludos cordiales,<br>El equipo de <strong>{{appName}}</strong>.</p>
-      <div style="text-align: center;">
-          <a href="https://frontend-rootscoop.vercel.app/contacto" class="btn">Contactar Soporte</a>
-      </div>
-     
+      <table role="presentation" width="100%" style="max-width: 600px; margin: 0 auto;">
+        <tr>
+          <td align="left" style="padding: 15px; font-family: 'Unica One'; font-size: 22px; color: #4d206c;">ROOTS COOPERATIVA</td>
+          <td align="right" style="padding: 15px;">
+            <img src="https://res.cloudinary.com/djzcrrbfb/image/upload/v1753703082/sol_sf2bpt.png" alt="Logo ROOTS COOPERATIVA" />
+          </td>
+        </tr>
+      </table>
     </div>
 
+    <div class="content">
+      <h1>Pago pendiente</h1>
+      <p>Hola <strong>{{userName}}</strong>,</p>
+      <p>Tu intento de pago está en estado <strong style="color: #e88c00;">pendiente</strong>.</p>
+      <p>Esto puede deberse a que el pago está siendo procesado por el proveedor o porque utilizaste un método que demora en acreditarse.</p>
+      <p>Si este estado no cambia en los próximos minutos, te recomendamos contactar a nuestro <a href="https://frontend-rootscoop.vercel.app/contacto" target="_blank">equipo de soporte</a>.</p>
+      <p>O comunicate directamente a nuestro whatsapp<a href="https://wa.link/b4wyji" target="_blank" class="social-icon" rel="noopener noreferrer">
+          <img src="https://cdn-icons-png.flaticon.com/512/124/124034.png" alt="WhatsApp" />
+        </a></p>
+      <p>Gracias por tu compra,<br/>El equipo de <strong>{{appName}}</strong>.</p>
+    </div>
     <!-- Redes sociales -->
 <div class="social-container" style="text-align: center; margin: 30px auto;">
   <p style="font-weight: 600; color: #642d91; margin-bottom: 15px;">Seguinos en nuestras redes:</p>

@@ -387,26 +387,26 @@ export class MailService {
     );
   }
   async sendPurchaseAlertToAdmin(
-    name: string,
-    email: string,
-    orderId?: string,
+    userName: string,
+    userEmail: string,
+    orderId: string,
+    orderTotal: number,
+    orderDate: Date,
   ): Promise<void> {
     const adminEmail = 'rootscooperativadev@gmail.com';
     const subject = 'Nueva compra realizada en ROOTS COOPERATIVA';
 
     const textAlt =
-      `Hola equipo ROOTS,\n\n` +
-      `Se ha realizado una nueva compra en la tienda.\n\n` +
-      `Comprador: ${name}\n` +
-      `Email: ${email}\n` +
-      `${orderId ? `ID de orden: ${orderId}\n` : ''}` +
-      `\nPor favor, revisá el panel de administración para más detalles.\n\n` +
-      `- ROOTS COOPERATIVA`;
+      `Hola equipo,\n\nSe ha realizado una nueva compra por parte de ${userName}.\n\n` +
+      `Email: ${userEmail}\n` +
+      `Orden ID: ${orderId}\n` +
+      `Total: $${orderTotal}\n` +
+      `Fecha: ${orderDate.toLocaleDateString()}\n\nRevisar sistema.\n\nGracias,\nROOTS COOPERATIVA`;
 
     const context = {
-      name,
-      email,
       orderId,
+      orderTotal,
+      orderDate: orderDate.toLocaleDateString(),
       appName: 'ROOTS COOPERATIVA',
     };
 
@@ -606,6 +606,57 @@ Seguimos sumando voluntades.
       subject,
       textAlt,
       'appointment-approved.html',
+      context,
+    );
+  }
+  async sendPaymentPendingEmail(
+    email: string,
+    userName: string,
+  ): Promise<void> {
+    const subject = 'Pago pendiente - ROOTS COOPERATIVA';
+    const textAlt =
+      `Hola ${userName},\n\n` +
+      `Tu intento de pago se encuentra pendiente.\n` +
+      `Esto puede deberse a que el pago está siendo procesado o a una demora por parte del proveedor.\n\n` +
+      `Podés verificar el estado en tu perfil o contactarnos si tenés dudas.\n\n` +
+      `Gracias por tu compra.\n\n` +
+      `Saludos,\nEl equipo de ROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      email,
+      subject,
+      textAlt,
+      'payment-pending.html',
+      context,
+    );
+  }
+  async sendPaymentRejectedEmail(
+    email: string,
+    userName: string,
+  ): Promise<void> {
+    const subject = 'Pago rechazado - ROOTS COOPERATIVA';
+    const textAlt =
+      `Hola ${userName},\n\n` +
+      `Lamentamos informarte que tu intento de pago fue rechazado.\n\n` +
+      `Te sugerimos intentar nuevamente con otro medio de pago o comunicarte con soporte si el problema persiste.\n\n` +
+      `Gracias por tu comprensión.\n\n` +
+      `Saludos,\nEl equipo de ROOTS COOPERATIVA.`;
+
+    const context = {
+      userName,
+      appName: 'ROOTS COOPERATIVA',
+    };
+
+    await this.sendMail(
+      email,
+      subject,
+      textAlt,
+      'payment-rejected.html',
       context,
     );
   }
